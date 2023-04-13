@@ -1,0 +1,18 @@
+from py2neo import Graph
+
+from utils.config import Config
+
+
+class Neo4j:
+    @staticmethod
+    def get_graph():
+        return Graph(Config.get_db_address(), auth=(Config.get_db_user(), Config.get_db_pw()))
+
+    @staticmethod
+    def wipe_database():
+        Neo4j.get_graph().delete_all()
+
+    @staticmethod
+    def remove_releases():
+        cypher_query = 'MATCH (n:Release) DETACH DELETE n'
+        Neo4j.get_graph().run(cypher_query)
