@@ -1,5 +1,7 @@
 # DevOps Digital Twin
 
+[![Python test](https://github.com/jangruenwaldt/devops-digital-twin/actions/workflows/on_push.yaml/badge.svg)](https://github.com/jangruenwaldt/devops-digital-twin/actions/workflows/on_push.yaml)
+
 Turns DevOps system data into a single graph database using neo4j.
 
 ## Components
