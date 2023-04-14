@@ -1,6 +1,8 @@
 import json
 
-CONFIG_PATH = 'config.json'
+from destinations import ROOT_DIR
+
+CONFIG_PATH = f'{ROOT_DIR}/config.json'
 
 with open(CONFIG_PATH, 'r') as f:
     CONFIG_DATA = json.load(f)
