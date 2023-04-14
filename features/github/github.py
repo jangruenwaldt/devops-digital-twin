@@ -20,7 +20,7 @@ class GitHub:
                 return cached_data
 
         all_releases = []
-        headers = Config.get_request_header()
+        headers = Config.get_github_request_header()
         while api_url is not None:
             response = requests.get(api_url, headers=headers)
             response.raise_for_status()
@@ -46,5 +46,6 @@ class GitHub:
     def get_latest_commit_hash_in_release(self, tag_name):
         owner, repo_name = self.get_owner_and_repo_name()
         tag_object = CachedRequest.get_json(
-            f'https://api.github.com/repos/{owner}/{repo_name}/git/refs/tags/{tag_name}')
+            f'https://api.github.com/repos/{owner}/{repo_name}/git/refs/tags/{tag_name}',
+            headers=Config().get_github_request_header())
         return tag_object['object']['sha']

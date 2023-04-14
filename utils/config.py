@@ -25,7 +25,7 @@ class Config:
         return CONFIG_DATA['db_address']
 
     @staticmethod
-    def get_request_header():
+    def get_github_request_header():
         return {
             'Authorization': f'token {Config.get_pat()}'
         }
