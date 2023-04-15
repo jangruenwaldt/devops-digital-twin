@@ -19,7 +19,7 @@ class TestReleasesTwin(unittest.TestCase):
             {'id': 1, 'tag_name': 'v1.0.0', 'published_at': '2022-01-01T17:42:20Z'},
             {'id': 2, 'tag_name': 'v1.1.0', 'published_at': '2023-01-01T17:42:20Z'}
         ]
-        mock_github_instance.get_latest_commit_hash_in_release.side_effect = ['commit1', 'commit2']
+        mock_github_instance.get_latest_commit_hash_in_release.side_effect = ['commit2', 'commit1']
         mock_github.return_value = mock_github_instance
 
         # Mock Neo4j graph
@@ -38,8 +38,9 @@ class TestReleasesTwin(unittest.TestCase):
         # (2 relationships for initial deploy of a commit left out as not running in mock mode)
         self.assertEqual(mock_graph.create.call_count, 5)
 
+        # TODO: Some tech debt below here, as releases are iterated in reverse direction, indices here are strange
         # release node 1
-        release_node_1 = mock_graph.create.call_args_list[0].args[0]
+        release_node_1 = mock_graph.create.call_args_list[2].args[0]
         expected_release_node_1 = {
             'id': 1,
             'tag_name': 'v1.0.0',
@@ -51,15 +52,16 @@ class TestReleasesTwin(unittest.TestCase):
         self.assertEqual(sorted(release_node_1.items()), sorted(expected_release_node_1.items()))
 
         # relationship between release 1 and commit 1
-        relationship_1 = mock_relationship.call_args_list[0]
+        relationship_1 = mock_relationship.call_args_list[2]
         # TODO: bit unclean to call mock_graph.nodes.match.return_value.first() here,
         #  but test fails if commit_1_node passed directly
+        mock_graph.nodes.match.return_value.first()
         self.assertTupleEqual(relationship_1.args, (release_node_1, GraphRelationships.LATEST_INCLUDED_COMMIT,
                                                     mock_graph.nodes.match.return_value.first()))
 
         # relationship between releases
         relationship_2 = mock_relationship.call_args_list[1]
-        release_node_2 = mock_graph.create.call_args_list[2].args[0]
+        release_node_2 = mock_graph.create.call_args_list[0].args[0]
         self.assertTupleEqual(relationship_2.args, (release_node_2, GraphRelationships.SUCCEEDED_BY, release_node_1))
 
 
