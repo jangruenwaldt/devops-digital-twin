@@ -11,7 +11,8 @@ class TestReleasesTwin(unittest.TestCase):
     @patch('features.twins.deployments_twin.Neo4j.get_graph')
     @patch('features.twins.deployments_twin.Neo4j.remove_releases')
     @patch('features.twins.deployments_twin.Relationship')
-    def test_construct(self, mock_relationship, mock_remove_releases, mock_get_graph, mock_github):
+    @patch('features.twins.deployments_twin.DeploymentsTwin.add_initial_deploy_relationship')
+    def test_construct(self, mock_initial_deploy, mock_relationship, mock_remove_releases, mock_get_graph, mock_github):
         # Mock GitHub
         mock_github_instance = MagicMock()
         mock_github_instance.fetch_releases.return_value = [
@@ -30,8 +31,12 @@ class TestReleasesTwin(unittest.TestCase):
 
         DeploymentsTwin.construct('https://github.com/jangruenwaldt/xss-escape-django')
 
+        mock_initial_deploy.assert_any_call('commit1')
+        mock_initial_deploy.assert_any_call('commit2')
         mock_remove_releases.assert_called_once()
-        self.assertEqual(mock_graph.create.call_count, 5)  # 2 releases, 3 relationships
+        # 2 release nodes, 1 relationship to next release, 2 relationships to latest included commit,
+        # (2 relationships for initial deploy of a commit left out as not running in mock mode)
+        self.assertEqual(mock_graph.create.call_count, 5)
 
         # release node 1
         release_node_1 = mock_graph.create.call_args_list[0].args[0]
