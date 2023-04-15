@@ -38,7 +38,7 @@ class GitTwin:
                                          debug_options=debug_options)
 
     @staticmethod
-    def construct_from_repo_path(path, branch_name, repo_url=None, debug_options=None):
+    def construct_from_repo_path(path, branch_name, repo_url=None, debug_options=None, enable_branch_node=False):
         GitTwin.setup()
 
         if debug_options is None:
@@ -52,8 +52,9 @@ class GitTwin:
 
         graph = Neo4j.get_graph()
 
-        branch_node = Node(GraphNodes.BRANCH, name=f'{branch_name}', url=f'{repo_url}/tree/{branch_name}')
-        graph.create(branch_node)
+        if enable_branch_node:
+            branch_node = Node(GraphNodes.BRANCH, name=f'{branch_name}', url=f'{repo_url}/tree/{branch_name}')
+            graph.create(branch_node)
 
         commits_added = 0
         for commit in repo.iter_commits(branch_name, reverse=True):
@@ -77,8 +78,9 @@ class GitTwin:
                                branch=branch_name,
                                url=commit_url)
             graph.create(commit_node)
-            branch_relation = Relationship(commit_node, GraphRelationships.ON_BRANCH, branch_node)
-            graph.create(branch_relation)
+            if enable_branch_node:
+                branch_relation = Relationship(commit_node, GraphRelationships.ON_BRANCH, branch_node)
+                graph.create(branch_relation)
             if enable_logs:
                 print(f'Added commit with hash {commit.hexsha}')
 
