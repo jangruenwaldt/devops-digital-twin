@@ -45,7 +45,7 @@ class GitTwin:
         if debug_options is None:
             debug_options = {}
         enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
-        max_nodes = debug_options['max_nodes'] if 'max_nodes' in debug_options else None
+        max_commits = debug_options['max_commits'] if 'max_commits' in debug_options else None
 
         repo = Repo(path)
         repo.git.checkout(branch_name)
@@ -53,11 +53,14 @@ class GitTwin:
 
         graph = Neo4j.get_graph()
 
-        node_count = 0
+        branch_node = Node(GraphNodes.BRANCH, name=f'{branch_name}', url=f'{repo_url}/tree/{branch_name}')
+        graph.create(branch_node)
+
+        commits_added = 0
         for commit in repo.iter_commits(branch_name, reverse=True):
             # Allow limiting imported nodes for quicker debugging
-            node_count += 1
-            if max_nodes is not None and node_count > max_nodes:
+            commits_added += 1
+            if max_commits is not None and commits_added > max_commits:
                 break
 
             # Do not add again if already exists - wipe db before importing to avoid this.
@@ -67,12 +70,14 @@ class GitTwin:
                     print(f'Commit with hash {commit.hexsha} already found, skipping')
                 continue
 
-            # Add commit node with some useful attributes
+            # Add commit node with attributes and branch relationship
             commit_url = None if repo_url is None else repo_url + f'/commit/{commit.hexsha}'
             commit_node = Node(GraphNodes.COMMIT, message=commit.message, hash=commit.hexsha,
                                date=str(commit.committed_datetime), branch=branch_name,
                                url=commit_url)
             graph.create(commit_node)
+            branch_relation = Relationship(commit_node, GraphRelationships.ON_BRANCH, branch_node)
+            graph.create(branch_relation)
             if enable_logs:
                 print(f'Added commit with hash {commit.hexsha}')
 

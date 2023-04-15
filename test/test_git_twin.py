@@ -32,10 +32,11 @@ class TestGitTwin(unittest.TestCase):
         mock_git_repo_instance.git.checkout.assert_called_with('main')
         mock_git_repo_instance.remotes.origin.pull.assert_called_once()
 
-        self.assertEqual(mock_graph.create.call_count, 3)  # 2 nodes and 1 relationship
+        # 6 = 2 nodes and 4 relationships (1 to parent, 3 times to branch)
+        self.assertEqual(mock_graph.create.call_count, 6)
 
         # Check commit 1 node for right values
-        commit_1_node = mock_graph.create.call_args_list[0].args[0]
+        commit_1_node = mock_graph.create.call_args_list[1].args[0]
         self.assertEqual(commit_1_node['message'], 'Commit 1')
         self.assertEqual(commit_1_node['hash'], 'sha_commit1')
         self.assertEqual(commit_1_node['date'], '2022-01-01')
