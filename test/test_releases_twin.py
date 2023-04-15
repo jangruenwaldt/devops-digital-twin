@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from features.twins.releases_twin import ReleasesTwin
+from features.twins.deployments_twin import DeploymentsTwin
 from utils.graph.graph_relationships import GraphRelationships
 
 
@@ -28,7 +28,7 @@ class TestReleasesTwin(unittest.TestCase):
         mock_graph.nodes.match.return_value.first.return_value.side_effect = [commit_1_node, commit_2_node]
         mock_get_graph.return_value = mock_graph
 
-        ReleasesTwin.construct('https://github.com/jangruenwaldt/xss-escape-django')
+        DeploymentsTwin.construct('https://github.com/jangruenwaldt/xss-escape-django')
 
         mock_remove_releases.assert_called_once()
         self.assertEqual(mock_graph.create.call_count, 5)  # 2 releases, 3 relationships

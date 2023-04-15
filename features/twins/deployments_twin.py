@@ -8,7 +8,7 @@ from utils.graph.graph_relationships import GraphRelationships
 from utils.neo4j import Neo4j
 
 
-class ReleasesTwin:
+class DeploymentsTwin:
     @staticmethod
     def construct(github_url, enable_cache=True, debug_options=None):
         if debug_options is None:

@@ -1,5 +1,5 @@
 from features.twins.git_twin import GitTwin
-from features.twins.releases_twin import ReleasesTwin
+from features.twins.deployments_twin import DeploymentsTwin
 from utils.neo4j import Neo4j
 
 
@@ -17,7 +17,7 @@ class Cockpit:
             Neo4j.wipe_database()
 
         GitTwin.construct_from_github_url(repo_url, branch_name=release_branch_name, debug_options=debug_options)
-        ReleasesTwin.construct(repo_url, debug_options=debug_options)
+        DeploymentsTwin.construct(repo_url, debug_options=debug_options)
         Cockpit.print_usage_info()
 
     @staticmethod
