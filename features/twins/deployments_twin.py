@@ -36,7 +36,7 @@ class DeploymentsTwin:
                                    latest_included_commit=latest_commit_hash)
             graph.create(deployment_node)
             if enable_logs:
-                print(f'Added release {deployment_node}')
+                print(f'Added deployment {deployment_node}')
 
             if previous_deployment is not None:
                 relation = Relationship(previous_deployment, GraphRelationships.SUCCEEDED_BY, deployment_node)
