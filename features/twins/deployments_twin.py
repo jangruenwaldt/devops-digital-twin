@@ -20,36 +20,53 @@ class DeploymentsTwin:
         graph = Neo4j.get_graph()
         Neo4j.remove_releases()
 
-        previous_release = None
-        for release in releases:
+        previous_deployment = None
+        for release in reversed(releases):
             tag_name = release['tag_name']
 
             latest_commit_hash = gh.get_latest_commit_hash_in_release(tag_name)
             release_url = github_url + f'/releases/tag/{tag_name}'
             commit_url = github_url + f'/commit/{latest_commit_hash}'
             publish_date = release['published_at']
-            release_node = Node(GraphNodes.RELEASE, id=release['id'], tag_name=tag_name,
-                                published_at=datetime.strptime(publish_date, '%Y-%m-%dT%H:%M:%SZ').replace(
-                                    microsecond=0).isoformat(),
-                                release_url=release_url,
-                                commit_url=commit_url)
-            graph.create(release_node)
+            deployment_node = Node(GraphNodes.DEPLOYMENT, id=release['id'], tag_name=tag_name,
+                                   published_at=datetime.strptime(publish_date, '%Y-%m-%dT%H:%M:%SZ').replace(
+                                       microsecond=0).isoformat(),
+                                   release_url=release_url,
+                                   commit_url=commit_url,
+                                   latest_included_commit=latest_commit_hash)
+            graph.create(deployment_node)
             if enable_logs:
-                print(f'Added release {release_node}')
+                print(f'Added release {deployment_node}')
 
-            if previous_release is not None:
-                # Note that previous release just means previously iterated, it factually is a higher release
-                relation = Relationship(release_node, GraphRelationships.SUCCEEDED_BY, previous_release)
+            if previous_deployment is not None:
+                relation = Relationship(previous_deployment, GraphRelationships.SUCCEEDED_BY, deployment_node)
                 graph.create(relation)
 
             commit_node = graph.nodes.match(GraphNodes.COMMIT, hash=latest_commit_hash).first()
             if commit_node is not None:
-                relation = Relationship(release_node, GraphRelationships.LATEST_INCLUDED_COMMIT, commit_node)
+                relation = Relationship(deployment_node, GraphRelationships.LATEST_INCLUDED_COMMIT, commit_node)
                 graph.create(relation)
+                DeploymentsTwin.add_initial_deploy_relationship(latest_commit_hash)
             else:
                 graph.run(f"""MATCH (n {{tag_name: '{tag_name}'}})
                     SET n.note = 'No relationship to commit added as the commit that was deployed is not part of the 
                     main branch anymore.'
                     """)
 
-            previous_release = release_node
+            previous_deployment = deployment_node
+
+    @staticmethod
+    def add_initial_deploy_relationship(latest_commit_hash):
+        query = f"""
+        MATCH (deployment:Deployment {{latest_included_commit: '{latest_commit_hash}'}}), 
+        (latestCommit:Commit {{hash: '{latest_commit_hash}'}})
+        
+        MATCH (latestCommit)-[:PARENT*]->(parentCommit:Commit)
+        WHERE NOT EXISTS(()-[:INITIAL_DEPLOY]->(parentCommit))
+        
+        WITH deployment, collect(DISTINCT parentCommit) AS parent_commits
+        FOREACH (commit IN parent_commits |
+            CREATE (deployment)-[:INITIAL_DEPLOY]->(commit)
+        )
+        """
+        return Neo4j.get_graph().run(query).evaluate()
