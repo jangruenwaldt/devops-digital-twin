@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from py2neo import Node, Relationship
 
 from features.github.github import GitHub
@@ -25,8 +27,10 @@ class ReleasesTwin:
             latest_commit_hash = gh.get_latest_commit_hash_in_release(tag_name)
             release_url = github_url + f'/releases/tag/{tag_name}'
             commit_url = github_url + f'/commit/{latest_commit_hash}'
+            publish_date = release['published_at']
             release_node = Node(GraphNodes.RELEASE, id=release['id'], tag_name=tag_name,
-                                published_at=release['published_at'],
+                                published_at=datetime.strptime(publish_date, '%Y-%m-%dT%H:%M:%SZ').replace(
+                                    microsecond=0).isoformat(),
                                 release_url=release_url,
                                 commit_url=commit_url)
             graph.create(release_node)

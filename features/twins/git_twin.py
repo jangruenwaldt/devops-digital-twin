@@ -1,5 +1,4 @@
 import os
-from tempfile import TemporaryDirectory
 
 from git import Repo
 from py2neo import Node, Relationship
@@ -72,8 +71,10 @@ class GitTwin:
 
             # Add commit node with attributes and branch relationship
             commit_url = None if repo_url is None else repo_url + f'/commit/{commit.hexsha}'
+
             commit_node = Node(GraphNodes.COMMIT, message=commit.message, hash=commit.hexsha,
-                               date=str(commit.committed_datetime), branch=branch_name,
+                               date=commit.committed_datetime.replace(microsecond=0).isoformat(),
+                               branch=branch_name,
                                url=commit_url)
             graph.create(commit_node)
             branch_relation = Relationship(commit_node, GraphRelationships.ON_BRANCH, branch_node)
