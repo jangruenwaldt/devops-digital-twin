@@ -40,7 +40,8 @@ class TestReleasesTwin(unittest.TestCase):
             'tag_name': 'v1.0.0',
             'published_at': '2022-01-01T17:42:20',
             'release_url': 'https://github.com/jangruenwaldt/xss-escape-django/releases/tag/v1.0.0',
-            'commit_url': 'https://github.com/jangruenwaldt/xss-escape-django/commit/commit1'
+            'commit_url': 'https://github.com/jangruenwaldt/xss-escape-django/commit/commit1',
+            'latest_included_commit': 'commit1'
         }
         self.assertEqual(sorted(release_node_1.items()), sorted(expected_release_node_1.items()))
 

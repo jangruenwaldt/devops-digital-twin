@@ -30,7 +30,8 @@ class TestGitTwin(unittest.TestCase):
 
         GitTwin.construct_from_repo_path('example/path', 'main',
                                          repo_url='https://github.com/jangruenwaldt/xss-escape-django',
-                                         debug_options={'enable_logs': True})
+                                         debug_options={'enable_logs': True},
+                                         enable_branch_node=True)
 
         mock_git_repo.assert_called_with('example/path')
         mock_git_repo_instance.git.checkout.assert_called_with('main')
