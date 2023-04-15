@@ -21,11 +21,19 @@ class GitTwin:
     def construct_from_github_url(github_url, branch_name='main', debug_options=None):
         GitTwin.setup()
 
+        if debug_options is None:
+            debug_options = {}
+        enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
+
         repo_owner_slash_name = github_url.split("https://github.com/")[1]
         repo_dir = f'{TWIN_DATA_DIR}/{repo_owner_slash_name}'
 
         if not os.path.exists(repo_dir):
+            if enable_logs:
+                print('repo did not exist locally yet, cloning now')
             Repo.clone_from(github_url, repo_dir)
+        elif enable_logs:
+            print('found repo locally')
 
         GitTwin.construct_from_repo_path(path=repo_dir, branch_name=branch_name, repo_url=github_url,
                                          debug_options=debug_options)
