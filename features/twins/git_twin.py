@@ -55,7 +55,10 @@ class GitTwin:
             for parent in commit.parents:
                 parent_node = graph.nodes.match('Commit', hash=parent.hexsha).first()
                 if parent_node is not None:
+                    print(f'Adding relationship to parent node {parent.hexsha}')
                     relation = Relationship(commit_node, 'PARENT', parent_node)
                     graph.create(relation)
+                elif enable_logs:
+                    print(f'Commit had parent node {parent.hexsha} but this node was not found in the graph')
 
         repo.close()
