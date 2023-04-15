@@ -1,4 +1,4 @@
 class GraphNodes:
-    RELEASE = 'Release'
+    DEPLOYMENT = 'Deployment'
     COMMIT = 'Commit'
     BRANCH = 'Branch'
