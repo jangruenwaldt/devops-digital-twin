@@ -7,16 +7,16 @@ from utils.graph.graph_relationships import GraphRelationships
 
 class TestReleasesTwin(unittest.TestCase):
 
-    @patch('features.twins.releases_twin.GitHub')
-    @patch('features.twins.releases_twin.Neo4j.get_graph')
-    @patch('features.twins.releases_twin.Neo4j.remove_releases')
-    @patch('features.twins.releases_twin.Relationship')
+    @patch('features.twins.deployments_twin.GitHub')
+    @patch('features.twins.deployments_twin.Neo4j.get_graph')
+    @patch('features.twins.deployments_twin.Neo4j.remove_releases')
+    @patch('features.twins.deployments_twin.Relationship')
     def test_construct(self, mock_relationship, mock_remove_releases, mock_get_graph, mock_github):
         # Mock GitHub
         mock_github_instance = MagicMock()
         mock_github_instance.fetch_releases.return_value = [
-            {'id': 1, 'tag_name': 'v1.0.0', 'published_at': '2022-01-01'},
-            {'id': 2, 'tag_name': 'v1.1.0', 'published_at': '2023-01-01'}
+            {'id': 1, 'tag_name': 'v1.0.0', 'published_at': '2022-01-01T17:42:20Z'},
+            {'id': 2, 'tag_name': 'v1.1.0', 'published_at': '2023-01-01T17:42:20Z'}
         ]
         mock_github_instance.get_latest_commit_hash_in_release.side_effect = ['commit1', 'commit2']
         mock_github.return_value = mock_github_instance
@@ -38,7 +38,7 @@ class TestReleasesTwin(unittest.TestCase):
         expected_release_node_1 = {
             'id': 1,
             'tag_name': 'v1.0.0',
-            'published_at': '2022-01-01',
+            'published_at': '2022-01-01T17:42:20',
             'release_url': 'https://github.com/jangruenwaldt/xss-escape-django/releases/tag/v1.0.0',
             'commit_url': 'https://github.com/jangruenwaldt/xss-escape-django/commit/commit1'
         }

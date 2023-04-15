@@ -1,4 +1,5 @@
 import unittest
+from datetime import datetime
 from unittest.mock import MagicMock, patch
 
 from features.twins.git_twin import GitTwin
@@ -12,8 +13,11 @@ class TestGitTwin(unittest.TestCase):
     @patch('features.twins.git_twin.Relationship')
     def test_construct_from_repo_path(self, _mock_relationship, mock_get_graph, mock_git_repo):
         # Mock the git repository
-        commit_1 = MagicMock(hexsha='sha_commit1', message='Commit 1', committed_datetime='2022-01-01', parents=[])
-        commit_2 = MagicMock(hexsha='sha_commit2', message='Commit 2', committed_datetime='2023-01-01',
+        commit_1 = MagicMock(hexsha='sha_commit1', message='Commit 1',
+                             committed_datetime=datetime.fromisoformat('2022-01-01'),
+                             parents=[])
+        commit_2 = MagicMock(hexsha='sha_commit2', message='Commit 2',
+                             committed_datetime=datetime.fromisoformat('2023-01-01'),
                              parents=[commit_1])
         mock_git_repo_instance = MagicMock()
         mock_git_repo_instance.iter_commits.return_value = [commit_1, commit_2]
@@ -39,7 +43,7 @@ class TestGitTwin(unittest.TestCase):
         commit_1_node = mock_graph.create.call_args_list[1].args[0]
         self.assertEqual(commit_1_node['message'], 'Commit 1')
         self.assertEqual(commit_1_node['hash'], 'sha_commit1')
-        self.assertEqual(commit_1_node['date'], '2022-01-01')
+        self.assertEqual(commit_1_node['date'], '2022-01-01T00:00:00')
         self.assertEqual(commit_1_node['branch'], 'main')
         self.assertEqual(commit_1_node['url'], 'https://github.com/jangruenwaldt/xss-escape-django/commit/sha_commit1')
 
