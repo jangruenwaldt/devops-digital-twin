@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from features.twins.releases_twin import ReleasesTwin
+from utils.graph.graph_relationships import GraphRelationships
 
 
 class TestReleasesTwin(unittest.TestCase):
@@ -47,13 +48,13 @@ class TestReleasesTwin(unittest.TestCase):
         relationship_1 = mock_relationship.call_args_list[0]
         # TODO: bit unclean to call mock_graph.nodes.match.return_value.first() here,
         #  but test fails if commit_1_node passed directly
-        self.assertTupleEqual(relationship_1.args, (release_node_1, 'LATEST_INCLUDED_COMMIT',
+        self.assertTupleEqual(relationship_1.args, (release_node_1, GraphRelationships.LATEST_INCLUDED_COMMIT,
                                                     mock_graph.nodes.match.return_value.first()))
 
         # relationship between releases
         relationship_2 = mock_relationship.call_args_list[1]
         release_node_2 = mock_graph.create.call_args_list[2].args[0]
-        self.assertTupleEqual(relationship_2.args, (release_node_2, 'SUCCEEDED_BY', release_node_1))
+        self.assertTupleEqual(relationship_2.args, (release_node_2, GraphRelationships.SUCCEEDED_BY, release_node_1))
 
 
 if __name__ == '__main__':

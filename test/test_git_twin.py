@@ -2,6 +2,7 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from features.twins.git_twin import GitTwin
+from utils.graph.graph_relationships import GraphRelationships
 
 
 class TestGitTwin(unittest.TestCase):
@@ -42,7 +43,7 @@ class TestGitTwin(unittest.TestCase):
         self.assertEqual(commit_1_node['url'], 'https://github.com/jangruenwaldt/xss-escape-django/commit/sha_commit1')
 
         relationship = mock_graph.create.call_args_list[2]
-        relationship.assert_called_once_with(commit_1, 'PARENT', commit_2)
+        relationship.assert_called_once_with(commit_1, GraphRelationships.PARENT, commit_2)
 
 
 if __name__ == '__main__':

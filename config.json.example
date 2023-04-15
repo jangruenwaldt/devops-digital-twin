@@ -1,6 +1,6 @@
 {
-  "personal_access_token" : "",
-  "db_address" : "bolt://localhost:7687",
-  "db_user" : "",
-  "db_pw" : "",
+  "personal_access_token": "",
+  "db_address": "bolt://localhost:7687",
+  "db_user": "",
+  "db_pw": "",
 }

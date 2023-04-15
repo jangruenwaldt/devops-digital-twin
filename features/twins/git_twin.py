@@ -3,6 +3,8 @@ from tempfile import TemporaryDirectory
 from git import Repo
 from py2neo import Node, Relationship
 
+from utils.graph.graph_nodes import GraphNodes
+from utils.graph.graph_relationships import GraphRelationships
 from utils.neo4j import Neo4j
 
 
@@ -36,7 +38,7 @@ class GitTwin:
                 break
 
             # Do not add again if already exists - wipe db before importing to avoid this.
-            match_current_commit = graph.nodes.match('Commit', hash=commit.hexsha).first()
+            match_current_commit = graph.nodes.match(GraphNodes.COMMIT, hash=commit.hexsha).first()
             if match_current_commit is not None:
                 if enable_logs:
                     print(f'Commit with hash {commit.hexsha} already found, skipping')
@@ -44,7 +46,7 @@ class GitTwin:
 
             # Add commit node with some useful attributes
             commit_url = None if repo_url is None else repo_url + f'/commit/{commit.hexsha}'
-            commit_node = Node('Commit', message=commit.message, hash=commit.hexsha,
+            commit_node = Node(GraphNodes.COMMIT, message=commit.message, hash=commit.hexsha,
                                date=str(commit.committed_datetime), branch=branch_name,
                                url=commit_url)
             graph.create(commit_node)
@@ -53,10 +55,10 @@ class GitTwin:
 
             # Add relationship to parent node(s)
             for parent in commit.parents:
-                parent_node = graph.nodes.match('Commit', hash=parent.hexsha).first()
+                parent_node = graph.nodes.match(GraphNodes.COMMIT, hash=parent.hexsha).first()
                 if parent_node is not None:
                     print(f'Adding relationship to parent node {parent.hexsha}')
-                    relation = Relationship(commit_node, 'PARENT', parent_node)
+                    relation = Relationship(commit_node, GraphRelationships.PARENT, parent_node)
                     graph.create(relation)
                 elif enable_logs:
                     print(f'Commit had parent node {parent.hexsha} but this node was not found in the graph')

@@ -1,0 +1,3 @@
+class GraphNodes:
+    RELEASE = 'Release'
+    COMMIT = 'Commit'
