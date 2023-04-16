@@ -1,0 +1,58 @@
+name: Create/update DevOps digital twin
+
+on:
+  workflow_dispatch:
+    inputs:
+      wipe_db:
+        type: boolean
+        description: 'Whether to wipe the Neo4j database'
+        required: false
+        default: true
+      repo_url:
+        description: 'Repository URL'
+        required: true
+        default: 'https://github.com/jangruenwaldt/xss-escape-django'
+      release_branch:
+        description: 'Release Branch'
+        required: false
+        default: 'master'
+      enable_logs:
+        type: boolean
+        description: 'Enable Logs'
+        required: false
+        default: true
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [ "3.9" ]
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+
+      - name: Create config json
+        id: create-json
+        uses: jsdaniell/create-json@v1.2.2
+        with:
+          name: "config.json"
+          json: ${{ secrets.CONFIG_JSON }}
+
+      - name: Run script
+        run: python3 create_twin.py --wipe_db ${{ github.event.inputs.wipe_db }} \
+          --repo_url ${{ github.event.inputs.repo_url }} \
+          --release_branch ${{ github.event.inputs.release_branch }} \
+          --enable_logs ${{ github.event.inputs.enable_logs }}
