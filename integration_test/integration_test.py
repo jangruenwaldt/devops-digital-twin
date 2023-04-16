@@ -12,6 +12,10 @@ class IntegrationTest(unittest.TestCase):
                                        release_branch_name='master', debug_options={'enable_logs': True}, wipe_db=True)
         self.assertEqual(Neo4j.count_nodes(), 13)
 
+    def test_lead_time(self):
+        lead_time = Cockpit.calculate_lead_time()
+        self.assertEqual(lead_time.days, 1216)
+
 
 if __name__ == '__main__':
     unittest.main()
