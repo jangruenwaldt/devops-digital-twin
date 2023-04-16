@@ -40,9 +40,8 @@ class Cockpit:
             filter_tags = f" WHERE NOT deployment.tag_name IN [{excluded_tag_string}]"
 
         query = f"""
-        MATCH (deployment:Deployment {filter_deployment})
+        MATCH (deployment:Deployment {filter_deployment})-[:INITIAL_DEPLOY]->(deployed_commit:Commit)
         {filter_tags}
-        MATCH (deployment)-[:INITIAL_DEPLOY]->(deployed_commit:Commit)
         WITH duration.inSeconds(datetime(deployed_commit.date), datetime(deployment.published_at)) as lead_time
         RETURN lead_time
         """
