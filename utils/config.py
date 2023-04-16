@@ -10,7 +10,6 @@ CONFIG_DATA = {}
 if os.path.isfile(CONFIG_PATH):
     with open(CONFIG_PATH, 'r') as f:
         CONFIG_DATA = json.load(f)
-        print(f'Using config: {CONFIG_DATA}')
 
 
 class Config:
