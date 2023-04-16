@@ -1,5 +1,5 @@
 import statistics
-from datetime import timedelta
+from datetime import timedelta, datetime
 from typing import Callable
 
 from features.twins.deployments_twin import DeploymentsTwin
@@ -15,9 +15,10 @@ class Cockpit:
     def get_all_releases():
         releases = Neo4j.get_graph().run(f"""
             MATCH (deployment:Deployment)
-            RETURN deployment.tag_name as version
+            RETURN deployment.tag_name as version, deployment.published_at as published_at
             """).data()
-        return sorted(list(map(lambda r: r['version'], releases)))
+        return list(map(lambda r: r['version'],
+                        sorted(releases, key=lambda r: datetime.fromisoformat(r['published_at']))))
 
     @staticmethod
     def calculate_lead_time_from_commit_to_deployment(commit_hash, deployment_tag):
