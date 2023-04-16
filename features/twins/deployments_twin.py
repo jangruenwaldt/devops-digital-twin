@@ -47,7 +47,7 @@ class DeploymentsTwin:
             if commit_node is not None:
                 relation = Relationship(deployment_node, GraphRelationships.LATEST_INCLUDED_COMMIT, commit_node)
                 graph.create(relation)
-                DeploymentsTwin.add_initial_deploy_relationship(latest_commit_hash)
+                DeploymentsTwin.add_initial_deploy_relationship(tag_name, latest_commit_hash)
             else:
                 graph.run(f"""MATCH (n {{tag_name: '{tag_name}'}})
                     SET n.note = 'No relationship to commit added as the commit that was deployed is not part of the 
@@ -57,17 +57,19 @@ class DeploymentsTwin:
             previous_deployment = deployment_node
 
     @staticmethod
-    def add_initial_deploy_relationship(latest_commit_hash):
+    def add_initial_deploy_relationship(tag_name, latest_commit_hash):
         query = f"""
-        MATCH (deployment:Deployment {{latest_included_commit: '{latest_commit_hash}'}}), 
-        (latestCommit:Commit {{hash: '{latest_commit_hash}'}})
-        
-        MATCH (latestCommit)-[:PARENT*]->(parentCommit:Commit)
+        MATCH (deployment:Deployment {{tag_name: '{tag_name}'}})
+        OPTIONAL MATCH (latestCommit:Commit {{hash: '{latest_commit_hash}'}})-[:PARENT*]->(parentCommit:Commit)
         WHERE NOT EXISTS(()-[:INITIAL_DEPLOY]->(parentCommit))
         
-        WITH deployment, collect(DISTINCT parentCommit) AS parent_commits
+        WITH deployment, latestCommit, collect(DISTINCT parentCommit) AS parent_commits
         FOREACH (commit IN parent_commits |
-            CREATE (deployment)-[:INITIAL_DEPLOY]->(commit)
+            MERGE (deployment)-[:INITIAL_DEPLOY]->(commit)
         )
+        
+        WITH deployment, latestCommit
+        WHERE latestCommit IS NOT NULL
+        MERGE (deployment)-[:INITIAL_DEPLOY]->(latestCommit)
         """
         return Neo4j.get_graph().run(query).evaluate()
