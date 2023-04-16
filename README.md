@@ -1,6 +1,7 @@
 # DevOps Digital Twin
 
 [![Python integration test](https://github.com/jangruenwaldt/devops-digital-twin/actions/workflows/integration_test.yaml/badge.svg)](https://github.com/jangruenwaldt/devops-digital-twin/actions/workflows/integration_test.yaml)
+[![Create/update DevOps digital twin](https://github.com/jangruenwaldt/devops-digital-twin/actions/workflows/create_twin.yaml/badge.svg)](https://github.com/jangruenwaldt/devops-digital-twin/actions/workflows/create_twin.yaml)
 
 Turns DevOps system data into a single graph database using neo4j.
 

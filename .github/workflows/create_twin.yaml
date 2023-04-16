@@ -5,7 +5,7 @@ on:
     inputs:
       wipe_db:
         type: boolean
-        description: 'Whether to wipe the Neo4j database'
+        description: 'Wipe Neo4j database'
         required: false
         default: true
       repo_url:
@@ -52,7 +52,7 @@ jobs:
           json: ${{ secrets.CONFIG_JSON }}
 
       - name: Run script
-        run: python3 create_twin.py --wipe_db ${{ github.event.inputs.wipe_db }} \
-          --repo_url ${{ github.event.inputs.repo_url }} \
-          --release_branch ${{ github.event.inputs.release_branch }} \
+        run: python3 create_twin.py --wipe_db ${{ github.event.inputs.wipe_db }}
+          --repo_url ${{ github.event.inputs.repo_url }}
+          --release_branch ${{ github.event.inputs.release_branch }}
           --enable_logs ${{ github.event.inputs.enable_logs }}
