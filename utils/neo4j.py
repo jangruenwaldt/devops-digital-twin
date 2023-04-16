@@ -16,3 +16,8 @@ class Neo4j:
     def remove_releases():
         cypher_query = 'MATCH (n:Release) DETACH DELETE n'
         Neo4j.get_graph().run(cypher_query)
+
+    @staticmethod
+    def count_nodes():
+        result = Neo4j.get_graph().run(f"MATCH (n) RETURN COUNT(n) AS count")
+        return result.evaluate()
