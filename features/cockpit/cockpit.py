@@ -1,5 +1,6 @@
 import statistics
 from datetime import timedelta
+from typing import Callable
 
 from features.twins.deployments_twin import DeploymentsTwin
 from features.twins.git_twin import GitTwin
@@ -51,12 +52,13 @@ class Cockpit:
         return timedelta(seconds=lead_time_in_s)
 
     @staticmethod
-    def construct_digital_twin(repo_url, release_branch_name, debug_options=None, wipe_db=True):
+    def construct_digital_twin(repo_url, release_branch_name, debug_options=None, wipe_db=True,
+                               exclude_release: Callable = None):
         if wipe_db:
             Neo4j.wipe_database()
 
         GitTwin.construct_from_github_url(repo_url, branch_name=release_branch_name, debug_options=debug_options)
-        DeploymentsTwin.construct(repo_url, debug_options=debug_options)
+        DeploymentsTwin.construct(repo_url, debug_options=debug_options, exclude_release=exclude_release)
         Cockpit.print_usage_info()
 
     @staticmethod

@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Callable
 
 from py2neo import Node, Relationship
 
@@ -10,7 +11,7 @@ from utils.neo4j import Neo4j
 
 class DeploymentsTwin:
     @staticmethod
-    def construct(github_url, enable_cache=True, debug_options=None):
+    def construct(github_url, enable_cache=True, debug_options=None, exclude_release: Callable = None):
         if debug_options is None:
             debug_options = {}
         enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
@@ -21,8 +22,15 @@ class DeploymentsTwin:
         Neo4j.remove_releases()
 
         previous_deployment = None
-        for release in reversed(releases):
+        releases_sorted = sorted(releases, key=lambda r: datetime.strptime(r['published_at'], '%Y-%m-%dT%H:%M:%SZ'))
+        for release in releases_sorted:
             tag_name = release['tag_name']
+
+            if exclude_release is not None:
+                if exclude_release(release):
+                    if enable_logs:
+                        print(f'Skipping release {tag_name} due to exclude_release setting')
+                    continue
 
             latest_commit_hash = gh.get_latest_commit_hash_in_release(tag_name)
             release_url = github_url + f'/releases/tag/{tag_name}'
