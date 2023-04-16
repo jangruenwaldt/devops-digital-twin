@@ -52,13 +52,12 @@ class Cockpit:
         return timedelta(seconds=lead_time_in_s)
 
     @staticmethod
-    def construct_digital_twin(repo_url, release_branch_name, debug_options=None, wipe_db=True,
-                               exclude_release: Callable = None):
+    def construct_digital_twin(repo_url, release_branch_name, debug_options=None, wipe_db=True):
         if wipe_db:
             Neo4j.wipe_database()
 
         GitTwin.construct_from_github_url(repo_url, branch_name=release_branch_name, debug_options=debug_options)
-        DeploymentsTwin.construct(repo_url, debug_options=debug_options, exclude_release=exclude_release)
+        DeploymentsTwin.construct(repo_url, debug_options=debug_options)
         Cockpit.print_usage_info()
 
     @staticmethod
