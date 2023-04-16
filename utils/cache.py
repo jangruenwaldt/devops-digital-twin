@@ -1,7 +1,9 @@
 import json
 import os
 
-CACHE_FILE = '../api_cache.json'
+from destinations import ROOT_DIR
+
+CACHE_FILE = f'{ROOT_DIR}/api_cache.json'
 
 
 class Cache:
