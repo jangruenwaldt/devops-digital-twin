@@ -14,7 +14,7 @@ class Neo4j:
 
     @staticmethod
     def remove_releases():
-        cypher_query = 'MATCH (n:Release) DETACH DELETE n'
+        cypher_query = 'MATCH (n:Deployment) DETACH DELETE n'
         Neo4j.get_graph().run(cypher_query)
 
     @staticmethod
