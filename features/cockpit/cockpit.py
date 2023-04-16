@@ -1,14 +1,23 @@
 import statistics
 from datetime import timedelta
 
-from features.twins.git_twin import GitTwin
 from features.twins.deployments_twin import DeploymentsTwin
+from features.twins.git_twin import GitTwin
 from utils.neo4j import Neo4j
 
 
 # The cockpit of a digital twin is a layer above the data itself, it usually includes a user interface, for now
 # it is just code that works on twin data.
 class Cockpit:
+
+    @staticmethod
+    def get_all_releases():
+        releases = Neo4j.get_graph().run(f"""
+            MATCH (deployment:Deployment)
+            RETURN deployment.tag_name as version
+            """).data()
+        return sorted(list(map(lambda r: r['version'], releases)))
+
     @staticmethod
     def calculate_lead_time_from_commit_to_deployment(commit_hash, deployment_tag):
         return Neo4j.get_graph().run(f"""
@@ -18,20 +27,27 @@ class Cockpit:
         """).evaluate()
 
     @staticmethod
-    def calculate_lead_time(deployment_tag=None):
+    def calculate_lead_time(deployment_tag=None, excluded_tags=None):
         filter_deployment = ''
         if deployment_tag is not None:
             filter_deployment = f" {{tag_name: '{deployment_tag}'}}"
 
-        duration_list = Neo4j.get_graph().run(f"""
+        filter_tags = ''
+        if excluded_tags is not None:
+            excluded_tag_string = ','.join(list(map(lambda s: f"'{s}'", excluded_tags)))
+            filter_tags = f" WHERE NOT deployment.tag_name IN [{excluded_tag_string}]"
+
+        query = f"""
         MATCH (deployment:Deployment {filter_deployment})
+        {filter_tags}
         MATCH (deployment)-[:INITIAL_DEPLOY]->(deployed_commit:Commit)
         WITH duration.inSeconds(datetime(deployed_commit.date), datetime(deployment.published_at)) as lead_time
         RETURN lead_time
-        """).data()
+        """
+        duration_list = Neo4j.get_graph().run(query).data()
 
         seconds_array = list(map(lambda d: d['lead_time'].seconds, duration_list))
-        lead_time_in_s = statistics.mean(seconds_array)
+        lead_time_in_s = statistics.mean(seconds_array) if len(seconds_array) > 0 else 0
         return timedelta(seconds=lead_time_in_s)
 
     @staticmethod
