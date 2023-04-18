@@ -12,13 +12,36 @@ from utils.neo4j import Neo4j
 class Cockpit:
 
     @staticmethod
-    def get_all_releases():
-        releases = Neo4j.get_graph().run(f"""
+    def get_all_releases(from_date=None, to_date=None):
+        date_filter = ''
+        if from_date is not None or to_date is not None:
+            date_filter += 'WHERE '
+            if from_date is not None:
+                date_filter += f'datetime(deployment.published_at) >= datetime("{from_date.isoformat()}")'
+            if to_date is not None:
+                if from_date is not None:
+                    date_filter += ' AND '
+                date_filter += f'datetime(deployment.published_at) <= datetime("{to_date.isoformat()}")'
+
+        query = f"""
             MATCH (deployment:Deployment)
-            RETURN deployment.tag_name as version, deployment.published_at as published_at
-            """).data()
-        return list(map(lambda r: r['version'],
-                        sorted(releases, key=lambda r: datetime.fromisoformat(r['published_at']))))
+            {date_filter}
+            RETURN deployment.tag_name as tag_name, deployment.published_at as published_at
+            """
+        releases = Neo4j.get_graph().run(query).data()
+        return sorted(releases, key=lambda r: datetime.fromisoformat(r['published_at']))
+
+    @staticmethod
+    def calculate_dora_deployment_frequency(from_date=None, to_date=None):
+        deployment_dates = Cockpit.get_all_releases(from_date=from_date, to_date=to_date)
+
+        if len(deployment_dates) <= 1:
+            raise Exception('Not enough data to calculate deployment frequency.')
+
+        parsed_dates = list(map(lambda x: datetime.fromisoformat(x['published_at']), deployment_dates))
+        time_between_releases = [parsed_dates[i] - parsed_dates[i - 1] for i in range(1, len(parsed_dates))]
+
+        return sum(time_between_releases, timedelta()) / (len(time_between_releases))
 
     @staticmethod
     def calculate_lead_time_from_commit_to_deployment(commit_hash, deployment_tag):
@@ -29,7 +52,7 @@ class Cockpit:
         """).evaluate()
 
     @staticmethod
-    def calculate_lead_time(deployment_tag=None, excluded_tags=None):
+    def calculate_dora_lead_time(deployment_tag=None, excluded_tags=None):
         filter_deployment = ''
         if deployment_tag is not None:
             filter_deployment = f" {{tag_name: '{deployment_tag}'}}"

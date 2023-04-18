@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import pytest
 
 from features.cockpit.cockpit import Cockpit
@@ -14,8 +16,15 @@ class IntegrationTest(unittest.TestCase):
                                        release_branch_name='master', debug_options={'enable_logs': True}, wipe_db=True)
         self.assertEqual(Neo4j.count_nodes(), 13)
 
-        lead_time = Cockpit.calculate_lead_time()
+        lead_time = Cockpit.calculate_dora_lead_time()
         self.assertEqual(lead_time.days, 1216)
+
+        lead_time = Cockpit.calculate_dora_deployment_frequency()
+        self.assertEqual(lead_time.days, 0)
+
+        lead_time = Cockpit.calculate_dora_deployment_frequency(from_date=datetime(2023, 4, 12),
+                                                                to_date=datetime(2023, 4, 14))
+        self.assertEqual(lead_time.days, 0)
 
 
 if __name__ == '__main__':
