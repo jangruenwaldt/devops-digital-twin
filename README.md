@@ -5,6 +5,11 @@
 
 Turns DevOps system data into a single graph database using neo4j.
 
+## Currently supported
+
+- Building the graph
+- Calculating DORA metrics: lead time, deployment frequency
+
 ## Components
 
 - Commits of a main branch (from which releases are built)
