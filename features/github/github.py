@@ -27,15 +27,16 @@ class GitHub:
     def fetch_from_paginated_api(api_url):
         data = []
         headers = Config.get_github_request_header()
+        api_url += '?per_page=100'
+
         while api_url is not None:
-            response = requests.get(api_url + '?per_page=100', headers=headers)
-            response.raise_for_status()
-            releases = response.json()
+            releases, headers = CachedRequest.get(api_url, request_headers=headers)
             data.extend(releases)
+            print(f'Fetched {len(releases)} objects from {api_url}')
 
             # Check if we need to make another request as API is paginated
             api_url = None
-            link_header = response.headers.get('Link')
+            link_header = headers.get('Link')
             if link_header is not None:
                 links = link_header.split(',')
                 for link in links:
