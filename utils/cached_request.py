@@ -30,5 +30,5 @@ class CachedRequest:
             response_headers = response.headers
 
             Cache.update(url, data)
-            Cache.update(header_key, json.dumps(dict(response_headers)))
+            Cache.update(header_key, dict(response_headers))
         return data, response_headers
