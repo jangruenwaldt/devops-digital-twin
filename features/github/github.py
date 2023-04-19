@@ -11,7 +11,38 @@ class GitHub:
 
     def fetch_issues(self, enable_cache=True):
         owner, repo_name = self.get_owner_and_repo_name()
-        return []
+        api_url = f'https://api.github.com/repos/{owner}/{repo_name}/issues'
+        initial_url = api_url
+
+        if enable_cache:
+            cached_data = Cache.load(api_url)
+            if cached_data is not None:
+                return cached_data
+
+        all_releases = self.fetch_from_paginated_api(api_url)
+        Cache.update(initial_url, all_releases)
+        return all_releases
+
+    @staticmethod
+    def fetch_from_paginated_api(api_url):
+        data = []
+        headers = Config.get_github_request_header()
+        while api_url is not None:
+            response = requests.get(api_url + '?per_page=100', headers=headers)
+            response.raise_for_status()
+            releases = response.json()
+            data.extend(releases)
+
+            # Check if we need to make another request as API is paginated
+            api_url = None
+            link_header = response.headers.get('Link')
+            if link_header is not None:
+                links = link_header.split(',')
+                for link in links:
+                    if 'rel="next"' in link:
+                        api_url = link[link.index('<') + 1:link.index('>')]
+                        break
+        return data
 
     def fetch_releases(self, enable_cache=True):
         owner, repo_name = self.get_owner_and_repo_name()
@@ -23,24 +54,7 @@ class GitHub:
             if cached_data is not None:
                 return cached_data
 
-        all_releases = []
-        headers = Config.get_github_request_header()
-        while api_url is not None:
-            response = requests.get(api_url, headers=headers)
-            response.raise_for_status()
-            releases = response.json()
-            all_releases.extend(releases)
-
-            # Check if we need to make another request as API is paginated
-            api_url = None
-            link_header = response.headers.get('Link')
-            if link_header is not None:
-                links = link_header.split(',')
-                for link in links:
-                    if 'rel="next"' in link:
-                        api_url = link[link.index('<') + 1:link.index('>')]
-                        break
-
+        all_releases = self.fetch_from_paginated_api(api_url)
         Cache.update(initial_url, all_releases)
         return all_releases
 
