@@ -33,9 +33,9 @@ class GitHub:
             api_url += '?per_page=100'
 
         while api_url is not None:
-            releases, headers = CachedRequest.get(api_url, request_headers=headers)
-            data.extend(releases)
-            print(f'Fetched {len(releases)} objects from {api_url}')
+            new_data, headers = CachedRequest.get(api_url, request_headers=headers)
+            data.extend(new_data)
+            print(f'Fetched {len(new_data)} objects from {api_url}')
 
             # Check if we need to make another request as API is paginated
             api_url = None
