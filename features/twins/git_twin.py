@@ -44,7 +44,7 @@ class GitTwin:
         if debug_options is None:
             debug_options = {}
         enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
-        max_commits = debug_options['max_commits'] if 'max_commits' in debug_options else None
+        max_nodes = debug_options['max_nodes'] if 'max_nodes' in debug_options else None
 
         repo = Repo(path)
         repo.git.checkout(branch_name)
@@ -60,7 +60,7 @@ class GitTwin:
         for commit in repo.iter_commits(branch_name, reverse=True):
             # Allow limiting imported nodes for quicker debugging
             commits_added += 1
-            if max_commits is not None and commits_added > max_commits:
+            if max_nodes is not None and commits_added > max_nodes:
                 break
 
             # Do not add again if already exists - wipe db before importing to avoid this.

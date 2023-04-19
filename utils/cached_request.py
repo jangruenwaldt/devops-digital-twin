@@ -27,8 +27,10 @@ class CachedRequest:
             response.raise_for_status()
 
             data = response.json()
-            next_link = response.links['next']['url']
+            next_link = None
+            if 'next' in response.links:
+                next_link = response.links['next']['url']
 
             Cache.update(url, data)
-            Cache.update(link_key, next_link)
-        return data, next_link
+            Cache.update(link_key, next_link if next_link is not None else '')
+        return data, next_link if next_link != '' else None

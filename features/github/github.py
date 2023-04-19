@@ -12,15 +12,7 @@ class GitHub:
     def fetch_issues(self, enable_cache=True):
         owner, repo_name = self.get_owner_and_repo_name()
         api_url = f'https://api.github.com/repos/{owner}/{repo_name}/issues?state=all'
-        initial_url = api_url
-
-        if enable_cache:
-            cached_data = Cache.load(api_url)
-            if cached_data is not None:
-                return cached_data
-
         all_releases = self.fetch_from_paginated_api(api_url)
-        Cache.update(initial_url, all_releases)
         return all_releases
 
     @staticmethod
@@ -35,7 +27,6 @@ class GitHub:
         while api_url is not None:
             new_data, api_url = CachedRequest.get_paginated(api_url, request_headers=headers)
             data.extend(new_data)
-            print(f'Fetched {len(new_data)} objects from {api_url}')
 
         return data
 
