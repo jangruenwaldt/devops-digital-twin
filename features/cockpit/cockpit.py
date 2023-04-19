@@ -4,6 +4,7 @@ from typing import Callable
 
 from features.twins.deployments_twin import DeploymentsTwin
 from features.twins.git_twin import GitTwin
+from features.twins.project_management_twin import ProjectManagementTwin
 from utils.neo4j import Neo4j
 
 
@@ -81,6 +82,7 @@ class Cockpit:
 
         GitTwin.construct_from_github_url(repo_url, branch_name=release_branch_name, debug_options=debug_options)
         DeploymentsTwin.construct(repo_url, debug_options=debug_options)
+        ProjectManagementTwin.construct(repo_url, debug_options=debug_options)
         Cockpit.print_usage_info()
 
     @staticmethod

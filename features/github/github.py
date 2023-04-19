@@ -9,6 +9,10 @@ class GitHub:
     def __init__(self, repo_url):
         self.repo_url = repo_url
 
+    def fetch_issues(self, enable_cache=True):
+        owner, repo_name = self.get_owner_and_repo_name()
+        return []
+
     def fetch_releases(self, enable_cache=True):
         owner, repo_name = self.get_owner_and_repo_name()
         api_url = f'https://api.github.com/repos/{owner}/{repo_name}/releases'
