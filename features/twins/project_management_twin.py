@@ -13,25 +13,26 @@ class ProjectManagementTwin:
 
         for label in issue['labels']:
             existing_label = graph.nodes.match(GraphNodes.ISSUE_LABEL, id=label['id']).first()
+            label_id = label['id']
             if existing_label is None:
                 node_to_add = Node(GraphNodes.ISSUE_LABEL,
-                                   id=label['id'],
+                                   id=label_id,
                                    url=label['url'],
                                    name=label['name'],
                                    color=label['color'],
                                    description=label['description'])
                 graph.create(node_to_add)
                 if enable_logs:
-                    print(f'Added issue label {label["description"]}')
+                    print(f'Added issue label {label_id}')
             else:
                 if enable_logs:
-                    print(f'Issue label {label["description"]} already found')
+                    print(f'Issue label {label_id} was already added')
 
-            issue_label_node = graph.nodes.match(GraphNodes.ISSUE_LABEL, id=label['id']).first()
-            has_label_relationship = Relationship(issue_node, GraphRelationships.HAS_LABEL, issue_label_node)
+            label_node = graph.nodes.match(GraphNodes.ISSUE_LABEL, id=label['id']).first()
+            has_label_relationship = Relationship(issue_node, GraphRelationships.HAS_LABEL, label_node)
             graph.create(has_label_relationship)
             if enable_logs:
-                print(f'Added relationship from {issue_node} to {issue_label_node}')
+                print(f'Added relationship from issue {issue_node.get("id")} to label {label_id}')
 
     @staticmethod
     def construct(github_url, enable_cache=True, debug_options=None):
@@ -66,6 +67,6 @@ class ProjectManagementTwin:
                               body=issue['body'])
             graph.create(issue_node)
             if enable_logs:
-                print(f'Added issue {issue_node}')
+                print(f'Added issue with id {issue["id"]}')
 
             ProjectManagementTwin._add_issue_labels(enable_logs, issue, issue_node)
