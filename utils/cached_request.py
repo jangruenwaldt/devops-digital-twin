@@ -17,18 +17,18 @@ class CachedRequest:
         return data
 
     @staticmethod
-    def get(url, request_headers=None):
-        header_key = f'headers:{url}'
+    def get_paginated(url, request_headers=None):
+        link_key = f'next_link:{url}'
 
         data = Cache.load(url)
-        response_headers = Cache.load(header_key)
-        if data is None or response_headers is None:
+        next_link = Cache.load(link_key)
+        if data is None or next_link is None:
             response = requests.get(url, headers=request_headers)
             response.raise_for_status()
 
             data = response.json()
-            response_headers = response.headers
+            next_link = response.links['next']['url']
 
             Cache.update(url, data)
-            Cache.update(header_key, dict(response_headers))
-        return data, response_headers
+            Cache.update(link_key, next_link)
+        return data, next_link
