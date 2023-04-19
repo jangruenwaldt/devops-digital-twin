@@ -3,38 +3,33 @@ import os
 
 from destinations import ROOT_DIR
 
-CACHE_FILE = f'{ROOT_DIR}/api_cache.json'
+CACHE_DIR = f'{ROOT_DIR}/.api_cache'
 
 
 class Cache:
     @staticmethod
+    def get_cache_file_path(key):
+        return os.path.join(CACHE_DIR, f'{key}.json')
+
+    @staticmethod
     def load(key):
-        if not os.path.isfile(CACHE_FILE):
+        cache_file_path = Cache.get_cache_file_path(key)
+
+        if not os.path.isfile(cache_file_path):
+            print(f'Cache miss for {key}')
             return None
 
-        with open(CACHE_FILE, 'r') as cache_file:
-            cache_data = json.load(cache_file)
-            if key in cache_data:
-                print(f'Cache hit for {key}')
-                val = cache_data[key]
-                del cache_data  # might save some memory
-                return val
-
-        print(f'Cache miss for {key}')
-        return None
+        with open(cache_file_path, 'r') as cache_file:
+            print(f'Cache hit for {key}')
+            return json.load(cache_file)
 
     @staticmethod
     def update(key, data):
         print(f'Saving {key} into cache')
 
-        if not os.path.isfile(CACHE_FILE):
-            with open(CACHE_FILE, 'w') as cache_file:
-                json.dump({}, cache_file)
+        if not os.path.exists(CACHE_DIR):
+            os.makedirs(CACHE_DIR)
 
-        with open(CACHE_FILE, 'r') as cache_file:
-            cache_data = json.load(cache_file)
-
-        cache_data[key] = data
-        with open(CACHE_FILE, 'w') as cache_file:
-            json.dump(cache_data, cache_file)
-            del cache_data  # might save some memory
+        cache_file_path = Cache.get_cache_file_path(key)
+        with open(cache_file_path, 'w') as cache_file:
+            json.dump(data, cache_file)
