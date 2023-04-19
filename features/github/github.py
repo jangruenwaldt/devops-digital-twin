@@ -11,7 +11,7 @@ class GitHub:
 
     def fetch_issues(self, enable_cache=True):
         owner, repo_name = self.get_owner_and_repo_name()
-        api_url = f'https://api.github.com/repos/{owner}/{repo_name}/issues'
+        api_url = f'https://api.github.com/repos/{owner}/{repo_name}/issues?state=all'
         initial_url = api_url
 
         if enable_cache:
@@ -27,7 +27,10 @@ class GitHub:
     def fetch_from_paginated_api(api_url):
         data = []
         headers = Config.get_github_request_header()
-        api_url += '?per_page=100'
+        if '?' in api_url:
+            api_url += '&per_page=100'
+        else:
+            api_url += '?per_page=100'
 
         while api_url is not None:
             releases, headers = CachedRequest.get(api_url, request_headers=headers)
