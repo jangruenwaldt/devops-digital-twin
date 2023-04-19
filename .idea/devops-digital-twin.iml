@@ -6,6 +6,7 @@
       <excludeFolder url="file://$MODULE_DIR$/.twin-data" />
       <excludeFolder url="file://$MODULE_DIR$/twin-data" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
+      <excludeFolder url="file://$MODULE_DIR$/.api_cache" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

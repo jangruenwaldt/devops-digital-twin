@@ -1,3 +1,4 @@
+import base64
 import json
 import os
 
@@ -9,7 +10,8 @@ CACHE_DIR = f'{ROOT_DIR}/.api_cache'
 class Cache:
     @staticmethod
     def get_cache_file_path(key):
-        return os.path.join(CACHE_DIR, f'{key}.json')
+        encoded_key = base64.urlsafe_b64encode(key.encode()).decode()
+        return os.path.join(CACHE_DIR, f'{encoded_key}.json')
 
     @staticmethod
     def load(key):
@@ -27,8 +29,7 @@ class Cache:
     def update(key, data):
         print(f'Saving {key} into cache')
 
-        if not os.path.exists(CACHE_DIR):
-            os.makedirs(CACHE_DIR)
+        os.makedirs(CACHE_DIR, exist_ok=True)
 
         cache_file_path = Cache.get_cache_file_path(key)
         with open(cache_file_path, 'w') as cache_file:
