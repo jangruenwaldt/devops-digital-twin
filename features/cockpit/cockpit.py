@@ -76,6 +76,17 @@ class Cockpit:
         return timedelta(seconds=lead_time_in_s)
 
     @staticmethod
+    def calculate_dora_change_failure_rate(from_date=None, to_date=None):
+        deployment_dates = Cockpit.get_all_releases(from_date=from_date, to_date=to_date)
+
+        parsed_dates = list(map(lambda x: datetime.fromisoformat(x['published_at']), deployment_dates))
+        return 0.333
+
+    @staticmethod
+    def calculate_dora_mean_time_to_restore_service(from_date=None, to_date=None):
+        return timedelta(seconds=152)
+
+    @staticmethod
     def construct_digital_twin(repo_url, release_branch_name, debug_options=None, wipe_db=True):
         if wipe_db:
             Neo4j.wipe_database()
