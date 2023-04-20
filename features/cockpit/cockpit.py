@@ -34,6 +34,11 @@ class Cockpit:
 
     @staticmethod
     def calculate_dora_deployment_frequency(from_date=None, to_date=None):
+        """
+        Deployment frequency: how often code is deployed
+        [Source: https://www.researchgate.net/publication/318018911_DORA_Platform_DevOps_Assessment_and_Benchmarking]
+        :return: the average time between deployments
+        """
         deployment_dates = Cockpit.get_all_releases(from_date=from_date, to_date=to_date)
 
         if len(deployment_dates) <= 1:
@@ -54,6 +59,14 @@ class Cockpit:
 
     @staticmethod
     def calculate_dora_lead_time(deployment_tag=None, excluded_tags=None):
+        """
+        Lead time: how long it takes an organization to go from code commit to code successfully running
+        in production or in a releasable state.
+        [Source: https://www.researchgate.net/publication/318018911_DORA_Platform_DevOps_Assessment_and_Benchmarking]
+        :param deployment_tag:
+        :param excluded_tags: deployments that should be excluded (possibly due to outliers)
+        :return:
+        """
         filter_deployment = ''
         if deployment_tag is not None:
             filter_deployment = f" {{tag_name: '{deployment_tag}'}}"
@@ -77,6 +90,14 @@ class Cockpit:
 
     @staticmethod
     def calculate_dora_change_failure_rate(from_date=None, to_date=None):
+        """
+        Change failure rate (CFR): the percentage of changes that result in degraded service or subsequently require
+        remediation (e.g., lead to service impairment, service outage, require a hotfix, fix forward, patch).
+        [Source: https://www.researchgate.net/publication/318018911_DORA_Platform_DevOps_Assessment_and_Benchmarking]
+
+        :returns CFR for the given timerange, calculated as: |deployments that had an incident| / |all deployments|
+        A deployment with an incident is defined as
+        """
         deployment_dates = Cockpit.get_all_releases(from_date=from_date, to_date=to_date)
 
         parsed_dates = list(map(lambda x: datetime.fromisoformat(x['published_at']), deployment_dates))
@@ -84,6 +105,11 @@ class Cockpit:
 
     @staticmethod
     def calculate_dora_mean_time_to_restore_service(from_date=None, to_date=None):
+        """
+        MTTR: how long it generally takes to restore service when a service incident occurs
+        (e.g., unplanned outage, service impairment)
+        [Source: https://www.researchgate.net/publication/318018911_DORA_Platform_DevOps_Assessment_and_Benchmarking]
+        """
         return timedelta(seconds=152)
 
     @staticmethod
