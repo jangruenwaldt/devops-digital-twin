@@ -50,14 +50,6 @@ class Cockpit:
         return sum(time_between_releases, timedelta()) / (len(time_between_releases))
 
     @staticmethod
-    def calculate_lead_time_from_commit_to_deployment(commit_hash, deployment_tag):
-        return Neo4j.get_graph().run(f"""
-        MATCH (deployment:Deployment {{tag_name: '{deployment_tag}'}}), 
-        (commit:Commit {{hash: '{commit_hash}'}})
-        RETURN duration.between(datetime(deployment.published_at), datetime(commit.date))
-        """).evaluate()
-
-    @staticmethod
     def calculate_dora_lead_time(deployment_tag=None, excluded_tags=None):
         """
         Lead time: how long it takes an organization to go from code commit to code successfully running
