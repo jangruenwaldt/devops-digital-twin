@@ -49,7 +49,7 @@ class ProjectManagementTwin:
         added_nodes = 0
         for issue in issues:
             added_nodes += 1
-            if added_nodes > max_nodes:
+            if max_nodes is not None and added_nodes > max_nodes:
                 break
 
             issue_node = Node(GraphNodes.ISSUE,
