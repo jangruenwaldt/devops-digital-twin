@@ -66,7 +66,8 @@ class ProjectManagementTwin:
                               created_at=datetime.strptime(issue['created_at'], '%Y-%m-%dT%H:%M:%SZ').replace(
                                   microsecond=0).isoformat(),
                               updated_at=issue['updated_at'],
-                              closed_at=issue['closed_at'],
+                              closed_at=datetime.strptime(issue['closed_at'], '%Y-%m-%dT%H:%M:%SZ').replace(
+                                  microsecond=0).isoformat() if issue['closed_at'] is not None else None,
                               body=issue['body'])
             graph.create(issue_node)
             if enable_logs:

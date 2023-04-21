@@ -38,6 +38,19 @@ class Cockpit:
         return sorted(releases, key=lambda r: datetime.fromisoformat(r['published_at']))
 
     @staticmethod
+    def get_issues(filter_issues, from_date, to_date):
+        date_filter = Cockpit._build_date_filter_cypher(from_date, to_date, property_name='issue.created_at')
+
+        query = f"""
+        MATCH (issue:Issue)-[:HAS_LABEL]-(label:IssueLabel)
+        {date_filter}
+        {filter_issues if len(date_filter) == 0 else "AND " + filter_issues.replace("WHERE", '')}
+        RETURN issue
+        """
+        issues = [d['issue'] for d in Neo4j.get_graph().run(query).data()]
+        return issues
+
+    @staticmethod
     def calculate_dora_deployment_frequency(from_date=None, to_date=None):
         """
         Deployment frequency: how often code is deployed
@@ -95,14 +108,7 @@ class Cockpit:
         :returns CFR for the given timerange, calculated as: |deployments that had an incident| / |all deployments|
         A deployment with an incident is defined as
         """
-        date_filter = Cockpit._build_date_filter_cypher(from_date, to_date, property_name='issue.created_at')
-        query = f"""
-        MATCH (issue:Issue)-[:HAS_LABEL]-(label:IssueLabel)
-        {date_filter}
-        {filter_issues if len(date_filter) == 0 else "AND " + filter_issues.replace("WHERE", '')}
-        RETURN issue
-        """
-        issues = [d['issue'] for d in Neo4j.get_graph().run(query).data()]
+        issues = Cockpit.get_issues(filter_issues, from_date, to_date)
         deployments = [{'date': datetime.fromisoformat(d['published_at']), 'id': d['id']} for d in
                        Cockpit.get_deployments(from_date=from_date, to_date=to_date)]
 
@@ -121,13 +127,17 @@ class Cockpit:
         return len(deployments_with_incident) / len(deployments)
 
     @staticmethod
-    def calculate_dora_mean_time_to_restore_service(from_date=None, to_date=None):
+    def calculate_dora_mean_time_to_restore_service(filter_issues, from_date=None, to_date=None):
         """
         MTTR: how long it generally takes to restore service when a service incident occurs
-        (e.g., unplanned outage, service impairment)
+        (e.g., unplanned outage, service impairment). Calculated as the average of closed_at - created_at of all issues
+        returned by issue_filter.
         [Source: https://www.researchgate.net/publication/318018911_DORA_Platform_DevOps_Assessment_and_Benchmarking]
         """
-        return timedelta(seconds=152)
+        issues = Cockpit.get_issues(filter_issues, from_date, to_date)
+        incident_durations = [datetime.fromisoformat(i['closed_at']) - datetime.fromisoformat(i['created_at']) for i in
+                              issues if 'closed_at' in i]
+        return sum(incident_durations, timedelta()) / (len(incident_durations))
 
     @staticmethod
     def construct_digital_twin(repo_url, release_branch_name, debug_options=None, wipe_db=True):
