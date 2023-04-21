@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from py2neo import Node, Relationship
 
 from features.github.github import GitHub
@@ -61,7 +63,8 @@ class ProjectManagementTwin:
                               assignee=issue['assignee'],
                               milestone=issue['milestone'],
                               comments=issue['comments'],
-                              created_at=issue['created_at'],
+                              created_at=datetime.strptime(issue['created_at'], '%Y-%m-%dT%H:%M:%SZ').replace(
+                                  microsecond=0).isoformat(),
                               updated_at=issue['updated_at'],
                               closed_at=issue['closed_at'],
                               body=issue['body'])

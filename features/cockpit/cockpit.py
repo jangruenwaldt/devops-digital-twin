@@ -27,7 +27,7 @@ class Cockpit:
         query = f"""
             MATCH (deployment:Deployment)
             {date_filter}
-            RETURN deployment.tag_name as tag_name, deployment.published_at as published_at
+            RETURN deployment.tag_name as tag_name, deployment.published_at as published_at, deployment.id as id
             """
         releases = Neo4j.get_graph().run(query).data()
         return sorted(releases, key=lambda r: datetime.fromisoformat(r['published_at']))
@@ -81,7 +81,7 @@ class Cockpit:
         return timedelta(seconds=lead_time_in_s)
 
     @staticmethod
-    def calculate_dora_change_failure_rate(from_date=None, to_date=None):
+    def calculate_dora_change_failure_rate(filter_issues):
         """
         Change failure rate (CFR): the percentage of changes that result in degraded service or subsequently require
         remediation (e.g., lead to service impairment, service outage, require a hotfix, fix forward, patch).
@@ -90,7 +90,28 @@ class Cockpit:
         :returns CFR for the given timerange, calculated as: |deployments that had an incident| / |all deployments|
         A deployment with an incident is defined as
         """
-        return 0.333
+        query = f"""
+        MATCH (issue:Issue)-[:HAS_LABEL]-(label:IssueLabel)
+        {filter_issues}
+        RETURN issue
+        """
+        issues = [d['issue'] for d in Neo4j.get_graph().run(query).data()]
+        deployments = [{'date': datetime.fromisoformat(d['published_at']), 'id': d['id']} for d in
+                       Cockpit.get_deployments()]
+
+        deployments_with_incident = set()
+        for issue in issues:
+            created_date = datetime.fromisoformat(issue['created_at'])
+            latest_deploy_before_incident = next(
+                (d[idx - 1] if idx > 0 else None for idx, d in enumerate(deployments) if
+                 d['date'] > created_date), None)
+            if latest_deploy_before_incident is not None:
+                deployments_with_incident.add(latest_deploy_before_incident['id'])
+            # It may be the case the latest deployment happened before the issue was created, which we miss in the
+            # previous expression as we find the first deployment that is larger and then go back one step.
+            elif deployments[-1]['date'] <= created_date:
+                deployments_with_incident.add(deployments[-1]['id'])
+        return len(deployments_with_incident) / len(deployments)
 
     @staticmethod
     def calculate_dora_mean_time_to_restore_service(from_date=None, to_date=None):
