@@ -116,7 +116,7 @@ class Cockpit:
         for issue in issues:
             created_date = datetime.fromisoformat(issue['created_at'])
             latest_deploy_before_incident = next(
-                (d[idx - 1] if idx > 0 else None for idx, d in enumerate(deployments) if
+                (deployments[idx - 1] if idx > 0 else None for idx, d in enumerate(deployments) if
                  d['date'] > created_date), None)
             if latest_deploy_before_incident is not None:
                 deployments_with_incident.add(latest_deploy_before_incident['id'])
@@ -127,7 +127,7 @@ class Cockpit:
         return len(deployments_with_incident) / len(deployments)
 
     @staticmethod
-    def calculate_dora_mean_time_to_restore_service(filter_issues, from_date=None, to_date=None):
+    def calculate_dora_mean_time_to_recover(filter_issues, from_date=None, to_date=None):
         """
         MTTR: how long it generally takes to restore service when a service incident occurs
         (e.g., unplanned outage, service impairment). Calculated as the average of closed_at - created_at of all issues
@@ -137,6 +137,9 @@ class Cockpit:
         issues = Cockpit.get_issues(filter_issues, from_date, to_date)
         incident_durations = [datetime.fromisoformat(i['closed_at']) - datetime.fromisoformat(i['created_at']) for i in
                               issues if 'closed_at' in i]
+        if len(incident_durations) == 0:
+            raise Exception('Not enough incidents to calculate incident duration')
+
         return sum(incident_durations, timedelta()) / (len(incident_durations))
 
     @staticmethod
