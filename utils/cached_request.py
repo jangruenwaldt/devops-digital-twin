@@ -1,3 +1,5 @@
+import json
+
 import requests
 
 from utils.cache import Cache
@@ -13,3 +15,22 @@ class CachedRequest:
             data = response.json()
             Cache.update(url, data)
         return data
+
+    @staticmethod
+    def get_paginated(url, request_headers=None):
+        link_key = f'next_link:{url}'
+
+        data = Cache.load(url)
+        next_link = Cache.load(link_key)
+        if data is None or next_link is None:
+            response = requests.get(url, headers=request_headers)
+            response.raise_for_status()
+
+            data = response.json()
+            next_link = None
+            if 'next' in response.links:
+                next_link = response.links['next']['url']
+
+            Cache.update(url, data)
+            Cache.update(link_key, next_link if next_link is not None else '')
+        return data, next_link if next_link != '' else None

@@ -18,6 +18,11 @@ class Neo4j:
         Neo4j.get_graph().run(cypher_query)
 
     @staticmethod
+    def remove_issues_and_labels():
+        Neo4j.get_graph().run('MATCH (n:Issue) DETACH DELETE n')
+        Neo4j.get_graph().run('MATCH (n:IssueLabel) DETACH DELETE n')
+
+    @staticmethod
     def count_nodes():
         result = Neo4j.get_graph().run(f"MATCH (n) RETURN COUNT(n) AS count")
         return result.evaluate()

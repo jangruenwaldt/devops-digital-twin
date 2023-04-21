@@ -32,5 +32,6 @@ class Config:
     @staticmethod
     def get_github_request_header():
         return {
-            'Authorization': f'token {Config.get_pat()}'
+            'Authorization': f'token {Config.get_pat()}',
+            'Accept': 'application/vnd.github+json'
         }
