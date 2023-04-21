@@ -1,6 +1,5 @@
 import statistics
 from datetime import timedelta, datetime
-from typing import Callable
 
 from features.twins.deployments_twin import DeploymentsTwin
 from features.twins.git_twin import GitTwin

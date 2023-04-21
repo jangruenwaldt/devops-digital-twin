@@ -1,5 +1,3 @@
-import json
-
 import requests
 
 from utils.cache import Cache

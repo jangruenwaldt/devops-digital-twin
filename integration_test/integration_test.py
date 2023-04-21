@@ -1,11 +1,7 @@
+import unittest
 from datetime import datetime
 
-import pytest
-
 from features.cockpit.cockpit import Cockpit
-
-import unittest
-
 from utils.neo4j import Neo4j
 
 

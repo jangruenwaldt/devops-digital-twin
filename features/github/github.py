@@ -1,5 +1,3 @@
-import requests
-
 from utils.cache import Cache
 from utils.cached_request import CachedRequest
 from utils.config import Config
