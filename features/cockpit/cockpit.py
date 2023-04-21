@@ -13,16 +13,21 @@ from utils.neo4j import Neo4j
 class Cockpit:
 
     @staticmethod
-    def get_deployments(from_date=None, to_date=None):
+    def _build_date_filter_cypher(from_date, to_date, property_name):
         date_filter = ''
         if from_date is not None or to_date is not None:
             date_filter += 'WHERE '
             if from_date is not None:
-                date_filter += f'datetime(deployment.published_at) >= datetime("{from_date.isoformat()}")'
+                date_filter += f'datetime({property_name}) >= datetime("{from_date.isoformat()}")'
             if to_date is not None:
                 if from_date is not None:
                     date_filter += ' AND '
-                date_filter += f'datetime(deployment.published_at) <= datetime("{to_date.isoformat()}")'
+                date_filter += f'datetime({property_name}) <= datetime("{to_date.isoformat()}")'
+        return date_filter
+
+    @staticmethod
+    def get_deployments(from_date=None, to_date=None):
+        date_filter = Cockpit._build_date_filter_cypher(from_date, to_date, property_name='deployment.published_at')
 
         query = f"""
             MATCH (deployment:Deployment)
@@ -81,7 +86,7 @@ class Cockpit:
         return timedelta(seconds=lead_time_in_s)
 
     @staticmethod
-    def calculate_dora_change_failure_rate(filter_issues):
+    def calculate_dora_change_failure_rate(filter_issues, from_date=None, to_date=None):
         """
         Change failure rate (CFR): the percentage of changes that result in degraded service or subsequently require
         remediation (e.g., lead to service impairment, service outage, require a hotfix, fix forward, patch).
@@ -90,14 +95,16 @@ class Cockpit:
         :returns CFR for the given timerange, calculated as: |deployments that had an incident| / |all deployments|
         A deployment with an incident is defined as
         """
+        date_filter = Cockpit._build_date_filter_cypher(from_date, to_date, property_name='issue.created_at')
         query = f"""
         MATCH (issue:Issue)-[:HAS_LABEL]-(label:IssueLabel)
-        {filter_issues}
+        {date_filter}
+        {filter_issues if len(date_filter) == 0 else "AND " + filter_issues.replace("WHERE", '')}
         RETURN issue
         """
         issues = [d['issue'] for d in Neo4j.get_graph().run(query).data()]
         deployments = [{'date': datetime.fromisoformat(d['published_at']), 'id': d['id']} for d in
-                       Cockpit.get_deployments()]
+                       Cockpit.get_deployments(from_date=from_date, to_date=to_date)]
 
         deployments_with_incident = set()
         for issue in issues:

@@ -26,7 +26,12 @@ class IntegrationTest(unittest.TestCase):
                                                                 to_date=datetime(2023, 4, 14))
         self.assertEqual(lead_time.days, 0)
 
-        cfr = Cockpit.calculate_dora_change_failure_rate()
+        cfr = Cockpit.calculate_dora_change_failure_rate(from_date=datetime(2023, 4, 1),
+                                                         to_date=datetime(2023, 4, 30),
+                                                         filter_issues='WHERE label.name IN ["bug"]')
+        self.assertEqual(round(cfr, 2), 0.33)
+
+        cfr = Cockpit.calculate_dora_change_failure_rate(filter_issues='WHERE label.name IN ["bug"]')
         self.assertEqual(round(cfr, 2), 0.33)
 
         mttr = Cockpit.calculate_dora_mean_time_to_restore_service()
