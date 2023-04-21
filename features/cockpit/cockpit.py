@@ -13,7 +13,7 @@ from utils.neo4j import Neo4j
 class Cockpit:
 
     @staticmethod
-    def get_all_releases(from_date=None, to_date=None):
+    def get_deployments(from_date=None, to_date=None):
         date_filter = ''
         if from_date is not None or to_date is not None:
             date_filter += 'WHERE '
@@ -39,7 +39,7 @@ class Cockpit:
         [Source: https://www.researchgate.net/publication/318018911_DORA_Platform_DevOps_Assessment_and_Benchmarking]
         :return: the average time between deployments
         """
-        deployment_dates = Cockpit.get_all_releases(from_date=from_date, to_date=to_date)
+        deployment_dates = Cockpit.get_deployments(from_date=from_date, to_date=to_date)
 
         if len(deployment_dates) <= 1:
             raise Exception('Not enough data to calculate deployment frequency.')
@@ -90,9 +90,6 @@ class Cockpit:
         :returns CFR for the given timerange, calculated as: |deployments that had an incident| / |all deployments|
         A deployment with an incident is defined as
         """
-        deployment_dates = Cockpit.get_all_releases(from_date=from_date, to_date=to_date)
-
-        parsed_dates = list(map(lambda x: datetime.fromisoformat(x['published_at']), deployment_dates))
         return 0.333
 
     @staticmethod
