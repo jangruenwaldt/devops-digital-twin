@@ -54,13 +54,13 @@ class ProjectManagementTwin:
             if max_nodes is not None and added_nodes > max_nodes:
                 break
 
+            # TODO: perhaps add link to users with the issue assignees/commenters to the graph
             issue_node = Node(GraphNodes.ISSUE,
                               url=issue['url'],
                               id=issue['id'],
                               title=issue['title'],
                               state=issue['state'],
                               locked=issue['locked'],
-                              assignee=issue['assignee'],
                               milestone=issue['milestone'],
                               comments=issue['comments'],
                               created_at=datetime.strptime(issue['created_at'], '%Y-%m-%dT%H:%M:%SZ').replace(
