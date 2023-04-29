@@ -12,8 +12,8 @@ jobs:
         python-version: [ "3.9" ]
 
     steps:
-      - uses: baptouuuu/setup-neo4j@v1.2.0
       - uses: actions/checkout@v3
+      - uses: baptouuuu/setup-neo4j@v1.2.0
 
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
