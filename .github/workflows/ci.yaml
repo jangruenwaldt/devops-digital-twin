@@ -4,7 +4,7 @@ name: Python integration test
 on: [ push ]
 
 jobs:
-  build:
+  integration_test:
 
     runs-on: ubuntu-latest
     strategy:
