@@ -11,9 +11,7 @@ from utils.neo4j import Neo4j
 
 class ProjectManagementTwin:
     @staticmethod
-    def _add_issue_labels(enable_logs, issue, issue_node):
-        graph = Neo4j.get_graph()
-
+    def _add_issue_labels(graph, enable_logs, issue, issue_node):
         for label in issue['labels']:
             existing_label = graph.nodes.match(GraphNodes.ISSUE_LABEL, id=label['id']).first()
             label_id = label['id']
@@ -75,4 +73,4 @@ class ProjectManagementTwin:
             if enable_logs:
                 print(f'Added issue with id {issue["id"]}')
 
-            ProjectManagementTwin._add_issue_labels(enable_logs, issue, issue_node)
+            ProjectManagementTwin._add_issue_labels(graph, enable_logs, issue, issue_node)
