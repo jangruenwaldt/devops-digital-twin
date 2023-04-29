@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 
 from py2neo import Node, Relationship
@@ -54,14 +55,15 @@ class ProjectManagementTwin:
             if max_nodes is not None and added_nodes > max_nodes:
                 break
 
-            # TODO: perhaps add link to users with the issue assignees/commenters to the graph
             issue_node = Node(GraphNodes.ISSUE,
                               url=issue['url'],
                               id=issue['id'],
                               title=issue['title'],
                               state=issue['state'],
                               locked=issue['locked'],
-                              milestone=issue['milestone'],
+                              user=json.dumps(issue['user']) if issue['user'] is not None else None,
+                              assignee=json.dumps(issue['assignee']) if issue['assignee'] is not None else None,
+                              milestone=json.dumps(issue['milestone']) if issue['milestone'] is not None else None,
                               comments=issue['comments'],
                               created_at=datetime.strptime(issue['created_at'], '%Y-%m-%dT%H:%M:%SZ').replace(
                                   microsecond=0).isoformat(),
