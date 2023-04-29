@@ -25,7 +25,7 @@ jobs:
         with:
           url: http://localhost:7474/browser/
           max-attempts: 5
-          retry-delay: 5s
+          retry-delay: 10s
           retry-all: true
 
       - name: Set up Python ${{ matrix.python-version }}
