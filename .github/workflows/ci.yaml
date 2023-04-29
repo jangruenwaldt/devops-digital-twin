@@ -18,7 +18,7 @@ jobs:
         ports:
           - 7474:7474
           - 7687:7687
-        options: --health-cmd "curl http://localhost:7474" --health-timeout 50s --health-retries 10 --health-interval 5s
+        options: --health-cmd "curl http://localhost:7474" --health-timeout 90s --health-retries 10 --health-interval 10s
 
     steps:
       - uses: actions/checkout@v3
