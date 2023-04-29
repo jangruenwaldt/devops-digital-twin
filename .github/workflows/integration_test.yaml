@@ -18,7 +18,7 @@ jobs:
         ports:
           - 7474:7474
           - 7687:7687
-        options: --health-cmd '/var/lib/neo4j/bin/neo4j status' --health-timeout 10s --health-retries 3 --health-interval 5s
+        options: --health-cmd "curl http://localhost:7474" --health-timeout 10s --health-retries 3 --health-interval 5s
 
     steps:
       - uses: actions/checkout@v3
