@@ -20,6 +20,12 @@ jobs:
           - 7687:7687
 
     steps:
+      - uses: jtalk/url-health-check-action@v3
+        with:
+          url: http://localhost:7474
+          max-attempts: 10
+          retry-delay: 10s
+          retry-all: true
       - uses: actions/checkout@v3
 
       - name: Set up Python ${{ matrix.python-version }}
