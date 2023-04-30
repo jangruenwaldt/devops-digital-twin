@@ -152,6 +152,12 @@ class Cockpit:
         Cockpit.print_usage_info()
 
     @staticmethod
+    def fetch_twin_data(repo_url, release_branch_name, debug_options=None):
+        GitTwin.construct_from_github_url(repo_url, branch_name=release_branch_name, debug_options=debug_options)
+        DeploymentsTwin.construct(repo_url, debug_options=debug_options)
+        ProjectManagementTwin.construct(repo_url, debug_options=debug_options)
+
+    @staticmethod
     def print_usage_info():
         print(""""
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@

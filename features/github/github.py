@@ -7,11 +7,10 @@ class GitHub:
     def __init__(self, repo_url):
         self.repo_url = repo_url
 
-    def fetch_issues(self, enable_cache=True):
+    def fetch_issues(self):
         owner, repo_name = self.get_owner_and_repo_name()
         api_url = f'https://api.github.com/repos/{owner}/{repo_name}/issues?state=all'
-        all_releases = self.fetch_from_paginated_api(api_url)
-        return all_releases
+        return self.fetch_from_paginated_api(api_url)
 
     @staticmethod
     def fetch_from_paginated_api(api_url):
