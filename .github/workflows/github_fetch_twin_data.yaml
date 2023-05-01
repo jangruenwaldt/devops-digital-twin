@@ -9,7 +9,7 @@ on:
       release_branch_name:
         description: 'Release branch'
         required: false
-        default: 'master'
+        default: 'main'
 
 jobs:
   fetch_twin_data:
