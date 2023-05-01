@@ -8,18 +8,20 @@ from destinations import LOCAL_DATA_DIR, DATA_EXPORT_DIR
 from utils.cache import Cache
 from utils.cached_request import CachedRequest
 from utils.config import Config
+from utils.constants.twin_constants import TwinConstants
+from utils.github_utils import GitHubUtils
 
 
 class GitHubDataAdapter:
     def __init__(self, repo_url, branch='main'):
         self.repo_url = repo_url
         self.branch = branch
+        self.owner, self.repo_name = GitHubUtils.get_owner_and_repo_name(repo_url)
         if not os.path.exists(LOCAL_DATA_DIR):
             os.makedirs(LOCAL_DATA_DIR)
 
     def _export_as_json(self, data, file_name):
-        owner, repo_name = self.get_owner_and_repo_name()
-        data_dir = os.path.join(DATA_EXPORT_DIR, owner, repo_name)
+        data_dir = os.path.join(DATA_EXPORT_DIR, self.owner, self.repo_name)
 
         os.makedirs(data_dir, exist_ok=True)
         with open(os.path.join(data_dir, file_name), 'w') as output_file:
@@ -73,7 +75,7 @@ class GitHubDataAdapter:
             if enable_logs:
                 print(f'Added issue with id {issue["id"]}')
 
-        self._export_as_json(issue_data_list, 'issues.json')
+        self._export_as_json(issue_data_list, TwinConstants.ISSUES_DATA_FILE_NAME)
 
     def export_deployment_data_as_json(self, debug_options=None):
         if debug_options is None:
@@ -105,7 +107,7 @@ class GitHubDataAdapter:
                 print(f'Deployment with tag {tag_name} added.')
             deployment_data.append(deployment)
 
-        self._export_as_json(deployment_data, 'deployments.json')
+        self._export_as_json(deployment_data, TwinConstants.DEPLOYMENT_DATA_FILE_NAME)
 
     def export_commit_data_as_json(self, debug_options=None):
         if not os.path.exists(DATA_EXPORT_DIR):
@@ -145,11 +147,10 @@ class GitHubDataAdapter:
                 print(f'Added commit with hash {commit.hexsha}.')
         repo.close()
 
-        self._export_as_json(commits, 'commits.json')
+        self._export_as_json(commits, TwinConstants.COMMIT_DATA_FILE_NAME)
 
     def fetch_issues(self):
-        owner, repo_name = self.get_owner_and_repo_name()
-        api_url = f'https://api.github.com/repos/{owner}/{repo_name}/issues?state=all'
+        api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/issues?state=all'
         return self.fetch_from_paginated_api(api_url)
 
     @staticmethod
@@ -168,8 +169,7 @@ class GitHubDataAdapter:
         return data
 
     def fetch_releases(self):
-        owner, repo_name = self.get_owner_and_repo_name()
-        api_url = f'https://api.github.com/repos/{owner}/{repo_name}/releases'
+        api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/releases'
         initial_url = api_url
 
         cached_data = Cache.load(api_url)
@@ -180,12 +180,8 @@ class GitHubDataAdapter:
         Cache.update(initial_url, all_releases)
         return all_releases
 
-    def get_owner_and_repo_name(self):
-        return self.repo_url.split('/')[-2:]
-
     def get_latest_commit_hash_in_release(self, tag_name):
-        owner, repo_name = self.get_owner_and_repo_name()
         tag_object = CachedRequest.get_json(
-            f'https://api.github.com/repos/{owner}/{repo_name}/git/refs/tags/{tag_name}',
+            f'https://api.github.com/repos/{self.owner}/{self.repo_name}/git/refs/tags/{tag_name}',
             headers=Config().get_github_request_header())
         return tag_object['object']['sha']

@@ -4,8 +4,8 @@ from git import Repo
 from py2neo import Node, Relationship
 
 from destinations import LOCAL_DATA_DIR
-from utils.graph.graph_nodes import GraphNodes
-from utils.graph.graph_relationships import GraphRelationships
+from utils.constants.graph_nodes import GraphNodes
+from utils.constants.graph_relationships import GraphRelationships
 from utils.neo4j import Neo4j
 
 
