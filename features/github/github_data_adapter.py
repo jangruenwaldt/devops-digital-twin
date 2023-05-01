@@ -4,7 +4,7 @@ from datetime import datetime
 
 from git import Repo
 
-from destinations import LOCAL_DATA_DIR, TWIN_DATA_EXPORT_DIR
+from destinations import LOCAL_DATA_DIR, DATA_EXPORT_DIR
 from utils.cache import Cache
 from utils.cached_request import CachedRequest
 from utils.config import Config
@@ -60,7 +60,7 @@ class GitHubDataAdapter:
             if enable_logs:
                 print(f'Added issue with id {issue["id"]}')
 
-        with open(os.path.join(TWIN_DATA_EXPORT_DIR, 'issues.json'), 'w') as output_file:
+        with open(os.path.join(DATA_EXPORT_DIR, 'issues.json'), 'w') as output_file:
             json.dump(issue_data_list, output_file)
 
     def export_deployment_data_as_json(self, debug_options=None):
@@ -93,12 +93,12 @@ class GitHubDataAdapter:
                 print(f'Deployment with tag {tag_name} added.')
             deployment_data.append(deployment)
 
-        with open(os.path.join(TWIN_DATA_EXPORT_DIR, 'deployments.json'), 'w') as output_file:
+        with open(os.path.join(DATA_EXPORT_DIR, 'deployments.json'), 'w') as output_file:
             json.dump(deployment_data, output_file)
 
     def export_commit_data_as_json(self, debug_options=None):
-        if not os.path.exists(TWIN_DATA_EXPORT_DIR):
-            os.makedirs(TWIN_DATA_EXPORT_DIR)
+        if not os.path.exists(DATA_EXPORT_DIR):
+            os.makedirs(DATA_EXPORT_DIR)
 
         if debug_options is None:
             debug_options = {}
@@ -134,7 +134,7 @@ class GitHubDataAdapter:
                 print(f'Added commit with hash {commit.hexsha}.')
         repo.close()
 
-        with open(os.path.join(TWIN_DATA_EXPORT_DIR, 'commits.json'), 'w') as output_file:
+        with open(os.path.join(DATA_EXPORT_DIR, 'commits.json'), 'w') as output_file:
             json.dump(commits, output_file)
 
     def fetch_issues(self):

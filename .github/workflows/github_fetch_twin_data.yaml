@@ -39,5 +39,5 @@ jobs:
       - name: Upload twin data JSON as artifact
         uses: actions/upload-artifact@v2
         with:
-          name: twin-data-artifact
-          path: TWIN_DATA
+          name: exported-data-for-twin
+          path: EXPORTED_DATA
