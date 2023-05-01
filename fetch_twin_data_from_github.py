@@ -1,12 +1,11 @@
 import argparse
 
 from features.cockpit.cockpit import Cockpit
+from features.data_adapters.github_data_adapter import GitHubDataAdapter
 
 
 def main(repo_url, release_branch):
-    Cockpit.fetch_twin_data(repo_url=repo_url,
-                            release_branch_name=release_branch,
-                            debug_options={'enable_logs': True})
+    GitHubDataAdapter(repo_url, release_branch).fetch_twin_data(debug_options={'enable_logs': True})
 
 
 if __name__ == "__main__":

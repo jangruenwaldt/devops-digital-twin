@@ -25,6 +25,11 @@ class GitHubDataAdapter:
         with open(os.path.join(data_dir, file_name), 'w') as output_file:
             json.dump(data, output_file)
 
+    def fetch_twin_data(self, debug_options=None):
+        self.export_commit_data_as_json(debug_options=debug_options)
+        self.export_deployment_data_as_json(debug_options=debug_options)
+        self.export_issue_data_as_json(debug_options=debug_options)
+
     def export_issue_data_as_json(self, debug_options=None):
         if debug_options is None:
             debug_options = {}
