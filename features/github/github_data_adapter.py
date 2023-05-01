@@ -17,6 +17,14 @@ class GitHubDataAdapter:
         if not os.path.exists(LOCAL_DATA_DIR):
             os.makedirs(LOCAL_DATA_DIR)
 
+    def _export_as_json(self, data, file_name):
+        owner, repo_name = self.get_owner_and_repo_name()
+        data_dir = os.path.join(DATA_EXPORT_DIR, owner, repo_name)
+
+        os.makedirs(data_dir, exist_ok=True)
+        with open(os.path.join(data_dir, file_name), 'w') as output_file:
+            json.dump(data, output_file)
+
     def export_issue_data_as_json(self, debug_options=None):
         if debug_options is None:
             debug_options = {}
@@ -60,8 +68,7 @@ class GitHubDataAdapter:
             if enable_logs:
                 print(f'Added issue with id {issue["id"]}')
 
-        with open(os.path.join(DATA_EXPORT_DIR, 'issues.json'), 'w') as output_file:
-            json.dump(issue_data_list, output_file)
+        self._export_as_json(issue_data_list, 'issues.json')
 
     def export_deployment_data_as_json(self, debug_options=None):
         if debug_options is None:
@@ -93,8 +100,7 @@ class GitHubDataAdapter:
                 print(f'Deployment with tag {tag_name} added.')
             deployment_data.append(deployment)
 
-        with open(os.path.join(DATA_EXPORT_DIR, 'deployments.json'), 'w') as output_file:
-            json.dump(deployment_data, output_file)
+        self._export_as_json(deployment_data, 'deployments.json')
 
     def export_commit_data_as_json(self, debug_options=None):
         if not os.path.exists(DATA_EXPORT_DIR):
@@ -134,8 +140,7 @@ class GitHubDataAdapter:
                 print(f'Added commit with hash {commit.hexsha}.')
         repo.close()
 
-        with open(os.path.join(DATA_EXPORT_DIR, 'commits.json'), 'w') as output_file:
-            json.dump(commits, output_file)
+        self._export_as_json(commits, 'commits.json')
 
     def fetch_issues(self):
         owner, repo_name = self.get_owner_and_repo_name()
