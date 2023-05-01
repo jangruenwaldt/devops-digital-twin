@@ -44,7 +44,7 @@ jobs:
           --release_branch ${{ github.event.inputs.release_branch_name }}
 
       - name: Upload twin data JSON as artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: exported-data-for-twin
           path: EXPORTED_DATA
