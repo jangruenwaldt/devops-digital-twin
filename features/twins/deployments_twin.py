@@ -39,17 +39,18 @@ FOREACH (i in CASE WHEN prev IS NOT NULL THEN [1] ELSE [] END |
 )
 
 WITH added_deploy as deployment, latest_commit_hash
-OPTIONAL MATCH (latestCommit:Commit {{hash: latest_commit_hash}})-[:PARENT*]->(parentCommit:Commit)
-WHERE NOT EXISTS(()-[:INITIAL_DEPLOY]->(parentCommit))
+OPTIONAL MATCH (latestCommit:{GraphNodes.COMMIT} {{hash: latest_commit_hash}})
+-[:{GraphRelationships.PARENT}*]->(parentCommit:{GraphNodes.COMMIT})
+WHERE NOT EXISTS(()-[:{GraphRelationships.INITIAL_DEPLOY}]->(parentCommit))
 
 WITH deployment, latestCommit, collect(DISTINCT parentCommit) AS parent_commits
 FOREACH (commit IN parent_commits |
-    MERGE (deployment)-[:INITIAL_DEPLOY]->(commit)
+    MERGE (deployment)-[:{GraphRelationships.INITIAL_DEPLOY}]->(commit)
 )
 
 WITH deployment, latestCommit
 WHERE latestCommit IS NOT NULL
-MERGE (deployment)-[:INITIAL_DEPLOY]->(latestCommit)
+MERGE (deployment)-[:{GraphRelationships.INITIAL_DEPLOY}]->(latestCommit)
 
 RETURN 1
 '''
