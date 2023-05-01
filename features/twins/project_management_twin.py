@@ -8,9 +8,9 @@ class ProjectManagementTwin:
     @staticmethod
     def construct_from_json(json_url):
         query = f'''
-CALL apoc.load.json('{json_url}') YIELD value
-
-MERGE (i:{GraphNodes.ISSUE} {{id: value.id}})
+CALL apoc.periodic.iterate(
+"CALL apoc.load.json('{json_url}') YIELD value RETURN value",
+"MERGE (i:{GraphNodes.ISSUE} {{id: value.id}})
 ON CREATE SET
 i.title = value.title,
 i.state = value.state,
@@ -34,6 +34,7 @@ l.name = label.name,
 l.color = label.color,
 l.description = label.description,
 l.url = label.url
-MERGE (i)-[:{GraphRelationships.HAS_LABEL}]->(l)
+MERGE (i)-[:{GraphRelationships.HAS_LABEL}]->(l)",
+{{batchSize: 1000, parallel: false}})
 '''
         Neo4j.get_graph().run(query)
