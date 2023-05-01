@@ -153,7 +153,7 @@ class Cockpit:
 
     @staticmethod
     def fetch_twin_data(repo_url, release_branch_name, debug_options=None):
-        GitTwin.construct_from_github_url(repo_url, branch_name=release_branch_name, debug_options=debug_options)
+        GitTwin.export_as_json_from_github_url(repo_url, branch_name=release_branch_name, debug_options=debug_options)
         DeploymentsTwin.construct(repo_url, debug_options=debug_options)
         ProjectManagementTwin.construct(repo_url, debug_options=debug_options)
 

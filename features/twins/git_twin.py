@@ -1,9 +1,10 @@
+import json
 import os
 
 from git import Repo
 from py2neo import Node, Relationship
 
-from destinations import TWIN_DATA_DIR
+from destinations import TWIN_DATA_DIR, TWIN_DATA_EXPORT_DIR
 from utils.graph.graph_nodes import GraphNodes
 from utils.graph.graph_relationships import GraphRelationships
 from utils.neo4j import Neo4j
@@ -17,7 +18,49 @@ class GitTwin:
             os.makedirs(TWIN_DATA_DIR)
 
     @staticmethod
+    def export_as_json_from_github_url(github_url, branch_name='main', debug_options=None):
+        GitTwin.setup()
+        if not os.path.exists(TWIN_DATA_EXPORT_DIR):
+            os.makedirs(TWIN_DATA_EXPORT_DIR)
+
+        if debug_options is None:
+            debug_options = {}
+        enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
+
+        repo_owner_slash_name = github_url.split("https://github.com/")[1]
+        repo_dir = f'{TWIN_DATA_DIR}/{repo_owner_slash_name}'
+
+        if not os.path.exists(repo_dir):
+            if enable_logs:
+                print('repo did not exist locally yet, cloning now')
+            Repo.clone_from(github_url, repo_dir)
+        elif enable_logs:
+            print('found repo locally')
+
+        repo = Repo(repo_dir)
+        repo.git.checkout(branch_name)
+        repo.remotes.origin.pull()
+
+        commits = []
+        for commit in repo.iter_commits(branch_name, reverse=True):
+            commit_data = {
+                'message': commit.message,
+                'hash': commit.hexsha,
+                'author': commit.author.email,
+                'date': commit.committed_datetime.replace(microsecond=0).isoformat(),
+                'branch': branch_name,
+                'url': (github_url + f'/commit/{commit.hexsha}'),
+                'parents': list(map(lambda c: c.hexsha, commit.parents))
+            }
+            commits.append(commit_data)
+        repo.close()
+
+        with open(os.path.join(TWIN_DATA_EXPORT_DIR, 'commits.json'), 'w') as output_file:
+            json.dump(commits, output_file)
+
+    @staticmethod
     def construct_from_github_url(github_url, branch_name='main', debug_options=None):
+        # TODO: Takes JSON
         GitTwin.setup()
 
         if debug_options is None:
@@ -39,6 +82,7 @@ class GitTwin:
 
     @staticmethod
     def construct_from_repo_path(path, branch_name, repo_url=None, debug_options=None, enable_branch_node=False):
+        # TODO: Takes JSON
         GitTwin.setup()
 
         if debug_options is None:
