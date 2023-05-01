@@ -10,7 +10,13 @@ class Neo4j:
 
     @staticmethod
     def wipe_database():
-        Neo4j.get_graph().delete_all()
+        Neo4j.get_graph().run('''
+        CALL apoc.periodic.iterate(
+          "MATCH (n) RETURN n",
+          "DETACH DELETE n",
+          {batchSize: 1000, parallel: false, iterateList: true}
+        )
+        ''')
 
     @staticmethod
     def remove_releases():
