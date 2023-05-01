@@ -158,7 +158,7 @@ class Cockpit:
 
         data_adapter.export_commit_data_as_json(debug_options=debug_options)
         data_adapter.export_deployment_data_as_json(debug_options=debug_options)
-        ProjectManagementTwin.construct(repo_url, debug_options=debug_options)
+        data_adapter.export_issue_data_as_json(debug_options=debug_options)
 
     @staticmethod
     def print_usage_info():

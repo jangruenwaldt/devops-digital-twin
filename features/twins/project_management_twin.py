@@ -3,7 +3,7 @@ from datetime import datetime
 
 from py2neo import Node, Relationship
 
-from features.github.github import GitHub
+from features.github.github_data_adapter import GitHubDataAdapter
 from utils.graph.graph_nodes import GraphNodes
 from utils.graph.graph_relationships import GraphRelationships
 from utils.neo4j import Neo4j
@@ -42,8 +42,8 @@ class ProjectManagementTwin:
         enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
         max_nodes = debug_options['max_nodes'] if 'max_nodes' in debug_options else None
 
-        gh = GitHub(github_url)
-        issues = gh.fetch_issues(enable_cache=enable_cache)
+        gh = GitHubDataAdapter(github_url)
+        issues = gh.fetch_issues()
         graph = Neo4j.get_graph()
         Neo4j.remove_issues_and_labels()
 

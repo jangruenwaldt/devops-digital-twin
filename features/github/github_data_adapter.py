@@ -17,6 +17,52 @@ class GitHubDataAdapter:
         if not os.path.exists(LOCAL_DATA_DIR):
             os.makedirs(LOCAL_DATA_DIR)
 
+    def export_issue_data_as_json(self, debug_options=None):
+        if debug_options is None:
+            debug_options = {}
+        enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
+
+        issues = self.fetch_issues()
+        issue_data_list = []
+        for issue in issues:
+            issue_data = {
+                'url': issue['url'],
+                'id': issue['id'],
+                'title': issue['title'],
+                'state': issue['state'],
+                'locked': issue['locked'],
+                'user': issue['user'] if issue['user'] is not None else None,
+                'assignee': issue['assignee'] if issue['assignee'] is not None else None,
+                'milestone': issue['milestone'] if issue['milestone'] is not None else None,
+                'comments': issue['comments'],
+                'created_at': datetime.strptime(issue['created_at'], '%Y-%m-%dT%H:%M:%SZ').replace(
+                    microsecond=0).isoformat(),
+                'updated_at': issue['updated_at'],
+                'closed_at': datetime.strptime(issue['closed_at'], '%Y-%m-%dT%H:%M:%SZ').replace(
+                    microsecond=0).isoformat() if issue['closed_at'] is not None else None,
+                'body': issue['body']
+            }
+
+            label_list = []
+            for label in issue['labels']:
+                label_id = label['id']
+                label_data = {
+                    'id': label_id,
+                    'url': label['url'],
+                    'name': label['name'],
+                    'color': label['color'],
+                    'description': label['description'],
+                }
+                label_list.append(label_data)
+            issue_data['labels'] = label_list
+
+            issue_data_list.append(issue_data)
+            if enable_logs:
+                print(f'Added issue with id {issue["id"]}')
+
+        with open(os.path.join(TWIN_DATA_EXPORT_DIR, 'issues.json'), 'w') as output_file:
+            json.dump(issue_data_list, output_file)
+
     def export_deployment_data_as_json(self, debug_options=None):
         if debug_options is None:
             debug_options = {}
