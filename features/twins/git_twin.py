@@ -7,7 +7,7 @@ class GitTwin:
     @staticmethod
     def construct_from_json(json_url):
         query = f'''
-CALL apoc.load.json({json_url}) YIELD value
+CALL apoc.load.json('{json_url}') YIELD value
 
 MERGE (c:Commit {{hash: value.hash}})
 ON CREATE SET
