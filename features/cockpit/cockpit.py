@@ -1,6 +1,7 @@
 import statistics
 from datetime import timedelta, datetime
 
+from features.github.github_data_adapter import GitHubDataAdapter
 from features.twins.deployments_twin import DeploymentsTwin
 from features.twins.git_twin import GitTwin
 from features.twins.project_management_twin import ProjectManagementTwin
@@ -153,7 +154,9 @@ class Cockpit:
 
     @staticmethod
     def fetch_twin_data(repo_url, release_branch_name, debug_options=None):
-        GitTwin.export_as_json_from_github_url(repo_url, branch_name=release_branch_name, debug_options=debug_options)
+        data_adapter = GitHubDataAdapter(repo_url, release_branch_name)
+
+        data_adapter.export_commit_data_as_json(debug_options=debug_options)
         DeploymentsTwin.construct(repo_url, debug_options=debug_options)
         ProjectManagementTwin.construct(repo_url, debug_options=debug_options)
 

@@ -9,7 +9,7 @@ from utils.cached_request import CachedRequest
 from utils.config import Config
 
 
-class GitHub:
+class GitHubDataAdapter:
     def __init__(self, repo_url, branch='main'):
         self.repo_url = repo_url
         self.branch = branch

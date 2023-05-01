@@ -7,8 +7,7 @@ Fetch DevOps system data into JSON, and then store it in neo4j. Exploration and 
 
 ## Structure
 
-- Step 1: download the required data into JSON. If the data source is GitHub, use GitHubDataAdapter.fetch_into() to
-  fetch the data into JSON files.
+- Step 1: download the required data into JSON. If the data source is GitHub, use GitHubDataAdapter.
 - Step 2: Construct the twin - either provide individual JSON file URLs, or call TwinBuilder.from_github(), which
   assumes the filenames used by GitHubDataAdapter. To do this, the twin data should be its own repository hosted on
   GitHub.
