@@ -29,7 +29,7 @@ class TwinBuilder:
             print(f'Building twin from data source in {repo_url} using the following '
                   f'files:\n{commit_data}\n{deployment_data}\n{issue_data}')
 
-        GitTwin.construct_from_json(commit_data, debug_options=debug_options)
+        GitTwin.construct_from_json(commit_data)
         DeploymentsTwin.construct(deployment_data, debug_options=debug_options)
         ProjectManagementTwin.construct(issue_data, debug_options=debug_options)
         TwinBuilder.print_usage_info()
