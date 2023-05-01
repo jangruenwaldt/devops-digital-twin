@@ -157,7 +157,7 @@ class Cockpit:
         data_adapter = GitHubDataAdapter(repo_url, release_branch_name)
 
         data_adapter.export_commit_data_as_json(debug_options=debug_options)
-        DeploymentsTwin.construct(repo_url, debug_options=debug_options)
+        data_adapter.export_deployment_data_as_json(debug_options=debug_options)
         ProjectManagementTwin.construct(repo_url, debug_options=debug_options)
 
     @staticmethod

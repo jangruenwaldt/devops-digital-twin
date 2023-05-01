@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 
 from git import Repo
 
@@ -15,6 +16,39 @@ class GitHubDataAdapter:
         self.branch = branch
         if not os.path.exists(LOCAL_DATA_DIR):
             os.makedirs(LOCAL_DATA_DIR)
+
+    def export_deployment_data_as_json(self, debug_options=None):
+        if debug_options is None:
+            debug_options = {}
+        enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
+
+        releases = self.fetch_releases()
+
+        deployments_sorted = sorted(releases, key=lambda r: datetime.strptime(r['published_at'], '%Y-%m-%dT%H:%M:%SZ'))
+        deployment_data = []
+        for release in deployments_sorted:
+            tag_name = release['tag_name']
+
+            latest_commit_hash = self.get_latest_commit_hash_in_release(tag_name)
+            release_url = self.repo_url + f'/releases/tag/{tag_name}'
+            commit_url = self.repo_url + f'/commit/{latest_commit_hash}'
+            publish_date = release['published_at']
+            deployment = {
+                'id': release['id'],
+                'tag_name': tag_name,
+                'published_at': datetime.strptime(publish_date, '%Y-%m-%dT%H:%M:%SZ').replace(
+                    microsecond=0).isoformat(),
+                'release_url': release_url,
+                'commit_url': commit_url,
+                'latest_included_commit': latest_commit_hash,
+                'previous_deployment': None if len(deployment_data) == 0 else deployment_data[-1]['tag_name'],
+            }
+            if enable_logs:
+                print(f'Deployment with tag {tag_name} added.')
+            deployment_data.append(deployment)
+
+        with open(os.path.join(TWIN_DATA_EXPORT_DIR, 'deployments.json'), 'w') as output_file:
+            json.dump(deployment_data, output_file)
 
     def export_commit_data_as_json(self, debug_options=None):
         if not os.path.exists(TWIN_DATA_EXPORT_DIR):
@@ -50,6 +84,8 @@ class GitHubDataAdapter:
                 'parents': list(map(lambda c: c.hexsha, commit.parents))
             }
             commits.append(commit_data)
+            if enable_logs:
+                print(f'Added commit with hash {commit.hexsha}.')
         repo.close()
 
         with open(os.path.join(TWIN_DATA_EXPORT_DIR, 'commits.json'), 'w') as output_file:
@@ -75,15 +111,14 @@ class GitHubDataAdapter:
 
         return data
 
-    def fetch_releases(self, enable_cache=True):
+    def fetch_releases(self):
         owner, repo_name = self.get_owner_and_repo_name()
         api_url = f'https://api.github.com/repos/{owner}/{repo_name}/releases'
         initial_url = api_url
 
-        if enable_cache:
-            cached_data = Cache.load(api_url)
-            if cached_data is not None:
-                return cached_data
+        cached_data = Cache.load(api_url)
+        if cached_data is not None:
+            return cached_data
 
         all_releases = self.fetch_from_paginated_api(api_url)
         Cache.update(initial_url, all_releases)
