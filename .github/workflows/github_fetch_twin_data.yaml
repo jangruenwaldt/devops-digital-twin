@@ -47,4 +47,4 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: exported-data-for-twin
-          path: EXPORTED_DATA
+          path: TWIN_DATA

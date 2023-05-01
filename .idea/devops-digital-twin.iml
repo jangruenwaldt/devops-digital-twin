@@ -7,7 +7,7 @@
       <excludeFolder url="file://$MODULE_DIR$/venv" />
       <excludeFolder url="file://$MODULE_DIR$/.api_cache" />
       <excludeFolder url="file://$MODULE_DIR$/.local-data" />
-      <excludeFolder url="file://$MODULE_DIR$/EXPORTED_DATA" />
+      <excludeFolder url="file://$MODULE_DIR$/TWIN_DATA" />
       <excludeFolder url="file://$MODULE_DIR$/integration_test/.pytest_cache" />
     </content>
     <orderEntry type="inheritedJdk" />

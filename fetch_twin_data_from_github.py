@@ -1,6 +1,5 @@
 import argparse
 
-from features.cockpit.cockpit import Cockpit
 from features.data_adapters.github_data_adapter import GitHubDataAdapter
 
 

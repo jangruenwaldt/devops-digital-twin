@@ -3,19 +3,14 @@ name: Create/update DevOps digital twin
 on:
   workflow_dispatch:
     inputs:
+      twin_data_repo_url:
+        description: 'Twin data repository URL'
+        required: true
       wipe_db:
         type: boolean
         description: 'Wipe Neo4j database'
         required: false
         default: true
-      repo_url:
-        description: 'Repository URL'
-        required: true
-        default: 'https://github.com/jangruenwaldt/xss-escape-django'
-      release_branch:
-        description: 'Release Branch'
-        required: false
-        default: 'master'
       enable_logs:
         type: boolean
         description: 'Enable Logs'
@@ -51,7 +46,7 @@ jobs:
           json: ${{ secrets.CONFIG_JSON }}
 
       - name: Run script
-        run: python3 create_twin.py --wipe_db ${{ github.event.inputs.wipe_db }}
-          --repo_url ${{ github.event.inputs.repo_url }}
-          --release_branch ${{ github.event.inputs.release_branch }}
+        run: python3 create_twin.py 
+          --repo_url ${{ github.event.inputs.twin_data_repo_url }}
+          --wipe_db ${{ github.event.inputs.wipe_db }}
           --enable_logs ${{ github.event.inputs.enable_logs }}

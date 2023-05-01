@@ -4,36 +4,34 @@ from git import Repo
 from py2neo import Node, Relationship
 
 from destinations import LOCAL_DATA_DIR
-from utils.graph.graph_nodes import GraphNodes
-from utils.graph.graph_relationships import GraphRelationships
+from utils.constants.graph_nodes import GraphNodes
+from utils.constants.graph_relationships import GraphRelationships
 from utils.neo4j import Neo4j
 
 
 class GitTwin:
 
     @staticmethod
-    def construct_from_github_url(github_url, branch_name='main', debug_options=None):
-        # TODO: Takes JSON
+    def construct_from_json(json_url, debug_options=None):
         if debug_options is None:
             debug_options = {}
         enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
 
-        repo_owner_slash_name = github_url.split("https://github.com/")[1]
+        repo_owner_slash_name = json_url.split("https://github.com/")[1]
         repo_dir = f'{LOCAL_DATA_DIR}/{repo_owner_slash_name}'
 
         if not os.path.exists(repo_dir):
             if enable_logs:
                 print('repo did not exist locally yet, cloning now')
-            Repo.clone_from(github_url, repo_dir)
+            Repo.clone_from(json_url, repo_dir)
         elif enable_logs:
             print('found repo locally')
 
-        GitTwin.construct_from_repo_path(path=repo_dir, branch_name=branch_name, repo_url=github_url,
+        GitTwin.construct_from_repo_path(path=repo_dir, branch_name=branch_name, repo_url=json_url,
                                          debug_options=debug_options)
 
     @staticmethod
     def construct_from_repo_path(path, branch_name, repo_url=None, debug_options=None, enable_branch_node=False):
-        # TODO: Takes JSON
         if debug_options is None:
             debug_options = {}
         enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
