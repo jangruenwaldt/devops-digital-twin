@@ -7,7 +7,7 @@ from utils.neo4j import Neo4j
 class TwinBuilder:
 
     @staticmethod
-    def construct_from_github(repo_url, debug_options=None, wipe_db=False):
+    def construct_from_github_data_repo(repo_url, debug_options=None, wipe_db=False):
         if debug_options is None:
             debug_options = {}
         enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
