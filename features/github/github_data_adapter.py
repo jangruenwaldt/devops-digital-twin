@@ -13,14 +13,10 @@ class GitHubDataAdapter:
     def __init__(self, repo_url, branch='main'):
         self.repo_url = repo_url
         self.branch = branch
-
-    @staticmethod
-    def setup():
         if not os.path.exists(LOCAL_DATA_DIR):
             os.makedirs(LOCAL_DATA_DIR)
 
     def export_commit_data_as_json(self, debug_options=None):
-        self.setup()
         if not os.path.exists(TWIN_DATA_EXPORT_DIR):
             os.makedirs(TWIN_DATA_EXPORT_DIR)
 
