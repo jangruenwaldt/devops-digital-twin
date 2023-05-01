@@ -3,7 +3,7 @@ import os
 from git import Repo
 from py2neo import Node, Relationship
 
-from destinations import TWIN_DATA_DIR
+from destinations import LOCAL_DATA_DIR
 from utils.graph.graph_nodes import GraphNodes
 from utils.graph.graph_relationships import GraphRelationships
 from utils.neo4j import Neo4j
@@ -12,20 +12,14 @@ from utils.neo4j import Neo4j
 class GitTwin:
 
     @staticmethod
-    def setup():
-        if not os.path.exists(TWIN_DATA_DIR):
-            os.makedirs(TWIN_DATA_DIR)
-
-    @staticmethod
     def construct_from_github_url(github_url, branch_name='main', debug_options=None):
-        GitTwin.setup()
-
+        # TODO: Takes JSON
         if debug_options is None:
             debug_options = {}
         enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
 
         repo_owner_slash_name = github_url.split("https://github.com/")[1]
-        repo_dir = f'{TWIN_DATA_DIR}/{repo_owner_slash_name}'
+        repo_dir = f'{LOCAL_DATA_DIR}/{repo_owner_slash_name}'
 
         if not os.path.exists(repo_dir):
             if enable_logs:
@@ -39,8 +33,7 @@ class GitTwin:
 
     @staticmethod
     def construct_from_repo_path(path, branch_name, repo_url=None, debug_options=None, enable_branch_node=False):
-        GitTwin.setup()
-
+        # TODO: Takes JSON
         if debug_options is None:
             debug_options = {}
         enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
