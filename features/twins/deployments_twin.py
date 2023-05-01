@@ -37,6 +37,7 @@ OPTIONAL MATCH (prev:{GraphNodes.DEPLOYMENT} {{id: previous_deploy_id}})
 FOREACH (i in CASE WHEN prev IS NOT NULL THEN [1] ELSE [] END |
     MERGE (prev)-[:{GraphRelationships.SUCCEEDED_BY}]->(added_deploy)
 )
+RETURN 1
 '''
         # TODO: Initial deploy relationship
         Neo4j.get_graph().run(query)

@@ -34,7 +34,8 @@ l.name = label.name,
 l.color = label.color,
 l.description = label.description,
 l.url = label.url
-MERGE (i)-[:{GraphRelationships.HAS_LABEL}]->(l)",
+MERGE (i)-[:{GraphRelationships.HAS_LABEL}]->(l)
+RETURN 1",
 {{batchSize: 1000, parallel: false}})
 '''
         Neo4j.get_graph().run(query)

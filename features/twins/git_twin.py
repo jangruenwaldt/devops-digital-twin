@@ -21,5 +21,6 @@ FOREACH (parentHash IN value.parents |
   MERGE (p:{GraphNodes.COMMIT} {{hash: parentHash}})
   MERGE (c)-[:{GraphRelationships.PARENT}]->(p)
 )
+RETURN 1
 '''
         Neo4j.get_graph().run(query)
