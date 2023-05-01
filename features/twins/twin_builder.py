@@ -13,12 +13,12 @@ class TwinBuilder:
         enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
 
         if enable_logs:
-            print(f'Building twin from {repo_url}')
+            print(f'Building twin from data source in {repo_url}')
 
         if wipe_db:
             Neo4j.wipe_database()
 
-        GitTwin.construct_from_github_url(repo_url, debug_options=debug_options)
+        GitTwin.construct_from_json(repo_url, debug_options=debug_options)
         DeploymentsTwin.construct(repo_url, debug_options=debug_options)
         ProjectManagementTwin.construct(repo_url, debug_options=debug_options)
         TwinBuilder.print_usage_info()
