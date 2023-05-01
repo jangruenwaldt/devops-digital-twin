@@ -3,7 +3,7 @@ from datetime import datetime
 
 from py2neo import Node, Relationship
 
-from features.github.github_data_adapter import GitHubDataAdapter
+from features.data_adapters.github_data_adapter import GitHubDataAdapter
 from utils.graph.graph_nodes import GraphNodes
 from utils.graph.graph_relationships import GraphRelationships
 from utils.neo4j import Neo4j

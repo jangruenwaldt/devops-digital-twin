@@ -1,7 +1,7 @@
 import statistics
 from datetime import timedelta, datetime
 
-from features.github.github_data_adapter import GitHubDataAdapter
+from features.data_adapters.github_data_adapter import GitHubDataAdapter
 from features.twins.deployments_twin import DeploymentsTwin
 from features.twins.git_twin import GitTwin
 from features.twins.project_management_twin import ProjectManagementTwin
