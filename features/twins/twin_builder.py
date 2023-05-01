@@ -31,8 +31,8 @@ class TwinBuilder:
                   f'files:\n{commit_data}\n{deployment_data}\n{issue_data}')
 
         GitTwin.construct_from_json(commit_data)
+        DeploymentsTwin.construct_from_json(deployment_data)
         ProjectManagementTwin.construct_from_json(issue_data)
-        DeploymentsTwin.construct(deployment_data)
         TwinBuilder.print_usage_info()
 
     @staticmethod

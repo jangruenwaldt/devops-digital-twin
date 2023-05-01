@@ -4,3 +4,4 @@ class GraphRelationships:
     PARENT = 'PARENT'
     ON_BRANCH = 'ON_BRANCH'
     HAS_LABEL = 'HAS_LABEL'
+    INITIAL_DEPLOY = 'INITIAL_DEPLOY'

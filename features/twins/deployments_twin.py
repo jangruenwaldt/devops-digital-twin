@@ -11,66 +11,32 @@ from utils.neo4j import Neo4j
 class DeploymentsTwin:
 
     @staticmethod
-    def construct(github_url, debug_options=None):
-        if debug_options is None:
-            debug_options = {}
-        enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
+    def construct_from_json(json_url):
+        query = f'''
+CALL apoc.load.json('{json_url}') YIELD value AS deployment
 
-        gh = GitHubDataAdapter(github_url)
-        releases = gh.fetch_releases()
-        graph = Neo4j.get_graph()
-        Neo4j.remove_releases()
+WITH deployment
+ORDER BY deployment.published_at ASC
+WITH collect(deployment) AS deployments
 
-        previous_deployment = None
-        releases_sorted = sorted(releases, key=lambda r: datetime.strptime(r['published_at'], '%Y-%m-%dT%H:%M:%SZ'))
-        for release in releases_sorted:
-            tag_name = release['tag_name']
+UNWIND range(0, size(deployments) - 1) AS i
+WITH 
+deployments[i] AS deploy_data,
+CASE WHEN i > 0 THEN deployments[i - 1].id ELSE null END AS previous_deploy_id
 
-            latest_commit_hash = gh.get_latest_commit_hash_in_release(tag_name)
-            release_url = github_url + f'/releases/tag/{tag_name}'
-            commit_url = github_url + f'/commit/{latest_commit_hash}'
-            publish_date = release['published_at']
-            deployment_node = Node(GraphNodes.DEPLOYMENT, id=release['id'], tag_name=tag_name,
-                                   published_at=datetime.strptime(publish_date, '%Y-%m-%dT%H:%M:%SZ').replace(
-                                       microsecond=0).isoformat(),
-                                   release_url=release_url,
-                                   commit_url=commit_url,
-                                   latest_included_commit=latest_commit_hash)
-            graph.create(deployment_node)
-            if enable_logs:
-                print(f'Added deployment {deployment_node}')
+MERGE (added_deploy:{GraphNodes.DEPLOYMENT} {{id: deploy_data.id}})
+ON CREATE SET
+added_deploy.tag_name = deploy_data.tag_name,
+added_deploy.latest_included_commit = deploy_data.latest_included_commit,
+added_deploy.published_at = deploy_data.published_at,
+added_deploy.release_url = deploy_data.release_url,
+added_deploy.commit_url = deploy_data.commit_url
 
-            if previous_deployment is not None:
-                relation = Relationship(previous_deployment, GraphRelationships.SUCCEEDED_BY, deployment_node)
-                graph.create(relation)
-
-            commit_node = graph.nodes.match(GraphNodes.COMMIT, hash=latest_commit_hash).first()
-            if commit_node is not None:
-                relation = Relationship(deployment_node, GraphRelationships.LATEST_INCLUDED_COMMIT, commit_node)
-                graph.create(relation)
-                DeploymentsTwin.add_initial_deploy_relationship(tag_name, latest_commit_hash)
-            else:
-                graph.run(f"""MATCH (n {{tag_name: '{tag_name}'}})
-                    SET n.note = 'No relationship to commit added as the commit that was deployed is not part of the 
-                    main branch anymore.'
-                    """)
-
-            previous_deployment = deployment_node
-
-    @staticmethod
-    def add_initial_deploy_relationship(tag_name, latest_commit_hash):
-        query = f"""
-        MATCH (deployment:Deployment {{tag_name: '{tag_name}'}})
-        OPTIONAL MATCH (latestCommit:Commit {{hash: '{latest_commit_hash}'}})-[:PARENT*]->(parentCommit:Commit)
-        WHERE NOT EXISTS(()-[:INITIAL_DEPLOY]->(parentCommit))
-        
-        WITH deployment, latestCommit, collect(DISTINCT parentCommit) AS parent_commits
-        FOREACH (commit IN parent_commits |
-            MERGE (deployment)-[:INITIAL_DEPLOY]->(commit)
-        )
-        
-        WITH deployment, latestCommit
-        WHERE latestCommit IS NOT NULL
-        MERGE (deployment)-[:INITIAL_DEPLOY]->(latestCommit)
-        """
-        return Neo4j.get_graph().run(query).evaluate()
+WITH added_deploy, previous_deploy_id, deploy_data.latest_included_commit AS latest_commit_hash
+OPTIONAL MATCH (prev:{GraphNodes.DEPLOYMENT} {{id: previous_deploy_id}})
+FOREACH (i in CASE WHEN prev IS NOT NULL THEN [1] ELSE [] END |
+    MERGE (prev)-[:{GraphRelationships.SUCCEEDED_BY}]->(added_deploy)
+)
+'''
+        # TODO: Initial deploy relationship
+        Neo4j.get_graph().run(query)
