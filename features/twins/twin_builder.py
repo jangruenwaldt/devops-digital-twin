@@ -22,6 +22,7 @@ class TwinBuilder:
                 print(f'Wiped DB')
 
         raw_file_link = os.path.join(GitHubUtils.get_raw_file_link(repo_url), TwinConstants.DATA_EXPORT_DIR)
+
         commit_data = os.path.join(raw_file_link, TwinConstants.COMMIT_DATA_FILE_NAME)
         deployment_data = os.path.join(raw_file_link, TwinConstants.DEPLOYMENT_DATA_FILE_NAME)
         issue_data = os.path.join(raw_file_link, TwinConstants.ISSUES_DATA_FILE_NAME)
@@ -30,8 +31,8 @@ class TwinBuilder:
                   f'files:\n{commit_data}\n{deployment_data}\n{issue_data}')
 
         GitTwin.construct_from_json(commit_data)
-        DeploymentsTwin.construct(deployment_data, debug_options=debug_options)
-        ProjectManagementTwin.construct(issue_data, debug_options=debug_options)
+        ProjectManagementTwin.construct_from_json(issue_data)
+        DeploymentsTwin.construct(deployment_data)
         TwinBuilder.print_usage_info()
 
     @staticmethod

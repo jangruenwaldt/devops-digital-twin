@@ -1,76 +1,39 @@
-import json
-from datetime import datetime
-
-from py2neo import Node, Relationship
-
-from features.data_adapters.github_data_adapter import GitHubDataAdapter
 from utils.constants.graph_nodes import GraphNodes
 from utils.constants.graph_relationships import GraphRelationships
 from utils.neo4j import Neo4j
 
 
 class ProjectManagementTwin:
-    @staticmethod
-    def _add_issue_labels(graph, enable_logs, issue, issue_node):
-        for label in issue['labels']:
-            existing_label = graph.nodes.match(GraphNodes.ISSUE_LABEL, id=label['id']).first()
-            label_id = label['id']
-            if existing_label is None:
-                node_to_add = Node(GraphNodes.ISSUE_LABEL,
-                                   id=label_id,
-                                   url=label['url'],
-                                   name=label['name'],
-                                   color=label['color'],
-                                   description=label['description'])
-                graph.create(node_to_add)
-                if enable_logs:
-                    print(f'Added issue label {label_id}')
-            else:
-                if enable_logs:
-                    print(f'Issue label {label_id} was already added')
-
-            label_node = graph.nodes.match(GraphNodes.ISSUE_LABEL, id=label['id']).first()
-            has_label_relationship = Relationship(issue_node, GraphRelationships.HAS_LABEL, label_node)
-            graph.create(has_label_relationship)
-            if enable_logs:
-                print(f'Added relationship from issue {issue_node.get("id")} to label {label_id}')
 
     @staticmethod
-    def construct(github_url, debug_options=None):
-        if debug_options is None:
-            debug_options = {}
-        enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
-        max_nodes = debug_options['max_nodes'] if 'max_nodes' in debug_options else None
+    def construct_from_json(json_url):
+        query = f'''
+CALL apoc.load.json('{json_url}') YIELD value
 
-        gh = GitHubDataAdapter(github_url)
-        issues = gh.fetch_issues()
-        graph = Neo4j.get_graph()
-        Neo4j.remove_issues_and_labels()
+MERGE (i:{GraphNodes.ISSUE} {{id: value.id}})
+ON CREATE SET
+i.title = value.title,
+i.state = value.state,
+i.locked = value.locked,
+i.comments = value.comments,
+i.url = value.url,
+i.created_at = value.created_at,
+i.updated_at = value.updated_at,
+i.closed_at = value.closed_at,
+i.body = value.body,
+i.user = apoc.convert.toJson(value.user),
+i.assignee = apoc.convert.toJson(value.assignee),
+i.milestone = apoc.convert.toJson(value.milestone)
 
-        added_nodes = 0
-        for issue in issues:
-            added_nodes += 1
-            if max_nodes is not None and added_nodes > max_nodes:
-                break
+WITH i, value.labels AS labels
+UNWIND labels AS label
 
-            issue_node = Node(GraphNodes.ISSUE,
-                              url=issue['url'],
-                              id=issue['id'],
-                              title=issue['title'],
-                              state=issue['state'],
-                              locked=issue['locked'],
-                              user=json.dumps(issue['user']) if issue['user'] is not None else None,
-                              assignee=json.dumps(issue['assignee']) if issue['assignee'] is not None else None,
-                              milestone=json.dumps(issue['milestone']) if issue['milestone'] is not None else None,
-                              comments=issue['comments'],
-                              created_at=datetime.strptime(issue['created_at'], '%Y-%m-%dT%H:%M:%SZ').replace(
-                                  microsecond=0).isoformat(),
-                              updated_at=issue['updated_at'],
-                              closed_at=datetime.strptime(issue['closed_at'], '%Y-%m-%dT%H:%M:%SZ').replace(
-                                  microsecond=0).isoformat() if issue['closed_at'] is not None else None,
-                              body=issue['body'])
-            graph.create(issue_node)
-            if enable_logs:
-                print(f'Added issue with id {issue["id"]}')
-
-            ProjectManagementTwin._add_issue_labels(graph, enable_logs, issue, issue_node)
+MERGE (l:{GraphNodes.ISSUE_LABEL} {{id: label.id}})
+ON CREATE SET 
+l.name = label.name,
+l.color = label.color,
+l.description = label.description,
+l.url = label.url
+MERGE (i)-[:{GraphRelationships.HAS_LABEL}]->(l)
+'''
+        Neo4j.get_graph().run(query)

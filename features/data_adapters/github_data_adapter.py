@@ -63,7 +63,7 @@ class GitHubDataAdapter:
                 label_id = label['id']
                 label_data = {
                     'id': label_id,
-                    'url': label['url'],
+                    'url': f'{self.repo_url}/labels/{label["name"]}',
                     'name': label['name'],
                     'color': label['color'],
                     'description': label['description'],
