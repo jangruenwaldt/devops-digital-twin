@@ -11,13 +11,13 @@ from utils.neo4j import Neo4j
 class DeploymentsTwin:
 
     @staticmethod
-    def construct(github_url, enable_cache=True, debug_options=None):
+    def construct(github_url, debug_options=None):
         if debug_options is None:
             debug_options = {}
         enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
 
         gh = GitHubDataAdapter(github_url)
-        releases = gh.fetch_releases(enable_cache=enable_cache)
+        releases = gh.fetch_releases()
         graph = Neo4j.get_graph()
         Neo4j.remove_releases()
 

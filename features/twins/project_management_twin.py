@@ -36,7 +36,7 @@ class ProjectManagementTwin:
                 print(f'Added relationship from issue {issue_node.get("id")} to label {label_id}')
 
     @staticmethod
-    def construct(github_url, enable_cache=True, debug_options=None):
+    def construct(github_url, debug_options=None):
         if debug_options is None:
             debug_options = {}
         enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
