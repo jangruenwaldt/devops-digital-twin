@@ -9,9 +9,9 @@ class GitTwin:
     def construct_from_json(json_url):
         print(f'Constructing GitTwin from {json_url}')
         query = f'''
-CALL apoc.load.json('{json_url}') YIELD value
-
-MERGE (c:{GraphNodes.COMMIT} {{hash: value.hash}})
+CALL apoc.periodic.iterate(
+"CALL apoc.load.json('{json_url}') YIELD value RETURN value",
+"MERGE (c:{GraphNodes.COMMIT} {{hash: value.hash}})
 ON CREATE SET
 c.message = value.message,
 c.date = value.date,
@@ -22,6 +22,9 @@ FOREACH (parentHash IN value.parents |
   MERGE (p:{GraphNodes.COMMIT} {{hash: parentHash}})
   MERGE (c)-[:{GraphRelationships.PARENT}]->(p)
 )
-RETURN 1
+RETURN 1",
+{{batchSize: 1000, parallel: false}})
+YIELD batch
 '''
-        Neo4j.get_graph().run(query)
+        result = Neo4j.run_large_query(query)
+        print(result)
