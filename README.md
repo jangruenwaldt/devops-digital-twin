@@ -1,7 +1,6 @@
 # DevOps Digital Twin
 
 [![Python integration test](https://github.com/jangruenwaldt/devops-digital-twin/actions/workflows/ci.yaml/badge.svg)](https://github.com/jangruenwaldt/devops-digital-twin/actions/workflows/ci.yaml)
-[![Create/update DevOps digital twin](https://github.com/jangruenwaldt/devops-digital-twin/actions/workflows/create_twin.yaml/badge.svg)](https://github.com/jangruenwaldt/devops-digital-twin/actions/workflows/create_twin.yaml)
 
 Fetch DevOps system data into JSON, and then store it in neo4j. Exploration and interface on top of neo4j is planned.
 
