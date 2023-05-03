@@ -37,6 +37,8 @@ l.description = label.description,
 l.url = label.url
 MERGE (i)-[:{GraphRelationships.HAS_LABEL}]->(l)
 RETURN 1",
-{{batchSize: 1000, parallel: false}})
+{{batchSize: 500, parallel: false}})
+YIELD batch
 '''
-        Neo4j.get_graph().run(query)
+        result = Neo4j.run_large_query(query)
+        print(result)
