@@ -7,6 +7,7 @@ class ProjectManagementTwin:
 
     @staticmethod
     def construct_from_json(json_url):
+        print(f'Constructing ProjectManagementTwin from {json_url}')
         query = f'''
 CALL apoc.periodic.iterate(
 "CALL apoc.load.json('{json_url}') YIELD value RETURN value",

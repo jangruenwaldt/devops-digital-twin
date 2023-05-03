@@ -7,6 +7,7 @@ class GitTwin:
 
     @staticmethod
     def construct_from_json(json_url):
+        print(f'Constructing GitTwin from {json_url}')
         query = f'''
 CALL apoc.load.json('{json_url}') YIELD value
 
