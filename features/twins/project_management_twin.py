@@ -11,35 +11,35 @@ class ProjectManagementTwin:
         query = f'''
 CALL apoc.periodic.iterate(
 "
-CALL apoc.load.json('{json_url}') YIELD value RETURN value
+    CALL apoc.load.json('{json_url}') YIELD value RETURN value
 ",
 "
-MERGE (i:{GraphNodes.ISSUE} {{id: value.id}})
-ON CREATE SET
-i.title = value.title,
-i.state = value.state,
-i.locked = value.locked,
-i.comments = value.comments,
-i.url = value.url,
-i.created_at = value.created_at,
-i.updated_at = value.updated_at,
-i.closed_at = value.closed_at,
-i.body = value.body,
-i.user = apoc.convert.toJson(value.user),
-i.assignee = apoc.convert.toJson(value.assignee),
-i.milestone = apoc.convert.toJson(value.milestone)
-
-WITH i, value.labels AS labels
-UNWIND labels AS label
-
-MERGE (l:{GraphNodes.ISSUE_LABEL} {{id: label.id}})
-ON CREATE SET 
-l.name = label.name,
-l.color = label.color,
-l.description = label.description,
-l.url = label.url
-MERGE (i)-[:{GraphRelationships.HAS_LABEL}]->(l)
-RETURN 1
+    MERGE (i:{GraphNodes.ISSUE} {{id: value.id}})
+    ON CREATE SET
+    i.title = value.title,
+    i.state = value.state,
+    i.locked = value.locked,
+    i.comments = value.comments,
+    i.url = value.url,
+    i.created_at = value.created_at,
+    i.updated_at = value.updated_at,
+    i.closed_at = value.closed_at,
+    i.body = value.body,
+    i.user = apoc.convert.toJson(value.user),
+    i.assignee = apoc.convert.toJson(value.assignee),
+    i.milestone = apoc.convert.toJson(value.milestone)
+    
+    WITH i, value.labels AS labels
+    UNWIND labels AS label
+    
+    MERGE (l:{GraphNodes.ISSUE_LABEL} {{id: label.id}})
+    ON CREATE SET 
+    l.name = label.name,
+    l.color = label.color,
+    l.description = label.description,
+    l.url = label.url
+    MERGE (i)-[:{GraphRelationships.HAS_LABEL}]->(l)
+    RETURN 1
 ",
 {{batchSize: 500, parallel: false}})
 YIELD batch
