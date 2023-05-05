@@ -19,7 +19,7 @@ class Neo4j:
         CALL apoc.periodic.iterate(
           "MATCH (n) RETURN n",
           "DETACH DELETE n",
-          {batchSize: 1000, parallel: false, iterateList: true}
+          {batchSize: 1000, parallel: false}
         )
         ''')
 
