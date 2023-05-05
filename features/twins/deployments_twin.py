@@ -13,39 +13,54 @@ class DeploymentsTwin:
     @staticmethod
     def construct_from_json(json_url):
         print(f'Constructing DeploymentsTwin from {json_url}')
-        query = f'''
-CALL apoc.load.json('{json_url}') YIELD value AS deployment
+        Neo4j.get_graph().run('CREATE INDEX commit_hash IF NOT EXISTS FOR (c:Commit) ON (c.hash)')
+        Neo4j.get_graph().run('CREATE INDEX deployment_id '
+                              'IF NOT EXISTS FOR (d:Deployment) ON (d.id)')
 
-WITH deployment
-ORDER BY deployment.published_at ASC
-WITH collect(deployment) AS deployments
-
-UNWIND range(0, size(deployments) - 1) AS i
-WITH 
-deployments[i] AS deploy_data,
-CASE WHEN i > 0 THEN deployments[i - 1].id ELSE null END AS previous_deploy_id
-
-MERGE (added_deploy:{GraphNodes.DEPLOYMENT} {{id: deploy_data.id}})
-ON CREATE SET
-added_deploy.tag_name = deploy_data.tag_name,
-added_deploy.latest_included_commit = deploy_data.latest_included_commit,
-added_deploy.published_at = deploy_data.published_at,
-added_deploy.release_url = deploy_data.release_url,
-added_deploy.commit_url = deploy_data.commit_url
-
-WITH added_deploy, previous_deploy_id, deploy_data.latest_included_commit AS latest_commit_hash
-OPTIONAL MATCH (prev:{GraphNodes.DEPLOYMENT} {{id: previous_deploy_id}})
-FOREACH (i in CASE WHEN prev IS NOT NULL THEN [1] ELSE [] END |
-    MERGE (prev)-[:{GraphRelationships.SUCCEEDED_BY}]->(added_deploy)
-)
-
-WITH added_deploy, latest_commit_hash
-MATCH (latestCommit:{GraphNodes.COMMIT} {{hash: latest_commit_hash}})
--[:{GraphRelationships.PARENT}*]
-->(parentCommit:{GraphNodes.COMMIT})
-WHERE NOT EXISTS(()-[:{GraphRelationships.INITIAL_DEPLOY}]->(parentCommit))
-MERGE (added_deploy)-[:{GraphRelationships.INITIAL_DEPLOY}]->(parentCommit)
-
-RETURN 1
+        add_deployment_nodes_query = f'''
+CALL apoc.periodic.iterate(
+"
+CALL apoc.load.json('{json_url}') YIELD value RETURN value
+",
+"
+WITH value AS deploy_data
+ MERGE (added_deploy:{GraphNodes.DEPLOYMENT} {{id: deploy_data.id}})
+ ON CREATE SET
+   added_deploy.tag_name = deploy_data.tag_name,
+   added_deploy.latest_included_commit = deploy_data.latest_included_commit,
+   added_deploy.published_at = deploy_data.published_at,
+   added_deploy.release_url = deploy_data.release_url,
+   added_deploy.commit_url = deploy_data.commit_url
+",
+{{batchSize: 1000, parallel: true}})
+YIELD batches, total
+RETURN batches, total
 '''
-        Neo4j.get_graph().run(query)
+        result = Neo4j.run_large_query(add_deployment_nodes_query)
+        print(result)
+
+        add_succeeded_by_relationship_query = f'''
+CALL apoc.periodic.iterate(
+  "
+    MATCH (d:{GraphNodes.DEPLOYMENT})
+    WITH d
+    ORDER BY d.published_at
+    WITH COLLECT(d) AS deployments
+    
+    UNWIND range(1, size(deployments) - 2) AS i
+    WITH deployments[i].id AS deployment_id,
+    deployments[i - 1].id AS previous_deployment_id
+    RETURN deployment_id, previous_deployment_id
+  ",
+  "
+  MATCH (d1:{GraphNodes.DEPLOYMENT} {{id: previous_deployment_id}}),
+  (d2:{GraphNodes.DEPLOYMENT} {{id: deployment_id}})
+  MERGE (d1)-[:{GraphRelationships.SUCCEEDED_BY}]->(d2)
+  ",
+  {{batchSize: 1000, parallel: true}}
+)
+YIELD batches, total
+RETURN batches, total
+'''
+        result2 = Neo4j.run_large_query(add_succeeded_by_relationship_query)
+        print(result2)
