@@ -1,4 +1,3 @@
-from neo4j import GraphDatabase
 from py2neo import Graph
 
 from utils.config import Config
@@ -7,11 +6,8 @@ from utils.config import Config
 class Neo4j:
 
     @staticmethod
-    def run_large_query(query):
-        # This method uses the neo4j library directly as I suspect py2neo adds performance overhead.
-        driver = GraphDatabase.driver(Config.get_db_address(), auth=(Config.get_db_user(), Config.get_db_pw()))
-        records, _, __ = driver.execute_query(query)
-        return records
+    def run_query(query):
+        return Neo4j.get_graph().run(query)
 
     @staticmethod
     def get_graph():

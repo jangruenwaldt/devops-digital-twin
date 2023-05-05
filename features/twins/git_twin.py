@@ -30,5 +30,5 @@ RETURN 1
 {{batchSize: 1000, parallel: false}})
 YIELD batch
 '''
-        result = Neo4j.run_large_query(query)
+        result = Neo4j.run_query(query)
         print(result)

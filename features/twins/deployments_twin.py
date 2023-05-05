@@ -36,7 +36,7 @@ WITH value AS deploy_data
 YIELD batches, total
 RETURN batches, total
 '''
-        result = Neo4j.run_large_query(add_deployment_nodes_query)
+        result = Neo4j.run_query(add_deployment_nodes_query)
         print(result)
 
         add_succeeded_by_relationship_query = f'''
