@@ -10,8 +10,11 @@ class GitTwin:
         print(f'Constructing GitTwin from {json_url}')
         query = f'''
 CALL apoc.periodic.iterate(
-"CALL apoc.load.json('{json_url}') YIELD value RETURN value",
-"MERGE (c:{GraphNodes.COMMIT} {{hash: value.hash}})
+"
+CALL apoc.load.json('{json_url}') YIELD value RETURN value
+",
+"
+MERGE (c:{GraphNodes.COMMIT} {{hash: value.hash}})
 ON CREATE SET
 c.message = value.message,
 c.date = value.date,
@@ -22,7 +25,8 @@ FOREACH (parentHash IN value.parents |
   MERGE (p:{GraphNodes.COMMIT} {{hash: parentHash}})
   MERGE (c)-[:{GraphRelationships.PARENT}]->(p)
 )
-RETURN 1",
+RETURN 1
+",
 {{batchSize: 1000, parallel: false}})
 YIELD batch
 '''

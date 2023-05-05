@@ -10,8 +10,11 @@ class ProjectManagementTwin:
         print(f'Constructing ProjectManagementTwin from {json_url}')
         query = f'''
 CALL apoc.periodic.iterate(
-"CALL apoc.load.json('{json_url}') YIELD value RETURN value",
-"MERGE (i:{GraphNodes.ISSUE} {{id: value.id}})
+"
+CALL apoc.load.json('{json_url}') YIELD value RETURN value
+",
+"
+MERGE (i:{GraphNodes.ISSUE} {{id: value.id}})
 ON CREATE SET
 i.title = value.title,
 i.state = value.state,
@@ -36,7 +39,8 @@ l.color = label.color,
 l.description = label.description,
 l.url = label.url
 MERGE (i)-[:{GraphRelationships.HAS_LABEL}]->(l)
-RETURN 1",
+RETURN 1
+",
 {{batchSize: 500, parallel: false}})
 YIELD batch
 '''
