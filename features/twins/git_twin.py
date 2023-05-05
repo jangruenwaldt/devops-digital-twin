@@ -15,7 +15,7 @@ CALL apoc.periodic.iterate(
 ",
 "
     MERGE (c:{GraphNodes.COMMIT} {{hash: value.hash}})
-    ON CREATE SET
+    SET
     c.message = value.message,
     c.date = value.date,
     c.branch = value.branch,

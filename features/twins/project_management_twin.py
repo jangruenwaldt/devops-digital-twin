@@ -15,7 +15,7 @@ CALL apoc.periodic.iterate(
 ",
 "
     MERGE (i:{GraphNodes.ISSUE} {{id: value.id}})
-    ON CREATE SET
+    SET
     i.title = value.title,
     i.state = value.state,
     i.locked = value.locked,
@@ -33,7 +33,7 @@ CALL apoc.periodic.iterate(
     UNWIND labels AS label
     
     MERGE (l:{GraphNodes.ISSUE_LABEL} {{id: label.id}})
-    ON CREATE SET 
+    SET 
     l.name = label.name,
     l.color = label.color,
     l.description = label.description,
