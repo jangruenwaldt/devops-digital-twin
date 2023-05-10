@@ -1,5 +1,3 @@
-from utils.constants.graph_nodes import GraphNodes
-from utils.constants.graph_relationships import GraphRelationships
 from utils.neo4j import Neo4j
 
 
@@ -14,7 +12,7 @@ CALL apoc.periodic.iterate(
     CALL apoc.load.json('{json_url}') YIELD value RETURN value
 ",
 "
-    MERGE (i:{GraphNodes.ISSUE} {{id: value.id}})
+    MERGE (i:Issue {{id: value.id}})
     SET
     i.title = value.title,
     i.state = value.state,
@@ -32,13 +30,13 @@ CALL apoc.periodic.iterate(
     WITH i, value.labels AS labels
     UNWIND labels AS label
     
-    MERGE (l:{GraphNodes.ISSUE_LABEL} {{id: label.id}})
+    MERGE (l:IssueLabel {{id: label.id}})
     SET 
     l.name = label.name,
     l.color = label.color,
     l.description = label.description,
     l.url = label.url
-    MERGE (i)-[:{GraphRelationships.HAS_LABEL}]->(l)
+    MERGE (i)-[:HAS_LABEL]->(l)
     RETURN 1
 ",
 {{batchSize: 500, parallel: false}})

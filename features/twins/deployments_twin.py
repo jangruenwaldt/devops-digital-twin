@@ -1,10 +1,3 @@
-from datetime import datetime
-
-from py2neo import Node, Relationship
-
-from features.data_adapters.github_data_adapter import GitHubDataAdapter
-from utils.constants.graph_nodes import GraphNodes
-from utils.constants.graph_relationships import GraphRelationships
 from utils.neo4j import Neo4j
 
 
@@ -27,11 +20,11 @@ class DeploymentsTwin:
 
     @staticmethod
     def _add_initial_deploy_relationship():
-        add_deployed_in_attribute = f'''
+        add_deployed_in_attribute = '''
 CALL apoc.periodic.iterate(
 "
-    MATCH (deployment:{GraphNodes.DEPLOYMENT})
-    OPTIONAL MATCH (latest_commit:{GraphNodes.COMMIT} {{hash: deployment.latest_included_commit}})
+    MATCH (deployment:Deployment)
+    OPTIONAL MATCH (latest_commit:Commit {hash: deployment.latest_included_commit})
 
     WITH deployment
      ORDER BY deployment.published_at
@@ -42,12 +35,12 @@ CALL apoc.periodic.iterate(
 "
     WITH deployment
     
-    MATCH (latest_commit:{GraphNodes.COMMIT} {{hash: deployment.latest_included_commit}})
+    MATCH (latest_commit:Commit {hash: deployment.latest_included_commit})
     
-    CALL apoc.path.subgraphAll(latest_commit, {{
+    CALL apoc.path.subgraphAll(latest_commit, {
      relationshipFilter: 'PARENT>',
      labelFilter: '+Commit'
-    }})
+    })
     YIELD nodes
     
     WITH nodes, deployment
@@ -58,7 +51,7 @@ CALL apoc.periodic.iterate(
      ELSE node.deployed_in_version + deployment.tag_name
     END )
 ",
-  {{batchSize: 50, parallel: false}}
+  {batchSize: 50, parallel: false}
 )
 YIELD batches, total
 RETURN batches, total
@@ -66,11 +59,11 @@ RETURN batches, total
         result = Neo4j.run_query(add_deployed_in_attribute)
         print(result)
 
-        add_initial_deploy_relationships = f'''
+        add_initial_deploy_relationships = '''
 CALL apoc.periodic.iterate(
 "
- MATCH (deployment:{GraphNodes.DEPLOYMENT})
- OPTIONAL MATCH (latest_commit:{GraphNodes.COMMIT} {{hash: deployment.latest_included_commit}})
+ MATCH (deployment:Deployment)
+ OPTIONAL MATCH (latest_commit:Commit {hash: deployment.latest_included_commit})
 
  WITH deployment
    ORDER BY deployment.published_at
@@ -81,13 +74,13 @@ CALL apoc.periodic.iterate(
 "
    WITH deployment
 
-   MATCH (n:{GraphNodes.COMMIT})
+   MATCH (n:Commit)
    WHERE deployment.tag_name IN n.deployed_in_version
-   AND NOT (:{GraphNodes.DEPLOYMENT})-[:{GraphRelationships.INITIAL_DEPLOY}]->(n)
+   AND NOT (:Deployment)-[:INITIAL_DEPLOY]->(n)
 
-   MERGE (deployment)-[:{GraphRelationships.INITIAL_DEPLOY}]->(n)
+   MERGE (deployment)-[:INITIAL_DEPLOY]->(n)
 ",
-{{batchSize: 1, parallel: false}})
+{batchSize: 1, parallel: false})
 YIELD batches, total
 RETURN batches, total
 '''
@@ -96,10 +89,10 @@ RETURN batches, total
 
     @staticmethod
     def _add_succeeded_by_relationship():
-        add_succeeded_by_relationship_query = f'''
+        add_succeeded_by_relationship_query = '''
 CALL apoc.periodic.iterate(
 "
-    MATCH (d:{GraphNodes.DEPLOYMENT})
+    MATCH (d:Deployment)
     WITH d
     ORDER BY d.published_at
     WITH COLLECT(d) AS deployments
@@ -110,9 +103,9 @@ CALL apoc.periodic.iterate(
     RETURN deployment, previous_deployment
 ",
 "WITH deployment, previous_deployment
-  MERGE (previous_deployment)-[:{GraphRelationships.SUCCEEDED_BY}]->(deployment)
+  MERGE (previous_deployment)-[:SUCCEEDED_BY]->(deployment)
 ",
-  {{batchSize: 1000, parallel: true}}
+  {batchSize: 1000, parallel: true}
 )
 YIELD batches, total
 RETURN batches, total
@@ -129,7 +122,7 @@ CALL apoc.periodic.iterate(
 ",
 "
     WITH value AS deploy_data
-    MERGE (added_deploy:{GraphNodes.DEPLOYMENT} {{id: deploy_data.id}})
+    MERGE (added_deploy:Deployment {{id: deploy_data.id}})
     SET
     added_deploy.tag_name = deploy_data.tag_name,
     added_deploy.latest_included_commit = deploy_data.latest_included_commit,

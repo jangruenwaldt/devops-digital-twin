@@ -1,5 +1,3 @@
-from utils.constants.graph_nodes import GraphNodes
-from utils.constants.graph_relationships import GraphRelationships
 from utils.neo4j import Neo4j
 
 
@@ -14,7 +12,7 @@ CALL apoc.periodic.iterate(
     CALL apoc.load.json('{json_url}') YIELD value RETURN value
 ",
 "
-    MERGE (c:{GraphNodes.COMMIT} {{hash: value.hash}})
+    MERGE (c:Commit {{hash: value.hash}})
     SET
     c.message = value.message,
     c.date = value.date,
@@ -22,8 +20,8 @@ CALL apoc.periodic.iterate(
     c.url = value.url
     
     FOREACH (parentHash IN value.parents |
-      MERGE (p:{GraphNodes.COMMIT} {{hash: parentHash}})
-      MERGE (c)-[:{GraphRelationships.PARENT}]->(p)
+      MERGE (p:Commit {{hash: parentHash}})
+      MERGE (c)-[:PARENT]->(p)
     )
     RETURN 1
 ",
