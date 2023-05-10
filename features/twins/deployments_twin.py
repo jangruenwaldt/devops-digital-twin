@@ -20,15 +20,15 @@ class DeploymentsTwin:
 
     @staticmethod
     def _add_initial_deploy_relationship():
-        add_deployed_in_attribute = '''
+        result2 = Neo4j.run_query('''
 CALL apoc.periodic.iterate(
 "
     MATCH (deployment:Deployment)
     OPTIONAL MATCH (latest_commit:Commit {hash: deployment.latest_included_commit})
-
+    
     WITH deployment
-     ORDER BY deployment.published_at
-     WHERE latest_commit is not null
+    ORDER BY deployment.published_at
+    WHERE latest_commit is not null
     
     RETURN deployment
 ",
@@ -41,50 +41,19 @@ CALL apoc.periodic.iterate(
      relationshipFilter: 'PARENT>',
      labelFilter: '+Commit'
     })
-    YIELD nodes
+    YIELD nodes AS all_commits_deployed_in_this_deployment
     
-    WITH nodes, deployment
+    UNWIND all_commits_deployed_in_this_deployment as commit
     
-    FOREACH (node in nodes |
-    SET node.deployed_in_version = CASE
-     WHEN node.deployed_in_version IS NULL THEN [deployment.tag_name]
-     ELSE node.deployed_in_version + deployment.tag_name
-    END )
-",
-  {batchSize: 50, parallel: false}
-)
-YIELD batches, total
-RETURN batches, total
-'''
-        result = Neo4j.run_query(add_deployed_in_attribute)
-        print(result)
+    WITH commit, deployment
+    WHERE NOT EXISTS((:Deployment)-[:INITIAL_DEPLOY]->(commit))
 
-        add_initial_deploy_relationships = '''
-CALL apoc.periodic.iterate(
-"
- MATCH (deployment:Deployment)
- OPTIONAL MATCH (latest_commit:Commit {hash: deployment.latest_included_commit})
-
- WITH deployment
-   ORDER BY deployment.published_at
-   WHERE latest_commit is not null
-
- RETURN deployment
-",
-"
-   WITH deployment
-
-   MATCH (n:Commit)
-   WHERE deployment.tag_name IN n.deployed_in_version
-   AND NOT (:Deployment)-[:INITIAL_DEPLOY]->(n)
-
-   MERGE (deployment)-[:INITIAL_DEPLOY]->(n)
+    MERGE (deployment)-[:INITIAL_DEPLOY]->(commit)
 ",
 {batchSize: 1, parallel: false})
 YIELD batches, total
 RETURN batches, total
-'''
-        result2 = Neo4j.run_query(add_initial_deploy_relationships)
+''')
         print(result2)
 
     @staticmethod
