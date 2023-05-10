@@ -6,6 +6,17 @@ class ProjectManagementTwin:
     @staticmethod
     def construct_from_json(json_url):
         print(f'Constructing ProjectManagementTwin from {json_url}')
+        ProjectManagementTwin._add_indices()
+
+        ProjectManagementTwin._add_issue_nodes(json_url)
+
+    @staticmethod
+    def _add_indices():
+        Neo4j.get_graph().run('CREATE INDEX issue_id IF NOT EXISTS FOR (c:Issue) ON (c.id)')
+        Neo4j.get_graph().run('CREATE INDEX issue_label_id IF NOT EXISTS FOR (c:IssueLabel) ON (c.id)')
+
+    @staticmethod
+    def _add_issue_nodes(json_url):
         query = f'''
 CALL apoc.periodic.iterate(
 "
