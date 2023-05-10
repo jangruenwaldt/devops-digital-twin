@@ -98,12 +98,12 @@ CALL apoc.periodic.iterate(
     WITH COLLECT(d) AS deployments
     
     UNWIND range(1, size(deployments) - 1) AS i
-    WITH deployments[i] AS deployment,
+    RETURN deployments[i] AS deployment,
     deployments[i - 1] AS previous_deployment
-    RETURN deployment, previous_deployment
 ",
-"WITH deployment, previous_deployment
-  MERGE (previous_deployment)-[:SUCCEEDED_BY]->(deployment)
+"
+    WITH deployment, previous_deployment
+    MERGE (previous_deployment)-[:SUCCEEDED_BY]->(deployment)
 ",
   {batchSize: 1000, parallel: true}
 )
