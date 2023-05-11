@@ -44,7 +44,7 @@ jobs:
         uses: jsdaniell/create-json@v1.2.2
         with:
           name: "config.json"
-          json: ${{ secrets.CONFIG_JSON }}
+          json: ${{ secrets.CONFIG_AURA_DB_JSON }}
 
       - name: Run script
         run: python3 create_twin.py 
