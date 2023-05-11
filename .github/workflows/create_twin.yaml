@@ -6,6 +6,7 @@ on:
       twin_data_repo_url:
         description: 'Twin data repository URL'
         required: true
+        default: https://github.com/jangruenwaldt/twin-data
       wipe_db:
         type: boolean
         description: 'Wipe Neo4j database'
