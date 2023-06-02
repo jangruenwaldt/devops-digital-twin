@@ -9,20 +9,25 @@ class GitTwin:
         query = f'''
 CALL apoc.periodic.iterate(
 "
-    CALL apoc.load.json('{json_url}') YIELD value RETURN value
+    CALL apoc.load.json('{json_url}') YIELD value RETURN value as commit_data
 ",
 "
-    MERGE (c:Commit {{hash: value.hash}})
+    MERGE (commit:Commit {{hash: commit_data.hash}})
     SET
-    c.message = value.message,
-    c.date = value.date,
-    c.branch = value.branch,
-    c.url = value.url
+    commit.message = commit_data.message,
+    commit.date = commit_data.date,
+    commit.branch = commit_data.branch,
+    commit.url = commit_data.url
     
-    FOREACH (parentHash IN value.parents |
-      MERGE (p:Commit {{hash: parentHash}})
-      MERGE (c)-[:PARENT]->(p)
+    FOREACH (parentHash IN commit_data.parents |
+      MERGE (parent:Commit {{hash: parentHash}})
+      MERGE (commit)-[:PARENT]->(parent)
     )
+    
+    WITH commit, commit_data
+    MERGE (author:Author {{email: commit_data.author}})
+    MERGE (author)-[:COMMITTED_BY]->(commit)
+
     RETURN 1
 ",
 {{batchSize: 1000, parallel: false}})
