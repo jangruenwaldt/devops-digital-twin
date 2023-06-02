@@ -20,25 +20,30 @@ class ProjectManagementTwin:
         query = f'''
 CALL apoc.periodic.iterate(
 "
-    CALL apoc.load.json('{json_url}') YIELD value RETURN value
+    CALL apoc.load.json('{json_url}') YIELD value RETURN value as issue_data
 ",
 "
-    MERGE (i:Issue {{id: value.id}})
+    MERGE (i:Issue {{id: issue_data.id}})
     SET
-    i.title = value.title,
-    i.state = value.state,
-    i.locked = value.locked,
-    i.comments = value.comments,
-    i.url = value.url,
-    i.created_at = value.created_at,
-    i.updated_at = value.updated_at,
-    i.closed_at = value.closed_at,
-    i.body = value.body,
-    i.user = apoc.convert.toJson(value.user),
-    i.assignee = apoc.convert.toJson(value.assignee),
-    i.milestone = apoc.convert.toJson(value.milestone)
+    i.title = issue_data.title,
+    i.state = issue_data.state,
+    i.locked = issue_data.locked,
+    i.comments = issue_data.comments,
+    i.url = issue_data.url,
+    i.created_at = issue_data.created_at,
+    i.updated_at = issue_data.updated_at,
+    i.closed_at = issue_data.closed_at,
+    i.body = issue_data.body,
+    i.user = apoc.convert.toJson(issue_data.user),
+    i.assignee = apoc.convert.toJson(issue_data.assignee),
+    i.milestone = apoc.convert.toJson(issue_data.milestone)
     
-    WITH i, value.labels AS labels
+    MERGE (author:Author {{login: issue_data.user.login}})
+    MERGE (author)-[r:CREATED_ISSUE]->(i)
+    SET
+    r.date = issue_data.created_at
+    
+    WITH i, issue_data.labels AS labels
     UNWIND labels AS label
     
     MERGE (l:IssueLabel {{id: label.id}})
