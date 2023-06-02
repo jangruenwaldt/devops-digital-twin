@@ -19,7 +19,7 @@ on:
         default: true
 
 jobs:
-  build:
+  create_update_twin:
 
     runs-on: ubuntu-latest
     strategy:
