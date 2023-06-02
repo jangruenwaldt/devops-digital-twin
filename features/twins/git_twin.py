@@ -26,7 +26,7 @@ CALL apoc.periodic.iterate(
     
     WITH commit, commit_data
     MERGE (author:Author {{email: commit_data.author}})
-    MERGE (author)-[:COMMITTED_BY]->(commit)
+    MERGE (author)-[:COMMITTED]->(commit)
 
     RETURN 1
 ",
