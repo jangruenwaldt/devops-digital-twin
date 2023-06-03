@@ -119,7 +119,7 @@ class GitHubDataAdapter:
 
         commits = self.fetch_commits()
         export_data = []
-        for commit in commits:
+        for commit in reversed(commits):
             # GitHub API 'quirk', sometimes only committer is set and author is None,
             # and sometimes author is set but committer is 'web-flow' when done via web UI, so we
             # give priority to the author field unless it is None.
