@@ -124,7 +124,10 @@ class GitHubDataAdapter:
             # and sometimes author is set but committer is 'web-flow' when done via web UI, so we
             # give priority to the author field unless it is None.
             if commit['author'] is None:
-                author = commit['committer']['login']
+                if commit['committer'] is None:
+                    author = "unknown"
+                else:
+                    author = commit['committer']['login']
             else:
                 author = commit['author']['login']
             commit_data = {
