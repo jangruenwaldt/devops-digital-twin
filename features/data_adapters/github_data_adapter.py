@@ -120,10 +120,17 @@ class GitHubDataAdapter:
         commits = self.fetch_commits()
         export_data = []
         for commit in commits:
+            # GitHub API 'quirk', sometimes only committer is set and author is None,
+            # and sometimes author is set but committer is 'web-flow' when done via web UI, so we
+            # give priority to the author field unless it is None.
+            if commit['author'] is None:
+                author = commit['committer']['login']
+            else:
+                author = commit['author']['login']
             commit_data = {
                 'message': commit['commit']['message'],
                 'hash': commit['sha'],
-                'author': commit['committer']['login'],
+                'author': author,
                 'date': datetime.strptime(commit['commit']['committer']['date'], '%Y-%m-%dT%H:%M:%SZ').replace(
                     microsecond=0).isoformat(),
                 'branch': self.branch,
