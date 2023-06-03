@@ -34,7 +34,7 @@ CALL apoc.periodic.iterate(
     i.updated_at = issue_data.updated_at,
     i.closed_at = issue_data.closed_at,
     i.body = issue_data.body,
-    i.user = apoc.convert.toJson(issue_data.user),
+    i.created_by = issue_data.user.login,
     i.assignee = apoc.convert.toJson(issue_data.assignee),
     i.milestone = apoc.convert.toJson(issue_data.milestone)
     
