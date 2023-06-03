@@ -135,7 +135,7 @@ class GitHubDataAdapter:
                     microsecond=0).isoformat(),
                 'branch': self.branch,
                 'url': (self.repo_url + f'/commit/{commit["sha"]}'),
-                'parents': list(map(lambda c: c['url'], commit['parents']))
+                'parents': list(map(lambda c: c['sha'], commit['parents']))
             }
             export_data.append(commit_data)
             if enable_logs:
