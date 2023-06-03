@@ -117,37 +117,24 @@ class GitHubDataAdapter:
             debug_options = {}
         enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
 
-        repo_owner_slash_name = self.repo_url.split("https://github.com/")[1]
-        repo_dir = f'{LOCAL_DATA_DIR}/{repo_owner_slash_name}'
-
-        if not os.path.exists(repo_dir):
-            if enable_logs:
-                print('repo did not exist locally yet, cloning now')
-            Repo.clone_from(self.repo_url, repo_dir)
-        elif enable_logs:
-            print('found repo locally')
-
-        repo = Repo(repo_dir)
-        repo.git.checkout(self.branch)
-        repo.remotes.origin.pull()
-
-        commits = []
-        for commit in repo.iter_commits(self.branch, reverse=True):
+        commits = self.fetch_commits()
+        export_data = []
+        for commit in commits:
             commit_data = {
-                'message': commit.message,
-                'hash': commit.hexsha,
-                'author': commit.author.email,
-                'date': commit.committed_datetime.replace(microsecond=0).isoformat(),
+                'message': commit['commit']['message'],
+                'hash': commit['sha'],
+                'author': commit['committer']['login'],
+                'date': datetime.strptime(commit['commit']['committer']['date'], '%Y-%m-%dT%H:%M:%SZ').replace(
+                    microsecond=0).isoformat(),
                 'branch': self.branch,
-                'url': (self.repo_url + f'/commit/{commit.hexsha}'),
-                'parents': list(map(lambda c: c.hexsha, commit.parents))
+                'url': (self.repo_url + f'/commit/{commit["sha"]}'),
+                'parents': list(map(lambda c: c['url'], commit['parents']))
             }
-            commits.append(commit_data)
+            export_data.append(commit_data)
             if enable_logs:
-                print(f'Added commit with hash {commit.hexsha}.')
-        repo.close()
+                print(f'Added commit with hash {commit["sha"]}.')
 
-        self._export_as_json(commits, TwinConstants.COMMIT_DATA_FILE_NAME)
+        self._export_as_json(export_data, TwinConstants.COMMIT_DATA_FILE_NAME)
 
     def fetch_issues(self):
         api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/issues?state=all'
@@ -179,6 +166,18 @@ class GitHubDataAdapter:
         all_releases = self.fetch_from_paginated_api(api_url)
         Cache.update(initial_url, all_releases)
         return all_releases
+
+    def fetch_commits(self):
+        api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/commits?sha={self.branch}'
+        initial_url = api_url
+
+        cached_data = Cache.load(api_url)
+        if cached_data is not None:
+            return cached_data
+
+        all_commits = self.fetch_from_paginated_api(api_url)
+        Cache.update(initial_url, all_commits)
+        return all_commits
 
     def get_latest_commit_hash_in_release(self, tag_name):
         tag_object = CachedRequest.get_json(
