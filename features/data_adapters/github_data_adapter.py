@@ -151,7 +151,7 @@ class GitHubDataAdapter:
             author = commit['author']['login']
 
         # In some cases, it is still web-flow. Then, we use the ['commit]['author']['name'] field instead
-        if author == 'web-flow':
+        if author == 'web-flow' or author == 'unknown':
             return commit['commit']['author']['name']
         return author
 
