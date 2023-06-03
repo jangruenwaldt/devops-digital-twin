@@ -25,7 +25,7 @@ CALL apoc.periodic.iterate(
     )
     
     WITH commit, commit_data
-    MERGE (author:Author {{email: commit_data.author}})
+    MERGE (author:Author {{id: commit_data.author}})
     MERGE (author)-[r:COMMITTED]->(commit)
     SET
     r.date = commit_data.date
