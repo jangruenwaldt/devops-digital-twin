@@ -120,16 +120,7 @@ class GitHubDataAdapter:
         commits = self.fetch_commits()
         export_data = []
         for commit in reversed(commits):
-            # GitHub API 'quirk', sometimes only committer is set and author is None,
-            # and sometimes author is set but committer is 'web-flow' when done via web UI, so we
-            # give priority to the author field unless it is None.
-            if commit['author'] is None:
-                if commit['committer'] is None:
-                    author = "unknown"
-                else:
-                    author = commit['committer']['login']
-            else:
-                author = commit['author']['login']
+            author = self._get_commit_author(commit)
             commit_data = {
                 'message': commit['commit']['message'],
                 'hash': commit['sha'],
@@ -145,6 +136,24 @@ class GitHubDataAdapter:
                 print(f'Added commit with hash {commit["sha"]}.')
 
         self._export_as_json(export_data, TwinConstants.COMMIT_DATA_FILE_NAME)
+
+    @staticmethod
+    def _get_commit_author(commit):
+        # GitHub API 'quirk', sometimes only committer is set and author is None,
+        # and sometimes author is set but committer is 'web-flow' when done via web UI, so we
+        # give priority to the author field unless it is None.
+        if commit['author'] is None:
+            if commit['committer'] is None:
+                author = "unknown"
+            else:
+                author = commit['committer']['login']
+        else:
+            author = commit['author']['login']
+
+        # In some cases, it is still web-flow. Then, we use the ['commit]['author']['name'] field instead
+        if author == 'web-flow':
+            return commit['commit']['author']['name']
+        return author
 
     def fetch_issues(self):
         api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/issues?state=all'
