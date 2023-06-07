@@ -10,7 +10,7 @@ class IntegrationTest(unittest.TestCase):
 
     def test_smoke(self):
         TwinBuilder.construct_from_github_data_repo('https://github.com/jangruenwaldt/twin-data-2',wipe_db=True)
-        self.assertEqual(Neo4j.count_nodes(), 20)
+        self.assertEqual(Neo4j.count_nodes(), 21)
 
         lead_time = Cockpit.calculate_dora_lead_time()
         self.assertEqual(lead_time.days, 1216)

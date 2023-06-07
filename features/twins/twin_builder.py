@@ -1,5 +1,6 @@
 import os
 
+from features.twins.automations_twin import AutomationsTwin
 from features.twins.deployments_twin import DeploymentsTwin
 from features.twins.git_twin import GitTwin
 from features.twins.project_management_twin import ProjectManagementTwin
@@ -26,13 +27,16 @@ class TwinBuilder:
         commit_data = os.path.join(raw_file_link, TwinConstants.COMMIT_DATA_FILE_NAME)
         deployment_data = os.path.join(raw_file_link, TwinConstants.DEPLOYMENT_DATA_FILE_NAME)
         issue_data = os.path.join(raw_file_link, TwinConstants.ISSUES_DATA_FILE_NAME)
+        automation_data = os.path.join(raw_file_link, TwinConstants.AUTOMATION_DATA_FILE_NAME)
+
         if enable_logs:
             print(f'Building twin from data source in {repo_url} using the following '
-                  f'files:\n{commit_data}\n{deployment_data}\n{issue_data}')
+                  f'files:\n{commit_data}\n{deployment_data}\n{issue_data}\n{automation_data}')
 
         GitTwin.construct_from_json(commit_data)
         DeploymentsTwin.construct_from_json(deployment_data)
         ProjectManagementTwin.construct_from_json(issue_data)
+        AutomationsTwin.construct_from_json(automation_data)
         TwinBuilder.print_usage_info()
 
     @staticmethod
