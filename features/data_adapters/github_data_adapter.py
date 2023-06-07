@@ -27,10 +27,29 @@ class GitHubDataAdapter:
         with open(os.path.join(data_dir, file_name), 'w') as output_file:
             json.dump(data, output_file)
 
+    @staticmethod
+    def _get_commit_author(commit):
+        # GitHub API 'quirk', sometimes only committer is set and author is None,
+        # and sometimes author is set but committer is 'web-flow' when done via web UI, so we
+        # give priority to the author field unless it is None.
+        if commit['author'] is None:
+            if commit['committer'] is None:
+                author = "unknown"
+            else:
+                author = commit['committer']['login']
+        else:
+            author = commit['author']['login']
+
+        # In some cases, it is still web-flow. Then, we use the ['commit]['author']['name'] field instead
+        if author == 'web-flow' or author == 'unknown':
+            return commit['commit']['author']['name']
+        return author
+
     def fetch_twin_data(self, debug_options=None):
         self.export_commit_data_as_json(debug_options=debug_options)
         self.export_deployment_data_as_json(debug_options=debug_options)
         self.export_issue_data_as_json(debug_options=debug_options)
+        self.export_automation_data_as_json(debug_options=debug_options)
 
     def export_issue_data_as_json(self, debug_options=None):
         if debug_options is None:
@@ -110,9 +129,6 @@ class GitHubDataAdapter:
         self._export_as_json(deployment_data, TwinConstants.DEPLOYMENT_DATA_FILE_NAME)
 
     def export_commit_data_as_json(self, debug_options=None):
-        if not os.path.exists(DATA_EXPORT_DIR):
-            os.makedirs(DATA_EXPORT_DIR)
-
         if debug_options is None:
             debug_options = {}
         enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
@@ -137,23 +153,29 @@ class GitHubDataAdapter:
 
         self._export_as_json(export_data, TwinConstants.COMMIT_DATA_FILE_NAME)
 
-    @staticmethod
-    def _get_commit_author(commit):
-        # GitHub API 'quirk', sometimes only committer is set and author is None,
-        # and sometimes author is set but committer is 'web-flow' when done via web UI, so we
-        # give priority to the author field unless it is None.
-        if commit['author'] is None:
-            if commit['committer'] is None:
-                author = "unknown"
-            else:
-                author = commit['committer']['login']
-        else:
-            author = commit['author']['login']
+    def export_automation_data_as_json(self, debug_options=None):
+        if debug_options is None:
+            debug_options = {}
+        enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
 
-        # In some cases, it is still web-flow. Then, we use the ['commit]['author']['name'] field instead
-        if author == 'web-flow' or author == 'unknown':
-            return commit['commit']['author']['name']
-        return author
+        workflows = self.fetch_workflows()
+        automation_data = []
+        for wf_data in workflows:
+            data = {
+                'id': wf_data['id'],
+                'name': wf_data['name'],
+                'path': wf_data['path'],
+                'created_at': datetime.strptime(wf_data['created_at'], '%Y-%m-%dT%H:%M:%S.%f%z').replace(
+                    microsecond=0).isoformat(),
+                'updated_at': datetime.strptime(wf_data['updated_at'], '%Y-%m-%dT%H:%M:%S.%f%z').replace(
+                    microsecond=0).isoformat(),
+                'url': wf_data['html_url'],
+            }
+            if enable_logs:
+                print(f'Workflow {wf_data["name"]} data added.')
+            automation_data.append(data)
+
+        self._export_as_json(automation_data, TwinConstants.AUTOMATION_DATA_FILE_NAME)
 
     def fetch_issues(self):
         api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/issues?state=all'
@@ -169,33 +191,49 @@ class GitHubDataAdapter:
             api_url += '?per_page=100'
 
         while api_url is not None:
-            new_data, api_url = CachedRequest.get_paginated(api_url, request_headers=headers)
+            new_data, api_url = CachedRequest.get_paginated(api_url, headers=headers)
             data.extend(new_data)
 
         return data
 
+    # Returns an array of response objects, each object looks like this:
+    # {
+    #   "total_count": 2,
+    #   "workflows": [..]
+    # }
+    # See also: https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#get-workflow-usage
+    def fetch_workflows(self):
+        # If there is more than 100 actions it won't work, but that's an irrelevant edge case.
+        api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/actions/workflows?per_page=100'
+
+        cached_data = Cache.load(api_url)
+        if cached_data is not None:
+            return cached_data
+
+        all_workflows = CachedRequest.get_json(api_url, headers=Config.get_github_request_header())['workflows']
+        Cache.update(api_url, all_workflows)
+        return all_workflows
+
     def fetch_releases(self):
         api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/releases'
-        initial_url = api_url
 
         cached_data = Cache.load(api_url)
         if cached_data is not None:
             return cached_data
 
         all_releases = self.fetch_from_paginated_api(api_url)
-        Cache.update(initial_url, all_releases)
+        Cache.update(api_url, all_releases)
         return all_releases
 
     def fetch_commits(self):
         api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/commits?sha={self.branch}'
-        initial_url = api_url
 
         cached_data = Cache.load(api_url)
         if cached_data is not None:
             return cached_data
 
         all_commits = self.fetch_from_paginated_api(api_url)
-        Cache.update(initial_url, all_commits)
+        Cache.update(api_url, all_commits)
         return all_commits
 
     def get_latest_commit_hash_in_release(self, tag_name):

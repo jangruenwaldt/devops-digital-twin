@@ -15,13 +15,13 @@ class CachedRequest:
         return data
 
     @staticmethod
-    def get_paginated(url, request_headers=None):
+    def get_paginated(url, headers=None):
         link_key = f'next_link:{url}'
 
         data = Cache.load(url)
         next_link = Cache.load(link_key)
         if data is None or next_link is None:
-            response = requests.get(url, headers=request_headers)
+            response = requests.get(url, headers=headers)
             response.raise_for_status()
 
             data = response.json()
