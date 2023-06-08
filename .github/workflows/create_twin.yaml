@@ -8,7 +8,7 @@ on:
         required: true
         default: https://github.com/jangruenwaldt/twin-data
       twin_name:
-        description: 'e.g. name of the twinned repo'
+        description: 'Twin name'
         required: true
       wipe_db:
         type: boolean
