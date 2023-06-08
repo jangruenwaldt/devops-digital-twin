@@ -7,6 +7,9 @@ on:
         description: 'Twin data repository URL'
         required: true
         default: https://github.com/jangruenwaldt/twin-data
+      twin_name:
+        description: 'e.g. name of the twinned repo'
+        required: true
       wipe_db:
         type: boolean
         description: 'Wipe Neo4j database'
@@ -47,7 +50,8 @@ jobs:
           json: ${{ secrets.CONFIG_AURA_DB_JSON }}
 
       - name: Run script
-        run: python3 create_twin.py 
+        run: python3 create_twin.py
           --repo_url ${{ github.event.inputs.twin_data_repo_url }}
+          --twin_name ${{ github.event.inputs.twin_name }}
           --wipe_db ${{ github.event.inputs.wipe_db }}
           --enable_logs ${{ github.event.inputs.enable_logs }}
