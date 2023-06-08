@@ -1,4 +1,8 @@
 from features.cockpit.cockpit import Cockpit
+from features.twins.twin_builder import TwinBuilder
+
+TwinBuilder.construct_from_github_data_repo('https://github.com/jangruenwaldt/twin-data-2', twin_name='xss-escape',
+                                            wipe_db=True)
 
 print('MTTR:')
 print(Cockpit.calculate_dora_mean_time_to_recover(filter_issues='WHERE label.name IN ["bug"]'))

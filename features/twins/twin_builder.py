@@ -4,6 +4,7 @@ from features.twins.automations_twin import AutomationsTwin
 from features.twins.deployments_twin import DeploymentsTwin
 from features.twins.git_twin import GitTwin
 from features.twins.project_management_twin import ProjectManagementTwin
+from features.twins.twin_link_creator import TwinLinkCreator
 from utils.github_utils import GitHubUtils
 from utils.neo4j import Neo4j
 from utils.constants.twin_constants import TwinConstants
@@ -12,7 +13,7 @@ from utils.constants.twin_constants import TwinConstants
 class TwinBuilder:
 
     @staticmethod
-    def construct_from_github_data_repo(repo_url, debug_options=None, wipe_db=False):
+    def construct_from_github_data_repo(repo_url, twin_name, debug_options=None, wipe_db=False):
         if debug_options is None:
             debug_options = {}
         enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
@@ -37,6 +38,9 @@ class TwinBuilder:
         DeploymentsTwin.construct_from_json(deployment_data)
         ProjectManagementTwin.construct_from_json(issue_data)
         AutomationsTwin.construct_from_json(automation_data)
+
+        TwinLinkCreator.create_links(twin_name)
+
         TwinBuilder.print_usage_info()
 
     @staticmethod
