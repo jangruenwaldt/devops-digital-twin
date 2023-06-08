@@ -99,7 +99,7 @@ class TwinLinkCreator:
         WITH dt
         
         MATCH (latest_deploy:Deployment)
-        WHERE NOT((d)-[:SUCCEEDED_BY]->())
+        WHERE NOT((latest_deploy)-[:SUCCEEDED_BY]->())
         
         MERGE (dt)-[:LATEST_DEPLOY]-(latest_deploy)
 '''
@@ -115,11 +115,22 @@ class TwinLinkCreator:
         MATCH (r:Repository)
         
         MERGE (r)-[:HAS_PROJECT_MANAGEMENT]-(all)
-        
-        WITH all
-        MATCH (i:Issue)
-        
-        MERGE (all)-[:IS_ISSUE]->(i)
 '''
         result = Neo4j.run_query(query)
         print(result)
+
+        query2 = f'''
+        CALL apoc.periodic.iterate(
+        "
+        MATCH (i:Issue) RETURN i
+        ",
+        "
+        MATCH (all:ProjectManagement)
+        MERGE (all)-[:IS_ISSUE]->(i)
+        ", 
+        {{batchSize:1000, iterateList:true, parallel:false}})
+'''
+        result2 = Neo4j.run_query(query2)
+        print(result2)
+
+
