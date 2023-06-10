@@ -45,18 +45,84 @@ class GitHubDataAdapter:
             return commit['commit']['author']['name']
         return author
 
-    def fetch_twin_data(self, debug_options=None):
-        self.export_commit_data_as_json(debug_options=debug_options)
-        self.export_deployment_data_as_json(debug_options=debug_options)
-        self.export_issue_data_as_json(debug_options=debug_options)
-        self.export_automation_data_as_json(debug_options=debug_options)
+    def _fetch_issues(self):
+        api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/issues?state=all'
+        return self._fetch_from_paginated_api(api_url)
 
-    def export_issue_data_as_json(self, debug_options=None):
+    @staticmethod
+    def _fetch_from_paginated_api(api_url):
+        data = []
+        headers = Config.get_github_request_header()
+        if '?' in api_url:
+            api_url += '&per_page=100'
+        else:
+            api_url += '?per_page=100'
+
+        while api_url is not None:
+            new_data, api_url = CachedRequest.get_paginated(api_url, headers=headers)
+            data.extend(new_data)
+
+        return data
+
+    # Returns an array of response objects, each object looks like this:
+    # {
+    #   "total_count": 2,
+    #   "workflows": [..]
+    # }
+    # See also: https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#get-workflow-usage
+    def _fetch_workflows(self):
+        # If there is more than 100 actions it won't work, but that's an irrelevant edge case.
+        api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/actions/workflows?per_page=100'
+
+        cached_data = Cache.load(api_url)
+        if cached_data is not None:
+            return cached_data
+
+        all_workflows = CachedRequest.get_json(api_url, headers=Config.get_github_request_header())['workflows']
+        Cache.update(api_url, all_workflows)
+        return all_workflows
+
+    def _fetch_releases(self):
+        api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/releases'
+
+        cached_data = Cache.load(api_url)
+        if cached_data is not None:
+            return cached_data
+
+        all_releases = self._fetch_from_paginated_api(api_url)
+        Cache.update(api_url, all_releases)
+        return all_releases
+
+    def _fetch_commits(self):
+        api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/commits?sha={self.branch}'
+
+        cached_data = Cache.load(api_url)
+        if cached_data is not None:
+            return cached_data
+
+        all_commits = self._fetch_from_paginated_api(api_url)
+        Cache.update(api_url, all_commits)
+        return all_commits
+
+    def _get_latest_commit_hash_in_release(self, tag_name):
+        tag_object = CachedRequest.get_json(
+            f'https://api.github.com/repos/{self.owner}/{self.repo_name}/git/refs/tags/{tag_name}',
+            headers=Config().get_github_request_header())
+        return tag_object['object']['sha']
+
+    def fetch_twin_data(self, debug_options=None):
+        self._export_commit_data_as_json(debug_options=debug_options)
+        self._export_deployment_data_as_json(debug_options=debug_options)
+        self._export_issue_data_as_json(debug_options=debug_options)
+        self._export_automation_data_as_json(debug_options=debug_options)
+        self._export_automation_runs_as_json(debug_options=debug_options)
+
+    def _export_issue_data_as_json(self, debug_options=None):
         if debug_options is None:
             debug_options = {}
         enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
 
-        issues = self.fetch_issues()
+        issues = self._fetch_issues()
         issue_data_list = []
         for issue in issues:
             issue_data = {
@@ -96,19 +162,19 @@ class GitHubDataAdapter:
 
         self._export_as_json(issue_data_list, TwinConstants.ISSUES_DATA_FILE_NAME)
 
-    def export_deployment_data_as_json(self, debug_options=None):
+    def _export_deployment_data_as_json(self, debug_options=None):
         if debug_options is None:
             debug_options = {}
         enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
 
-        releases = self.fetch_releases()
+        releases = self._fetch_releases()
 
         deployments_sorted = sorted(releases, key=lambda r: datetime.strptime(r['published_at'], '%Y-%m-%dT%H:%M:%SZ'))
         deployment_data = []
         for release in deployments_sorted:
             tag_name = release['tag_name']
 
-            latest_commit_hash = self.get_latest_commit_hash_in_release(tag_name)
+            latest_commit_hash = self._get_latest_commit_hash_in_release(tag_name)
             release_url = self.repo_url + f'/releases/tag/{tag_name}'
             commit_url = self.repo_url + f'/commit/{latest_commit_hash}'
             publish_date = release['published_at']
@@ -128,12 +194,12 @@ class GitHubDataAdapter:
 
         self._export_as_json(deployment_data, TwinConstants.DEPLOYMENT_DATA_FILE_NAME)
 
-    def export_commit_data_as_json(self, debug_options=None):
+    def _export_commit_data_as_json(self, debug_options=None):
         if debug_options is None:
             debug_options = {}
         enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
 
-        commits = self.fetch_commits()
+        commits = self._fetch_commits()
         export_data = []
         for commit in reversed(commits):
             author = self._get_commit_author(commit)
@@ -153,12 +219,12 @@ class GitHubDataAdapter:
 
         self._export_as_json(export_data, TwinConstants.COMMIT_DATA_FILE_NAME)
 
-    def export_automation_data_as_json(self, debug_options=None):
+    def _export_automation_data_as_json(self, debug_options=None):
         if debug_options is None:
             debug_options = {}
         enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
 
-        workflows = self.fetch_workflows()
+        workflows = self._fetch_workflows()
         automation_data = []
         for wf_data in workflows:
             data = {
@@ -177,67 +243,17 @@ class GitHubDataAdapter:
 
         self._export_as_json(automation_data, TwinConstants.AUTOMATION_DATA_FILE_NAME)
 
-    def fetch_issues(self):
-        api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/issues?state=all'
-        return self.fetch_from_paginated_api(api_url)
+    def _export_automation_runs_as_json(self, debug_options=None):
+        if debug_options is None:
+            debug_options = {}
+        enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
 
-    @staticmethod
-    def fetch_from_paginated_api(api_url):
-        data = []
-        headers = Config.get_github_request_header()
-        if '?' in api_url:
-            api_url += '&per_page=100'
-        else:
-            api_url += '?per_page=100'
+        workflows = self._fetch_workflows()
+        automation_data = []
+        for wf_data in workflows:
+            # TODO
+            if enable_logs:
+                print(f'Workflow {wf_data["name"]} data added.')
+            automation_data.append('TODO')
 
-        while api_url is not None:
-            new_data, api_url = CachedRequest.get_paginated(api_url, headers=headers)
-            data.extend(new_data)
-
-        return data
-
-    # Returns an array of response objects, each object looks like this:
-    # {
-    #   "total_count": 2,
-    #   "workflows": [..]
-    # }
-    # See also: https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#get-workflow-usage
-    def fetch_workflows(self):
-        # If there is more than 100 actions it won't work, but that's an irrelevant edge case.
-        api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/actions/workflows?per_page=100'
-
-        cached_data = Cache.load(api_url)
-        if cached_data is not None:
-            return cached_data
-
-        all_workflows = CachedRequest.get_json(api_url, headers=Config.get_github_request_header())['workflows']
-        Cache.update(api_url, all_workflows)
-        return all_workflows
-
-    def fetch_releases(self):
-        api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/releases'
-
-        cached_data = Cache.load(api_url)
-        if cached_data is not None:
-            return cached_data
-
-        all_releases = self.fetch_from_paginated_api(api_url)
-        Cache.update(api_url, all_releases)
-        return all_releases
-
-    def fetch_commits(self):
-        api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/commits?sha={self.branch}'
-
-        cached_data = Cache.load(api_url)
-        if cached_data is not None:
-            return cached_data
-
-        all_commits = self.fetch_from_paginated_api(api_url)
-        Cache.update(api_url, all_commits)
-        return all_commits
-
-    def get_latest_commit_hash_in_release(self, tag_name):
-        tag_object = CachedRequest.get_json(
-            f'https://api.github.com/repos/{self.owner}/{self.repo_name}/git/refs/tags/{tag_name}',
-            headers=Config().get_github_request_header())
-        return tag_object['object']['sha']
+        self._export_as_json(automation_data, TwinConstants.AUTOMATION_DATA_FILE_NAME)
