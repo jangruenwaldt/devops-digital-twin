@@ -99,7 +99,7 @@ class TwinLinkCreator:
         WITH dt
         
         MATCH (latest_deploy:Deployment)
-        WHERE NOT((latest_deploy)-[:SUCCEEDED_BY]->())
+        WHERE NOT(()-[:SUCCEEDS]->(latest_deploy))
         
         MERGE (dt)-[:LATEST_DEPLOY]-(latest_deploy)
 '''

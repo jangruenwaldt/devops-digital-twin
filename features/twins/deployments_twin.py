@@ -9,7 +9,7 @@ class DeploymentsTwin:
         DeploymentsTwin._add_indices()
 
         DeploymentsTwin._add_deployment_nodes(json_url)
-        DeploymentsTwin._add_succeeded_by_relationship()
+        DeploymentsTwin._add_succeeds_relationship()
         DeploymentsTwin._add_initial_deploy_relationship()
 
     @staticmethod
@@ -57,8 +57,8 @@ RETURN batches, total
         print(result2)
 
     @staticmethod
-    def _add_succeeded_by_relationship():
-        add_succeeded_by_relationship_query = '''
+    def _add_succeeds_relationship():
+        query = '''
 CALL apoc.periodic.iterate(
 "
     MATCH (d:Deployment)
@@ -72,14 +72,14 @@ CALL apoc.periodic.iterate(
 ",
 "
     WITH deployment, previous_deployment
-    MERGE (previous_deployment)-[:SUCCEEDED_BY]->(deployment)
+    MERGE (deployment)-[:SUCCEEDS]->(previous_deployment)
 ",
   {batchSize: 1000, parallel: true}
 )
 YIELD batches, total
 RETURN batches, total
 '''
-        result2 = Neo4j.run_query(add_succeeded_by_relationship_query)
+        result2 = Neo4j.run_query(query)
         print(result2)
 
     @staticmethod
