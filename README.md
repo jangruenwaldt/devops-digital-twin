@@ -6,10 +6,10 @@ Fetch DevOps system data into JSON, and then store it in neo4j. Exploration and 
 
 ## Structure
 
-- Step 1: download the required data into JSON. If the data source is GitHub, use GitHubDataAdapter.
-- Step 2: Construct the twin - either provide individual JSON file URLs, or call TwinBuilder.from_github(), which
-  assumes the filenames used by GitHubDataAdapter. To do this, the twin data should be its own repository hosted on
-  GitHub.
+- Step 1: download the required data into JSON. There is a CI job which does just this with one click. Otherwise, when
+  doing this manually, so far only GitHub is supported. In that case, use GitHubDataAdapter.
+- Step 2: Construct the twin - there is a CI job which expects as input a GitHub repository URL. This repository is
+  expected to contain a folder TWIN_DATA with the json files named according to convention in twin_constants.py.
 
 ## Currently supported
 
@@ -21,8 +21,9 @@ Fetch DevOps system data into JSON, and then store it in neo4j. Exploration and 
 - Commits of a main branch (from which releases are built)
 - All releases (from GitHub)
 - Issues and their labels (from GitHub)
+- Automations and their run history (from GitHub actions)
 
-## Quickstart
+## Local quickstart
 
 - Copy config.json.example to config.json
 - Add your neo4j connection credentials. It can be a local or cloud-hosted instance, like auraDB.
