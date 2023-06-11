@@ -2,7 +2,7 @@ import json
 import os
 from datetime import datetime
 
-from git import Repo
+from dateutil.relativedelta import relativedelta
 
 from destinations import LOCAL_DATA_DIR, DATA_EXPORT_DIR
 from utils.cache import Cache
@@ -13,9 +13,10 @@ from utils.github_utils import GitHubUtils
 
 
 class GitHubDataAdapter:
-    def __init__(self, repo_url, branch='main'):
+    def __init__(self, repo_url, branch='main', automation_run_history_timeframe_in_months=6):
         self.repo_url = repo_url
         self.branch = branch
+        self.automation_run_history_timeframe_in_months = automation_run_history_timeframe_in_months
         self.owner, self.repo_name = GitHubUtils.get_owner_and_repo_name(repo_url)
         if not os.path.exists(LOCAL_DATA_DIR):
             os.makedirs(LOCAL_DATA_DIR)
@@ -64,23 +65,30 @@ class GitHubDataAdapter:
 
         return data
 
-    # Returns an array of response objects, each object looks like this:
-    # {
-    #   "total_count": 2,
-    #   "workflows": [..]
-    # }
-    # See also: https://docs.github.com/en/rest/actions/workflows?apiVersion=2022-11-28#get-workflow-usage
+    # Use with APIs that do not return arrays but instead an object with
+    #     # {
+    #     #   "total_count": 2,
+    #     #   "data": [..]
+    #     # }
+    @staticmethod
+    def _fetch_from_paginated_counted_api(api_url, data_object_key):
+        data = []
+        headers = Config.get_github_request_header()
+        if '?' in api_url:
+            api_url += '&per_page=100'
+        else:
+            api_url += '?per_page=100'
+
+        while api_url is not None:
+            new_data, api_url = CachedRequest.get_paginated(api_url, headers=headers)
+            data.extend(new_data[data_object_key])
+
+        return data
+
     def _fetch_workflows(self):
-        # If there is more than 100 actions it won't work, but that's an irrelevant edge case.
-        api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/actions/workflows?per_page=100'
+        api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/actions/workflows'
 
-        cached_data = Cache.load(api_url)
-        if cached_data is not None:
-            return cached_data
-
-        all_workflows = CachedRequest.get_json(api_url, headers=Config.get_github_request_header())['workflows']
-        Cache.update(api_url, all_workflows)
-        return all_workflows
+        return self._fetch_from_paginated_counted_api(api_url, 'workflows')
 
     def _fetch_releases(self):
         api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/releases'
@@ -235,7 +243,7 @@ class GitHubDataAdapter:
                     microsecond=0).isoformat(),
                 'updated_at': datetime.strptime(wf_data['updated_at'], '%Y-%m-%dT%H:%M:%S.%f%z').replace(
                     microsecond=0).isoformat(),
-                'url': wf_data['html_url'],
+                'url': wf_data['url'],
             }
             if enable_logs:
                 print(f'Workflow {wf_data["name"]} data added.')
@@ -249,11 +257,41 @@ class GitHubDataAdapter:
         enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
 
         workflows = self._fetch_workflows()
-        automation_data = []
+        automation_history = []
         for wf_data in workflows:
-            # TODO
-            if enable_logs:
-                print(f'Workflow {wf_data["name"]} data added.')
-            automation_data.append('TODO')
+            earliest_valid_date = (datetime.now() - relativedelta(
+                months=self.automation_run_history_timeframe_in_months)).isoformat()
 
-        self._export_as_json(automation_data, TwinConstants.AUTOMATION_DATA_FILE_NAME)
+            api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/actions/workflows/{wf_data["id"]}/runs' \
+                      f'?per_page=100&created=>{earliest_valid_date}'
+
+            workflow_runs = self._fetch_from_paginated_counted_api(api_url, 'workflow_runs')
+            data = list(map(self._github_run_history_to_data_model, workflow_runs))
+
+            if enable_logs:
+                print(f"Fetched {len(workflow_runs)} runs for workflow {wf_data['name']}")
+            automation_history.extend(data)
+
+        self._export_as_json(automation_history, TwinConstants.AUTOMATION_HISTORY_FILE_NAME)
+
+    @staticmethod
+    def _github_run_history_to_data_model(data):
+        return {
+            'id': data['id'],
+            'name': data['name'],
+            'head_branch': data['head_branch'],
+            'head_sha': data['head_sha'],
+            'path': data['path'],
+            'run_number': data['run_number'],
+            'event': data['event'],
+            'status': data['status'],
+            'conclusion': data['conclusion'],
+            'workflow_id': data['workflow_id'],
+            'url': data['url'],
+            'run_started_at': datetime.strptime(data['run_started_at'], '%Y-%m-%dT%H:%M:%SZ').replace(
+                microsecond=0).isoformat(),
+            'updated_at': datetime.strptime(data['updated_at'], '%Y-%m-%dT%H:%M:%SZ').replace(
+                microsecond=0).isoformat(),
+            'started_by': data.get('triggering_actor', {}).get('login', None),
+            'run_attempt': data['run_attempt'],
+        }
