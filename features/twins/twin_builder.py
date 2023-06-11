@@ -29,6 +29,7 @@ class TwinBuilder:
         deployment_data = os.path.join(raw_file_link, TwinConstants.DEPLOYMENT_DATA_FILE_NAME)
         issue_data = os.path.join(raw_file_link, TwinConstants.ISSUES_DATA_FILE_NAME)
         automation_data = os.path.join(raw_file_link, TwinConstants.AUTOMATION_DATA_FILE_NAME)
+        automation_history_data = os.path.join(raw_file_link, TwinConstants.AUTOMATION_HISTORY_FILE_NAME)
 
         if enable_logs:
             print(f'Building twin from data source in {repo_url} using the following '
@@ -37,7 +38,7 @@ class TwinBuilder:
         GitTwin.construct_from_json(commit_data)
         DeploymentsTwin.construct_from_json(deployment_data)
         ProjectManagementTwin.construct_from_json(issue_data)
-        AutomationsTwin.construct_from_json(automation_data)
+        AutomationsTwin.construct_from_json(automation_data, automation_history_data)
 
         TwinLinkCreator.create_links(twin_name)
 
