@@ -13,7 +13,7 @@ class AutomationsTwin:
 
     @staticmethod
     def _add_indices():
-        Neo4j.get_graph().run('CREATE INDEX workflow_id IF NOT EXISTS FOR (c:Workflow) ON (c.id)')
+        Neo4j.get_graph().run('CREATE INDEX automation_id IF NOT EXISTS FOR (c:Automation) ON (c.id)')
 
     @staticmethod
     def _add_automation_nodes(json_url):
