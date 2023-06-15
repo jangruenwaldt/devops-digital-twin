@@ -4,12 +4,12 @@ from utils.neo4j import Neo4j
 class AutomationsTwin:
 
     @staticmethod
-    def construct_from_json(workflow_json_url, workflow_run_json_url):
-        print(f'Constructing AutomationsTwin from {workflow_json_url} and {workflow_run_json_url}')
+    def construct_from_json(automations_json_url, automation_runs_json_url):
+        print(f'Constructing AutomationsTwin from {automations_json_url} and {automation_runs_json_url}')
         AutomationsTwin._add_indices()
 
-        AutomationsTwin._add_automation_nodes(workflow_json_url)
-        AutomationsTwin._add_automation_history(workflow_run_json_url)
+        AutomationsTwin._add_automation_nodes(automations_json_url)
+        AutomationsTwin._add_automation_history(automation_runs_json_url)
 
     @staticmethod
     def _add_indices():
@@ -72,7 +72,7 @@ CALL apoc.periodic.iterate(
     WITH r
       WHERE r.event = 'workflow_dispatch'
     MERGE (a:Author {{id: r.started_by}})
-    MERGE (a)-[:STARTED_WORKFLOW]->(r)
+    MERGE (a)-[:STARTED_AUTOMATION]->(r)
 ",
 {{batchSize: 1000, parallel: true}})
 YIELD batches, total
