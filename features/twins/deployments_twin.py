@@ -96,7 +96,7 @@ CALL apoc.periodic.iterate(
     added_deploy.tag_name = deploy_data.tag_name,
     added_deploy.latest_included_commit = deploy_data.latest_included_commit,
     added_deploy.published_at = deploy_data.published_at,
-    added_deploy.release_url = deploy_data.release_url,
+    added_deploy.url = deploy_data.url,
     added_deploy.commit_url = deploy_data.commit_url
 ",
 {{batchSize: 1000, parallel: true}})

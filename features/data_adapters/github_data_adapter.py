@@ -183,7 +183,7 @@ class GitHubDataAdapter:
             tag_name = release['tag_name']
 
             latest_commit_hash = self._get_latest_commit_hash_in_release(tag_name)
-            release_url = self.repo_url + f'/releases/tag/{tag_name}'
+            url = self.repo_url + f'/releases/tag/{tag_name}'
             commit_url = self.repo_url + f'/commit/{latest_commit_hash}'
             publish_date = release['published_at']
             deployment = {
@@ -191,7 +191,7 @@ class GitHubDataAdapter:
                 'tag_name': tag_name,
                 'published_at': datetime.strptime(publish_date, '%Y-%m-%dT%H:%M:%SZ').replace(
                     microsecond=0).isoformat(),
-                'release_url': release_url,
+                'url': url,
                 'commit_url': commit_url,
                 'latest_included_commit': latest_commit_hash,
                 'previous_deployment': None if len(deployment_data) == 0 else deployment_data[-1]['tag_name'],
