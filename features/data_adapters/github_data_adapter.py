@@ -180,15 +180,15 @@ class GitHubDataAdapter:
         deployments_sorted = sorted(releases, key=lambda r: datetime.strptime(r['published_at'], '%Y-%m-%dT%H:%M:%SZ'))
         deployment_data = []
         for release in deployments_sorted:
-            tag_name = release['tag_name']
+            name = release['tag_name']
 
-            latest_commit_hash = self._get_latest_commit_hash_in_release(tag_name)
-            url = self.repo_url + f'/releases/tag/{tag_name}'
+            latest_commit_hash = self._get_latest_commit_hash_in_release(name)
+            url = self.repo_url + f'/releases/tag/{name}'
             commit_url = self.repo_url + f'/commit/{latest_commit_hash}'
             publish_date = release['published_at']
             deployment = {
                 'id': release['id'],
-                'tag_name': tag_name,
+                'name': name,
                 'published_at': datetime.strptime(publish_date, '%Y-%m-%dT%H:%M:%SZ').replace(
                     microsecond=0).isoformat(),
                 'url': url,
@@ -197,7 +197,7 @@ class GitHubDataAdapter:
                 'previous_deployment': None if len(deployment_data) == 0 else deployment_data[-1]['tag_name'],
             }
             if enable_logs:
-                print(f'Deployment with tag {tag_name} added.')
+                print(f'Deployment with tag {name} added.')
             deployment_data.append(deployment)
 
         self._export_as_json(deployment_data, TwinConstants.DEPLOYMENT_DATA_FILE_NAME)

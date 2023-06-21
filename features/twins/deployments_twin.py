@@ -93,7 +93,7 @@ CALL apoc.periodic.iterate(
     WITH value AS deploy_data
     MERGE (added_deploy:Deployment {{id: deploy_data.id}})
     SET
-    added_deploy.tag_name = deploy_data.tag_name,
+    added_deploy.name = deploy_data.name,
     added_deploy.latest_included_commit = deploy_data.latest_included_commit,
     added_deploy.published_at = deploy_data.published_at,
     added_deploy.url = deploy_data.url,

@@ -28,7 +28,7 @@ class Cockpit:
         query = f"""
             MATCH (deployment:Deployment)
             {date_filter}
-            RETURN deployment.tag_name as tag_name, deployment.published_at as published_at, deployment.id as id
+            RETURN deployment.name as name, deployment.published_at as published_at, deployment.id as id
             """
         releases = Neo4j.get_graph().run(query).data()
         return sorted(releases, key=lambda r: datetime.fromisoformat(r['published_at']))
@@ -64,27 +64,27 @@ class Cockpit:
         return sum(time_between_releases, timedelta()) / (len(time_between_releases))
 
     @staticmethod
-    def calculate_dora_lead_time(deployment_tag=None, excluded_tags=None):
+    def calculate_dora_lead_time(deployment_name=None, excluded_names=None):
         """
         Lead time: how long it takes an organization to go from code commit to code successfully running
         in production or in a releasable state.
         [Source: https://www.researchgate.net/publication/318018911_DORA_Platform_DevOps_Assessment_and_Benchmarking]
-        :param deployment_tag:
-        :param excluded_tags: deployments that should be excluded (possibly due to outliers)
+        :param deployment_name: if only interested in a single deployment
+        :param excluded_names: deployments that should be excluded (possibly due to outliers)
         :return:
         """
         filter_deployment = ''
-        if deployment_tag is not None:
-            filter_deployment = f" {{tag_name: '{deployment_tag}'}}"
+        if deployment_name is not None:
+            filter_deployment = f" {{name: '{deployment_name}'}}"
 
-        filter_tags = ''
-        if excluded_tags is not None:
-            excluded_tag_string = ','.join(list(map(lambda s: f"'{s}'", excluded_tags)))
-            filter_tags = f" WHERE NOT deployment.tag_name IN [{excluded_tag_string}]"
+        filter_names = ''
+        if excluded_names is not None:
+            excluded_names_string = ','.join(list(map(lambda s: f"'{s}'", excluded_names)))
+            filter_names = f" WHERE NOT deployment.name IN [{excluded_names_string}]"
 
         query = f"""
         MATCH (deployment:Deployment {filter_deployment})-[:INITIAL_DEPLOY]->(deployed_commit:Commit)
-        {filter_tags}
+        {filter_names}
         WITH duration.inSeconds(datetime(deployed_commit.date), datetime(deployment.published_at)) as lead_time
         RETURN lead_time
         """
