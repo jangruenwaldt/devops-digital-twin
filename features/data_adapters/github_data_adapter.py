@@ -194,7 +194,7 @@ class GitHubDataAdapter:
                 'url': url,
                 'commit_url': commit_url,
                 'latest_included_commit': latest_commit_hash,
-                'previous_deployment': None if len(deployment_data) == 0 else deployment_data[-1]['tag_name'],
+                'previous_deployment': None if len(deployment_data) == 0 else deployment_data[-1]['name'],
             }
             if enable_logs:
                 print(f'Deployment with tag {name} added.')
