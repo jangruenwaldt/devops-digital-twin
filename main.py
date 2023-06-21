@@ -16,5 +16,5 @@ print('')
 print('Lead time:')
 print(Cockpit.calculate_dora_lead_time())
 
-# On some projects, if releases are only used after a certain time, use excluded tags to exclude from the average
-# print(Cockpit.calculate_dora_lead_time(excluded_tags=['0.18.0']))
+# On some projects, if releases are only used after a certain time, use excluded names to exclude from the average
+# print(Cockpit.calculate_dora_lead_time(excluded_names=['0.18.0']))
