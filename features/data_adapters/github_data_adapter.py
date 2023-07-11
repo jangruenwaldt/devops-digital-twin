@@ -18,8 +18,6 @@ class GitHubDataAdapter:
         self.branch = branch
         self.automation_run_history_timeframe_in_months = automation_run_history_timeframe_in_months
         self.owner, self.repo_name = GitHubUtils.get_owner_and_repo_name(repo_url)
-        if not os.path.exists(LOCAL_DATA_DIR):
-            os.makedirs(LOCAL_DATA_DIR)
 
     def _export_as_json(self, data, file_name):
         data_dir = os.path.join(DATA_EXPORT_DIR, self.owner, self.repo_name)
