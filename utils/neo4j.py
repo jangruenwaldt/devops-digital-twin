@@ -1,3 +1,5 @@
+import time
+
 from py2neo import Graph
 
 from utils.config import Config
@@ -10,8 +12,21 @@ class Neo4j:
         return Neo4j.get_graph().run(query)
 
     @staticmethod
+    def wait_for_connection(retries=5, delay=8):
+        for i in range(retries):
+            try:
+                connection = Graph(Config.get_db_address(), auth=(Config.get_db_user(), Config.get_db_pw()))
+                connection.run('match (n) return n limit 1')
+                return connection
+            except Exception:
+                print(f"Neo4j is not available, retrying in {delay}s")
+                time.sleep(delay)
+
+        raise Exception("Could not connect to Neo4j")
+
+    @staticmethod
     def get_graph():
-        return Graph(Config.get_db_address(), auth=(Config.get_db_user(), Config.get_db_pw()))
+        return Neo4j.wait_for_connection()
 
     @staticmethod
     def wipe_database():
@@ -22,16 +37,6 @@ class Neo4j:
           {batchSize: 1000, parallel: false}
         )
         ''')
-
-    @staticmethod
-    def remove_releases():
-        cypher_query = 'MATCH (n:Deployment) DETACH DELETE n'
-        Neo4j.get_graph().run(cypher_query)
-
-    @staticmethod
-    def remove_issues_and_labels():
-        Neo4j.get_graph().run('MATCH (n:Issue) DETACH DELETE n')
-        Neo4j.get_graph().run('MATCH (n:IssueLabel) DETACH DELETE n')
 
     @staticmethod
     def count_nodes():

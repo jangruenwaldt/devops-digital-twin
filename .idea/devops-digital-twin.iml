@@ -10,7 +10,7 @@
       <excludeFolder url="file://$MODULE_DIR$/TWIN_DATA" />
       <excludeFolder url="file://$MODULE_DIR$/integration_test/.pytest_cache" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="Python 3.9 (devops-digital-twin)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>
