@@ -1,20 +1,10 @@
-from features.cockpit.cockpit import Cockpit
-from features.twins.twin_builder import TwinBuilder
+from apscheduler.schedulers.blocking import BlockingScheduler
 
-TwinBuilder.construct_from_github_data_repo('https://github.com/jangruenwaldt/twin-data-2', twin_name='xss-escape',
-                                            wipe_db=True)
 
-print('MTTR:')
-print(Cockpit.calculate_dora_mean_time_to_recover(filter_issues='WHERE label.name IN ["bug"]'))
-print('')
-print('Change Failure Rate:')
-print(Cockpit.calculate_dora_change_failure_rate(filter_issues='WHERE label.name IN ["bug"]'))
-print('')
-print('Deployment frequency (time between releases):')
-print(Cockpit.calculate_dora_deployment_frequency())
-print('')
-print('Lead time:')
-print(Cockpit.calculate_dora_lead_time())
+def main():
+    print('TODO: Update data and database')
 
-# On some projects, if releases are only used after a certain time, use excluded names to exclude from the average
-# print(Cockpit.calculate_dora_lead_time(excluded_names=['0.18.0']))
+
+scheduler = BlockingScheduler()
+scheduler.add_job(main, 'interval', hours=24)
+scheduler.start()
