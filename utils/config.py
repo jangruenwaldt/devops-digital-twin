@@ -18,6 +18,26 @@ class Config:
         return CONFIG_DATA.get('personal_access_token', None)
 
     @staticmethod
+    def get_commit_data_source():
+        return CONFIG_DATA.get('commit_data_source', None)
+
+    @staticmethod
+    def get_deployment_data_source():
+        return CONFIG_DATA.get('deployment_data_source', None)
+
+    @staticmethod
+    def get_project_management_data_source():
+        return CONFIG_DATA.get('project_management_data_source', None)
+
+    @staticmethod
+    def get_automations_data_source():
+        return CONFIG_DATA.get('automations_data_source', None)
+
+    @staticmethod
+    def get_update_interval_in_hours():
+        return CONFIG_DATA.get('update_interval_in_hours', None)
+
+    @staticmethod
     def get_db_user():
         return CONFIG_DATA.get('db_user', None)
 
