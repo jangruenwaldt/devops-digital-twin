@@ -1,0 +1,10 @@
+{
+  "personal_access_token": "",
+  "db_address": "bolt://localhost:7687",
+  "db_user": "",
+  "db_pw": "",
+  "commit_data_source": "https://github.com/jangruenwaldt/xss-escape-django",
+  "deployment_data_source": "https://github.com/jangruenwaldt/xss-escape-django",
+  "project_management_data_source": "https://github.com/jangruenwaldt/xss-escape-django",
+  "automations_data_source": "https://github.com/jangruenwaldt/xss-escape-django"
+}
