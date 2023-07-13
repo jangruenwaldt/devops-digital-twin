@@ -18,6 +18,10 @@ class Config:
         return CONFIG_DATA.get('personal_access_token', None)
 
     @staticmethod
+    def get_main_branch():
+        return CONFIG_DATA.get('main_branch', None)
+
+    @staticmethod
     def get_commit_data_source():
         return CONFIG_DATA.get('commit_data_source', None)
 
@@ -32,6 +36,10 @@ class Config:
     @staticmethod
     def get_automations_data_source():
         return CONFIG_DATA.get('automations_data_source', None)
+
+    @staticmethod
+    def get_automations_history_data_source():
+        return CONFIG_DATA.get('automations_history_data_source', None)
 
     @staticmethod
     def get_update_interval_in_hours():

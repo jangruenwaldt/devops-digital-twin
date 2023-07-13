@@ -4,7 +4,7 @@ from features.data_adapters.github.github_data_fetcher import GitHubDataFetcher
 from utils.constants.twin_constants import TwinConstants
 
 
-class GitHubIssueDataAdapter(GitHubDataFetcher):
+class GitHubProjectManagementDataAdapter(GitHubDataFetcher):
     def __init__(self, repo_url):
         super().__init__(repo_url)
 
