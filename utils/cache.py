@@ -3,8 +3,9 @@ import json
 import os
 
 from destinations import ROOT_DIR
+from utils.constants.twin_constants import TwinConstants
 
-CACHE_DIR = f'{ROOT_DIR}/data/.api_cache'
+CACHE_DIR = os.path.join(ROOT_DIR, TwinConstants.DATA_DIR_NAME, TwinConstants.API_CACHE_DIR_NAME)
 
 
 class Cache:

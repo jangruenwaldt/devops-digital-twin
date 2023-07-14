@@ -1,5 +1,7 @@
 class TwinConstants:
-    DATA_EXPORT_DIR = 'data/.twin_data'
+    DATA_DIR_NAME = 'data'
+    TWIN_DATA_EXPORT_DIR_NAME = '.twin_data'
+    API_CACHE_DIR_NAME = '.api_cache'
     COMMIT_DATA_FILE_NAME = 'commits.json'
     DEPLOYMENT_DATA_FILE_NAME = 'deployments.json'
     ISSUES_DATA_FILE_NAME = 'issues.json'
