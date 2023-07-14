@@ -2,6 +2,7 @@ from datetime import datetime
 
 from features.data_adapters.github.github_data_fetcher import GitHubDataFetcher
 from utils.constants.twin_constants import DataTypes, DataTypeFileNames
+from utils.twin_data_retriever import TwinDataRetriever
 
 
 class GitHubProjectManagementDataAdapter(GitHubDataFetcher):
@@ -10,7 +11,22 @@ class GitHubProjectManagementDataAdapter(GitHubDataFetcher):
 
     def _fetch_issues(self):
         api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/issues?state=all'
-        return self._fetch_from_paginated_api(api_url)
+
+        old_data = TwinDataRetriever.retrieve(DataTypes.ISSUES_DATA)
+        if old_data is not None:
+            # Get the latest edited issue in the old data
+            latest_edited_issue = max(old_data, key=lambda x: x.get('updated_at', ''))
+            since_date = latest_edited_issue.get('updated_at', '')
+
+            # Send a new query with since parameter
+            new_api_url = f'{api_url}&since={since_date}'
+            new_data = self._fetch_from_paginated_api(new_api_url)
+
+            # Combine the two into one data object
+            combined_data = old_data + new_data
+            return combined_data
+        else:
+            return self._fetch_from_paginated_api(api_url)
 
     def fetch_data(self):
         issues = self._fetch_issues()

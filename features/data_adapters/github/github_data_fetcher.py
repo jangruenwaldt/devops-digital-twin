@@ -5,6 +5,7 @@ from destinations import DATA_EXPORT_DIR
 from utils.cached_request import CachedRequest
 from utils.config import Config
 from features.data_adapters.github.utils.github_utils import GitHubUtils
+from utils.request import Request
 
 
 class GitHubDataFetcher:
@@ -30,7 +31,7 @@ class GitHubDataFetcher:
             api_url += '?per_page=100'
 
         while api_url is not None:
-            new_data, api_url = CachedRequest.get_paginated(api_url, headers=headers)
+            new_data, api_url = Request.get_paginated(api_url, headers=headers)
             data.extend(new_data)
 
         return data
@@ -50,7 +51,7 @@ class GitHubDataFetcher:
             api_url += '?per_page=100'
 
         while api_url is not None:
-            new_data, api_url = CachedRequest.get_paginated(api_url, headers=headers)
+            new_data, api_url = Request.get_paginated(api_url, headers=headers)
             data.extend(new_data[data_object_key])
 
         return data
