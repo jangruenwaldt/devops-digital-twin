@@ -7,7 +7,7 @@ from features.twins.project_management_twin import ProjectManagementTwin
 from features.twins.twin_link_creator import TwinLinkCreator
 from utils.github_utils import GitHubUtils
 from utils.neo4j import Neo4j
-from utils.constants.twin_constants import TwinConstants
+from utils.constants.twin_constants import TwinConstants, DataTypeFileNames
 
 
 class TwinBuilder:
@@ -25,11 +25,11 @@ class TwinBuilder:
 
         raw_file_link = os.path.join(GitHubUtils.get_raw_file_link(repo_url), TwinConstants.DATA_EXPORT_DIR)
 
-        commit_data = os.path.join(raw_file_link, TwinConstants.COMMIT_DATA_FILE_NAME)
-        deployment_data = os.path.join(raw_file_link, TwinConstants.DEPLOYMENT_DATA_FILE_NAME)
-        issue_data = os.path.join(raw_file_link, TwinConstants.ISSUES_DATA_FILE_NAME)
-        automation_data = os.path.join(raw_file_link, TwinConstants.AUTOMATION_DATA_FILE_NAME)
-        automation_history_data = os.path.join(raw_file_link, TwinConstants.AUTOMATION_HISTORY_FILE_NAME)
+        commit_data = os.path.join(raw_file_link, DataTypeFileNames.COMMIT_DATA_FILE_NAME)
+        deployment_data = os.path.join(raw_file_link, DataTypeFileNames.DEPLOYMENT_DATA_FILE_NAME)
+        issue_data = os.path.join(raw_file_link, DataTypeFileNames.ISSUES_DATA_FILE_NAME)
+        automation_data = os.path.join(raw_file_link, DataTypeFileNames.AUTOMATION_DATA_FILE_NAME)
+        automation_history_data = os.path.join(raw_file_link, DataTypeFileNames.AUTOMATION_HISTORY_FILE_NAME)
 
         if enable_logs:
             print(f'Building twin from data source in {repo_url} using the following '

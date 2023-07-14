@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from features.data_adapters.github.github_data_fetcher import GitHubDataFetcher
-from utils.constants.twin_constants import TwinConstants
+from utils.constants.twin_constants import DataTypeFileNames
 
 
 class GitHubAutomationDataAdapter(GitHubDataFetcher):
@@ -16,7 +16,7 @@ class GitHubAutomationDataAdapter(GitHubDataFetcher):
     def fetch_data(self):
         workflows = self._fetch_workflows()
         automation_data = self._transform_api_response_to_data_format(self.enable_logs, workflows)
-        self._export_as_json(automation_data, TwinConstants.AUTOMATION_DATA_FILE_NAME)
+        self._export_as_json(automation_data, DataTypeFileNames.AUTOMATION_DATA_FILE_NAME)
 
     @staticmethod
     def _transform_api_response_to_data_format(enable_logs, workflows):

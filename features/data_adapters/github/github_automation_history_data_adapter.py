@@ -3,7 +3,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 from features.data_adapters.github.github_data_fetcher import GitHubDataFetcher
-from utils.constants.twin_constants import TwinConstants
+from utils.constants.twin_constants import DataTypeFileNames
 
 
 class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
@@ -60,4 +60,4 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
         if self.enable_logs:
             print(f'Fetched {len(automation_runs)} automation runs')
 
-        self._export_as_json(automation_runs, TwinConstants.AUTOMATION_HISTORY_FILE_NAME)
+        self._export_as_json(automation_runs, DataTypeFileNames.AUTOMATION_HISTORY_FILE_NAME)

@@ -4,7 +4,7 @@ from features.data_adapters.github.github_data_fetcher import GitHubDataFetcher
 from utils.cache import Cache
 from utils.cached_request import CachedRequest
 from utils.config import Config
-from utils.constants.twin_constants import TwinConstants
+from utils.constants.twin_constants import DataTypeFileNames
 
 
 class GitHubDeploymentDataAdapter(GitHubDataFetcher):
@@ -31,7 +31,7 @@ class GitHubDeploymentDataAdapter(GitHubDataFetcher):
     def fetch_data(self):
         releases = self._fetch_releases()
         deployment_data = self._transform_api_response_to_data_format(self.enable_logs, releases)
-        self._export_as_json(deployment_data, TwinConstants.DEPLOYMENT_DATA_FILE_NAME)
+        self._export_as_json(deployment_data, DataTypeFileNames.DEPLOYMENT_DATA_FILE_NAME)
 
     def _transform_api_response_to_data_format(self, enable_logs, releases):
         deployments_sorted = sorted(releases, key=lambda r: datetime.strptime(r['published_at'], '%Y-%m-%dT%H:%M:%SZ'))

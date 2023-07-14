@@ -2,7 +2,7 @@ from datetime import datetime
 
 from features.data_adapters.github.github_data_fetcher import GitHubDataFetcher
 from utils.cache import Cache
-from utils.constants.twin_constants import TwinConstants
+from utils.constants.twin_constants import DataTypeFileNames
 
 
 class GitHubCommitDataAdapter(GitHubDataFetcher):
@@ -42,7 +42,7 @@ class GitHubCommitDataAdapter(GitHubDataFetcher):
     def fetch_data(self):
         commits = self._fetch_commits()
         export_data = self._transform_api_response_to_data_format(commits, self.enable_logs)
-        self._export_as_json(export_data, TwinConstants.COMMIT_DATA_FILE_NAME)
+        self._export_as_json(export_data, DataTypeFileNames.COMMIT_DATA_FILE_NAME)
 
     def _transform_api_response_to_data_format(self, commits, enable_logs):
         export_data = []
