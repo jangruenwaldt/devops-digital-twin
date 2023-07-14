@@ -12,7 +12,7 @@ class GitHubProjectManagementDataAdapter(GitHubDataFetcher):
     def _fetch_issues(self):
         api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/issues?state=all'
 
-        old_data = DataManager.retrieve(DataTypes.ISSUES_DATA)
+        old_data = DataManager.retrieve_raw_api_data(DataTypes.ISSUES_DATA, self.owner, self.repo_name)
         if old_data is not None:
             # Get the latest edited issue in the old data
             latest_edited_issue = max(old_data, key=lambda x: x.get('updated_at', ''))
