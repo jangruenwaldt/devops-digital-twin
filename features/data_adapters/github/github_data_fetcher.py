@@ -8,7 +8,7 @@ from utils.github_utils import GitHubUtils
 
 
 class GitHubDataFetcher:
-    def __init__(self, repo_url, debug_options):
+    def __init__(self, repo_url, debug_options=None):
         self.repo_url = repo_url
         self.owner, self.repo_name = GitHubUtils.get_owner_and_repo_name(repo_url)
         self.debug_options = debug_options or {}

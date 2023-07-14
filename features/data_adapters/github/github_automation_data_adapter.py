@@ -15,7 +15,7 @@ class GitHubAutomationDataAdapter(GitHubDataFetcher):
         return self._fetch_from_paginated_counted_api(api_url, 'workflows')
 
     def fetch_data(self):
-        workflows = self._fetch_workflows()
+        workflows = self.fetch_workflows()
         automation_data = self._transform_api_response_to_data_format(self.enable_logs, workflows)
         self._export_as_json(automation_data, TwinConstants.AUTOMATION_DATA_FILE_NAME)
 
