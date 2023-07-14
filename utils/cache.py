@@ -4,7 +4,7 @@ import os
 
 from destinations import ROOT_DIR
 
-CACHE_DIR = f'{ROOT_DIR}/.api_cache'
+CACHE_DIR = f'{ROOT_DIR}/data/.api_cache'
 
 
 class Cache:

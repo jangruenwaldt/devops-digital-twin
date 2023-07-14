@@ -5,10 +5,11 @@
       <excludeFolder url="file://$MODULE_DIR$/.pytest_cache" />
       <excludeFolder url="file://$MODULE_DIR$/twin-data" />
       <excludeFolder url="file://$MODULE_DIR$/venv" />
-      <excludeFolder url="file://$MODULE_DIR$/.api_cache" />
       <excludeFolder url="file://$MODULE_DIR$/.local-data" />
       <excludeFolder url="file://$MODULE_DIR$/TWIN_DATA" />
       <excludeFolder url="file://$MODULE_DIR$/integration_test/.pytest_cache" />
+      <excludeFolder url="file://$MODULE_DIR$/data" />
+      <excludeFolder url="file://$MODULE_DIR$/data/.api_cache" />
     </content>
     <orderEntry type="jdk" jdkName="Python 3.9 (devops-digital-twin)" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
