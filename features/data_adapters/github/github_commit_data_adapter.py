@@ -45,6 +45,11 @@ class GitHubCommitDataAdapter(GitHubDataFetcher):
         enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
 
         commits = self._fetch_commits()
+        export_data = self._transform_api_response_to_data_format(commits, enable_logs)
+
+        self._export_as_json(export_data, TwinConstants.COMMIT_DATA_FILE_NAME)
+
+    def _transform_api_response_to_data_format(self, commits, enable_logs):
         export_data = []
         for commit in reversed(commits):
             author = self._get_commit_author(commit)
@@ -61,5 +66,4 @@ class GitHubCommitDataAdapter(GitHubDataFetcher):
             export_data.append(commit_data)
             if enable_logs:
                 print(f'Added commit with hash {commit["sha"]}.')
-
-        self._export_as_json(export_data, TwinConstants.COMMIT_DATA_FILE_NAME)
+        return export_data

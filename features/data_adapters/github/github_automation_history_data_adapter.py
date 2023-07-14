@@ -2,6 +2,7 @@ from datetime import datetime
 
 from dateutil.relativedelta import relativedelta
 
+from features.data_adapters.github.github_automation_data_adapter import GitHubAutomationDataAdapter
 from features.data_adapters.github.github_data_fetcher import GitHubDataFetcher
 from utils.constants.twin_constants import TwinConstants
 
@@ -11,13 +12,9 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
         super().__init__(repo_url)
         self.automation_run_history_timeframe_in_months = automation_run_history_timeframe_in_months
 
-    def _fetch_workflows(self):
-        api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/actions/workflows'
-
-        return self._fetch_from_paginated_counted_api(api_url, 'workflows')
-
     def _fetch_automation_runs(self):
-        workflows = self._fetch_workflows()
+        # get the workflows by reusing fetch_workflows from the other data adapter
+        workflows = GitHubAutomationDataAdapter(super()).fetch_workflows()
         automation_history = []
         for wf_data in workflows:
             earliest_valid_date = (datetime.now() - relativedelta(
@@ -27,14 +24,14 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
                       f'?per_page=100&created=>{earliest_valid_date}'
 
             workflow_runs = self._fetch_from_paginated_counted_api(api_url, 'workflow_runs')
-            data = list(map(self._github_run_history_to_data_model, workflow_runs))
+            data = list(map(self._transform_api_response_to_data_format, workflow_runs))
 
             automation_history.extend(data)
 
         return automation_history
 
     @staticmethod
-    def _github_run_history_to_data_model(data):
+    def _transform_api_response_to_data_format(data):
         return {
             'id': data['id'],
             'name': data['name'],

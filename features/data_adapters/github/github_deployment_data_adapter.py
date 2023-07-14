@@ -34,7 +34,11 @@ class GitHubDeploymentDataAdapter(GitHubDataFetcher):
         enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
 
         releases = self._fetch_releases()
+        deployment_data = self._transform_api_response_to_data_format(enable_logs, releases)
 
+        self._export_as_json(deployment_data, TwinConstants.DEPLOYMENT_DATA_FILE_NAME)
+
+    def _transform_api_response_to_data_format(self, enable_logs, releases):
         deployments_sorted = sorted(releases, key=lambda r: datetime.strptime(r['published_at'], '%Y-%m-%dT%H:%M:%SZ'))
         deployment_data = []
         for release in deployments_sorted:
@@ -57,5 +61,4 @@ class GitHubDeploymentDataAdapter(GitHubDataFetcher):
             if enable_logs:
                 print(f'Deployment with tag {name} added.')
             deployment_data.append(deployment)
-
-        self._export_as_json(deployment_data, TwinConstants.DEPLOYMENT_DATA_FILE_NAME)
+        return deployment_data

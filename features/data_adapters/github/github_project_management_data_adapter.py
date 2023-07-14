@@ -18,6 +18,11 @@ class GitHubProjectManagementDataAdapter(GitHubDataFetcher):
         enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
 
         issues = self._fetch_issues()
+        issue_data_list = self._transform_api_response_into_data_format(enable_logs, issues)
+
+        self._export_as_json(issue_data_list, TwinConstants.ISSUES_DATA_FILE_NAME)
+
+    def _transform_api_response_into_data_format(self, enable_logs, issues):
         issue_data_list = []
         for issue in issues:
             issue_data = {
@@ -54,5 +59,4 @@ class GitHubProjectManagementDataAdapter(GitHubDataFetcher):
             issue_data_list.append(issue_data)
             if enable_logs:
                 print(f'Added issue with id {issue["id"]}')
-
-        self._export_as_json(issue_data_list, TwinConstants.ISSUES_DATA_FILE_NAME)
+        return issue_data_list

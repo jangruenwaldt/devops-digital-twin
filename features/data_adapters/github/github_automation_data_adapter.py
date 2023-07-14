@@ -9,7 +9,7 @@ class GitHubAutomationDataAdapter(GitHubDataFetcher):
         super().__init__(repo_url)
         self.automation_run_history_timeframe_in_months = automation_run_history_timeframe_in_months
 
-    def _fetch_workflows(self):
+    def fetch_workflows(self):
         api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/actions/workflows'
 
         return self._fetch_from_paginated_counted_api(api_url, 'workflows')
@@ -20,6 +20,12 @@ class GitHubAutomationDataAdapter(GitHubDataFetcher):
         enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
 
         workflows = self._fetch_workflows()
+        automation_data = self._transform_api_response_to_data_format(enable_logs, workflows)
+
+        self._export_as_json(automation_data, TwinConstants.AUTOMATION_DATA_FILE_NAME)
+
+    @staticmethod
+    def _transform_api_response_to_data_format(enable_logs, workflows):
         automation_data = []
         for wf_data in workflows:
             data = {
@@ -35,5 +41,4 @@ class GitHubAutomationDataAdapter(GitHubDataFetcher):
             if enable_logs:
                 print(f'Workflow {wf_data["name"]} data added.')
             automation_data.append(data)
-
-        self._export_as_json(automation_data, TwinConstants.AUTOMATION_DATA_FILE_NAME)
+        return automation_data
