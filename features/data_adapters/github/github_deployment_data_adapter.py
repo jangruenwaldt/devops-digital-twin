@@ -31,7 +31,6 @@ class GitHubDeploymentDataAdapter(GitHubDataFetcher):
     def fetch_data(self):
         releases = self._fetch_releases()
         deployment_data = self._transform_api_response_to_data_format(self.enable_logs, releases)
-
         self._export_as_json(deployment_data, TwinConstants.DEPLOYMENT_DATA_FILE_NAME)
 
     def _transform_api_response_to_data_format(self, enable_logs, releases):

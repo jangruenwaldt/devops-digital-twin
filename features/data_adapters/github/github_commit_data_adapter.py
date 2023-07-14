@@ -42,7 +42,6 @@ class GitHubCommitDataAdapter(GitHubDataFetcher):
     def fetch_data(self):
         commits = self._fetch_commits()
         export_data = self._transform_api_response_to_data_format(commits, self.enable_logs)
-
         self._export_as_json(export_data, TwinConstants.COMMIT_DATA_FILE_NAME)
 
     def _transform_api_response_to_data_format(self, commits, enable_logs):
