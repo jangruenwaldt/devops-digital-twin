@@ -5,14 +5,14 @@ import os
 from destinations import ROOT_DIR
 from utils.constants.twin_constants import TwinConstants
 
-CACHE_DIR = os.path.join(ROOT_DIR, TwinConstants.DATA_DIR_NAME, TwinConstants.API_CACHE_DIR_NAME)
+API_DATA_DIR = os.path.join(ROOT_DIR, TwinConstants.DATA_DIR_NAME, TwinConstants.API_DATA_DIR_NAME)
 
 
 class Cache:
     @staticmethod
     def get_cache_file_path(key):
         encoded_key = base64.urlsafe_b64encode(key.encode()).decode()
-        return os.path.join(CACHE_DIR, f'{encoded_key}.json')
+        return os.path.join(API_DATA_DIR, f'{encoded_key}.json')
 
     @staticmethod
     def load(key):
@@ -30,7 +30,7 @@ class Cache:
     def update(key, data):
         print(f'Saving {key} into cache')
 
-        os.makedirs(CACHE_DIR, exist_ok=True)
+        os.makedirs(API_DATA_DIR, exist_ok=True)
 
         cache_file_path = Cache.get_cache_file_path(key)
         with open(cache_file_path, 'w') as cache_file:

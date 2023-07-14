@@ -1,7 +1,7 @@
 class TwinConstants:
     DATA_DIR_NAME = 'data'
     TWIN_DATA_EXPORT_DIR_NAME = '.twin_data'
-    API_CACHE_DIR_NAME = '.api_cache'
+    API_DATA_DIR_NAME = '.api_data'
 
 
 class DataTypes:
