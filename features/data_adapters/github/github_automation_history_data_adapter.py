@@ -52,14 +52,10 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
             'run_attempt': data['run_attempt'],
         }
 
-    def fetch_data(self, debug_options=None):
-        if debug_options is None:
-            debug_options = {}
-        enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
-
+    def fetch_data(self):
         automation_runs = self._fetch_automation_runs()
 
-        if enable_logs:
+        if self.enable_logs:
             print(f'Fetched {len(automation_runs)} automation runs')
 
         self._export_as_json(automation_runs, TwinConstants.AUTOMATION_HISTORY_FILE_NAME)

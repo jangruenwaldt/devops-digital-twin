@@ -12,13 +12,9 @@ class GitHubProjectManagementDataAdapter(GitHubDataFetcher):
         api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/issues?state=all'
         return self._fetch_from_paginated_api(api_url)
 
-    def fetch_data(self, debug_options=None):
-        if debug_options is None:
-            debug_options = {}
-        enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
-
+    def fetch_data(self):
         issues = self._fetch_issues()
-        issue_data_list = self._transform_api_response_into_data_format(enable_logs, issues)
+        issue_data_list = self._transform_api_response_into_data_format(self.enable_logs, issues)
 
         self._export_as_json(issue_data_list, TwinConstants.ISSUES_DATA_FILE_NAME)
 

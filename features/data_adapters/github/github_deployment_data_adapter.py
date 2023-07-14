@@ -28,13 +28,9 @@ class GitHubDeploymentDataAdapter(GitHubDataFetcher):
         Cache.update(api_url, all_releases)
         return all_releases
 
-    def fetch_data(self, debug_options=None):
-        if debug_options is None:
-            debug_options = {}
-        enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
-
+    def fetch_data(self):
         releases = self._fetch_releases()
-        deployment_data = self._transform_api_response_to_data_format(enable_logs, releases)
+        deployment_data = self._transform_api_response_to_data_format(self.enable_logs, releases)
 
         self._export_as_json(deployment_data, TwinConstants.DEPLOYMENT_DATA_FILE_NAME)
 

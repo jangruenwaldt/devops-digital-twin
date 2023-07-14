@@ -39,13 +39,9 @@ class GitHubCommitDataAdapter(GitHubDataFetcher):
         Cache.update(api_url, all_commits)
         return all_commits
 
-    def fetch_data(self, debug_options=None):
-        if debug_options is None:
-            debug_options = {}
-        enable_logs = 'enable_logs' in debug_options and debug_options['enable_logs']
-
+    def fetch_data(self):
         commits = self._fetch_commits()
-        export_data = self._transform_api_response_to_data_format(commits, enable_logs)
+        export_data = self._transform_api_response_to_data_format(commits, self.enable_logs)
 
         self._export_as_json(export_data, TwinConstants.COMMIT_DATA_FILE_NAME)
 
