@@ -1,8 +1,8 @@
 {
   "personal_access_token": "",
-  "db_address": "bolt://localhost:7687",
-  "db_user": "",
-  "db_pw": "",
+  "db_address": "bolt://neo4j:7687",
+  "db_user": "neo4j",
+  "db_pw": "password",
   "main_branch": "master",
   "commit_data_source": "https://github.com/jangruenwaldt/xss-escape-django",
   "deployment_data_source": "https://github.com/jangruenwaldt/xss-escape-django",

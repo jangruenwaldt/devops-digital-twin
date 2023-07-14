@@ -6,6 +6,22 @@ services:
       - 8000:8000
     volumes:
       - data-volume:/app/data
+    depends_on:
+      - neo4j
+
+  neo4j:
+    build:
+      context: .
+      dockerfile: neo4j_apoc.Dockerfile
+    ports:
+      - 7474:7474
+      - 7687:7687
+    volumes:
+      - $HOME/neo4j/data:/data
+      - $HOME/neo4j/logs:/logs
+    environment:
+      - NEO4J_AUTH=neo4j/password
 
 volumes:
   data-volume:
+
