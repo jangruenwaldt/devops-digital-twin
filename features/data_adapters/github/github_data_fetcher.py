@@ -7,11 +7,10 @@ from utils.request import Request
 
 
 class GitHubDataFetcher:
-    def __init__(self, repo_url, debug_options=None):
+    def __init__(self, repo_url):
         self.repo_url = repo_url
         self.owner, self.repo_name = GitHubUtils.get_owner_and_repo_name(repo_url)
-        self.debug_options = debug_options or {}
-        self.enable_logs = 'enable_logs' in self.debug_options and self.debug_options['enable_logs']
+        self.enable_logs = Config.get_enable_logs()
 
     @staticmethod
     def _fetch_from_paginated_api(api_url):

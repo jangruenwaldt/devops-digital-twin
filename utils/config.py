@@ -18,6 +18,10 @@ class Config:
         return CONFIG_DATA.get('personal_access_token', None)
 
     @staticmethod
+    def get_enable_logs():
+        return CONFIG_DATA.get('enable_logs', None) == 'true'
+
+    @staticmethod
     def get_main_branch():
         return CONFIG_DATA.get('main_branch', None)
 
