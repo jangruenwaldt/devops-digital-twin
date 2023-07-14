@@ -1,4 +1,5 @@
 from features.data_adapters.github.github_automation_data_adapter import GitHubAutomationDataAdapter
+from features.data_adapters.github.github_automation_history_data_adapter import GitHubAutomationHistoryDataAdapter
 from features.data_adapters.github.github_commit_data_adapter import GitHubCommitDataAdapter
 from features.data_adapters.github.github_deployment_data_adapter import GitHubDeploymentDataAdapter
 from features.data_adapters.github.github_project_management_data_adapter import GitHubProjectManagementDataAdapter
@@ -18,7 +19,7 @@ class AutomationHistoryDataAdapter:
     @staticmethod
     def fetch_data(url):
         if url.startswith('https://github.com/'):
-            return GitHubAutomationDataAdapter(url).fetch_data()
+            return GitHubAutomationHistoryDataAdapter(url).fetch_data()
         else:
             raise Exception('Unsupported data source')
 
