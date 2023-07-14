@@ -4,7 +4,7 @@ import os
 from destinations import DATA_EXPORT_DIR
 from utils.cached_request import CachedRequest
 from utils.config import Config
-from utils.github_utils import GitHubUtils
+from features.data_adapters.github.utils.github_utils import GitHubUtils
 
 
 class GitHubDataFetcher:

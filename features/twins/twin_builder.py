@@ -5,7 +5,7 @@ from features.twins.deployments_twin import DeploymentsTwin
 from features.twins.git_twin import GitTwin
 from features.twins.project_management_twin import ProjectManagementTwin
 from features.twins.twin_link_creator import TwinLinkCreator
-from utils.github_utils import GitHubUtils
+from features.data_adapters.github.utils.github_utils import GitHubUtils
 from utils.neo4j import Neo4j
 from utils.constants.twin_constants import TwinConstants, DataTypeFileNames
 
