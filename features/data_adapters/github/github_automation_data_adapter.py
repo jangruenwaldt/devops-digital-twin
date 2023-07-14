@@ -9,13 +9,12 @@ class GitHubAutomationDataAdapter(GitHubDataFetcher):
         super().__init__(repo_url)
         self.automation_run_history_timeframe_in_months = automation_run_history_timeframe_in_months
 
-    def fetch_workflows(self):
+    def _fetch_workflows(self):
         api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/actions/workflows'
-
         return self._fetch_from_paginated_counted_api(api_url, 'workflows')
 
     def fetch_data(self):
-        workflows = self.fetch_workflows()
+        workflows = self._fetch_workflows()
         automation_data = self._transform_api_response_to_data_format(self.enable_logs, workflows)
         self._export_as_json(automation_data, TwinConstants.AUTOMATION_DATA_FILE_NAME)
 
