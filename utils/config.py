@@ -55,7 +55,10 @@ class Config:
 
     @staticmethod
     def get_update_interval_in_hours():
-        return CONFIG_DATA.get('update_interval_in_hours', None)
+        config_value = CONFIG_DATA.get('update_interval_in_hours', None)
+        if config_value is not None:
+            return int(config_value)
+        return 24
 
     @staticmethod
     def get_db_user():

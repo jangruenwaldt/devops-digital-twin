@@ -21,7 +21,7 @@ class TwinBuilder:
         # DeploymentsTwin.construct_from_json(deployment_data)
         # ProjectManagementTwin.construct_from_json(issue_data)
         # AutomationsTwin.construct_from_json(automation_data, automation_history_data)
-        TwinLinkCreator.create_links()
+        # TwinLinkCreator.create_links()
 
     @staticmethod
     def fetch():

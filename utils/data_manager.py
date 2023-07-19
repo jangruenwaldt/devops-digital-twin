@@ -1,10 +1,21 @@
 import json
 import os
 
-from destinations import TWIN_DATA_EXPORT_DIR, RAW_API_DATA_EXPORT_DIR
+from destinations import TWIN_DATA_EXPORT_DIR, RAW_API_DATA_EXPORT_DIR, KEY_VALUE_DATA_EXPORT_DIR
 
 
 class DataManager:
+    @staticmethod
+    def store_by_key(key, value):
+        return DataManager._store_file(KEY_VALUE_DATA_EXPORT_DIR, 'data', 'keys', f'{key}.json', {'data': value})
+
+    @staticmethod
+    def retrieve_by_key(key):
+        data = DataManager._retrieve_file(KEY_VALUE_DATA_EXPORT_DIR, 'data', 'keys', f'{key}.json')
+        if data is not None:
+            return data['data']
+        return None
+
     @staticmethod
     def retrieve_twin_data(data_type, owner, repo):
         return DataManager._retrieve_file(TWIN_DATA_EXPORT_DIR, owner, repo, f'{data_type}.json')
