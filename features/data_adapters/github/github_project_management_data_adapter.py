@@ -23,7 +23,7 @@ class GitHubProjectManagementDataAdapter(GitHubDataFetcher):
             new_data = self._fetch_from_paginated_api(new_api_url)
 
             # The last updated issue will be fetched again, just remove it
-            cleaned_data = new_data[1:]
+            cleaned_data = new_data[:-1]
 
             # Combine the two into one data object
             combined_data = old_data + cleaned_data
