@@ -30,9 +30,18 @@ class GitHubDeploymentDataAdapter(GitHubDataFetcher):
 
             newly_fetched_data = self._fetch_from_paginated_api(api_url,
                                                                 stopping_condition=check_if_existing_release_reached)
+            if self.enable_logs:
+                print(
+                    f'Fetched {len(newly_fetched_data)} releases from GitHub API,'
+                    f' found {len(cached_data)} releases in cache.')
             return self._merge_data(cached_data, newly_fetched_data, merge_key='tag_name')
         else:
-            return self._fetch_from_paginated_api(api_url)
+            data = self._fetch_from_paginated_api(api_url)
+
+            if self.enable_logs:
+                print(f'Fetched {len(data)} releases from GitHub API')
+
+            return data
 
     def fetch_data(self):
         releases = self._fetch_releases()

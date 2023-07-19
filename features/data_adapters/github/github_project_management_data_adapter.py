@@ -28,9 +28,18 @@ class GitHubProjectManagementDataAdapter(GitHubDataFetcher):
 
             # Combine the two into one data object
             combined_data = old_data + cleaned_data
+            if self.enable_logs:
+                print(
+                    f'Fetched {len(new_data)} issues from GitHub API,'
+                    f' found {len(old_data)} issues in cache.')
             return combined_data
         else:
-            return self._fetch_from_paginated_api(api_url)
+            data = self._fetch_from_paginated_api(api_url)
+
+            if self.enable_logs:
+                print(f'Fetched {len(data)} issues from GitHub API')
+
+            return data
 
     def fetch_data(self):
         raw_issues = self._fetch_issues()

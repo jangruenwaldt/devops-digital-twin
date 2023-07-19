@@ -45,9 +45,18 @@ class GitHubCommitDataAdapter(GitHubDataFetcher):
 
             newly_fetched_data = self._fetch_from_paginated_api(api_url,
                                                                 stopping_condition=stop_if_existing_commit_reached)
+            if self.enable_logs:
+                print(
+                    f'Fetched {len(newly_fetched_data)} commits from GitHub API,'
+                    f' found {len(cached_data)} commits in cache.')
             return self._merge_data(cached_data, newly_fetched_data, merge_key='sha')
         else:
-            return self._fetch_from_paginated_api(api_url)
+            data = self._fetch_from_paginated_api(api_url)
+
+            if self.enable_logs:
+                print(f'Fetched {len(data)} commits from GitHub API')
+
+            return data
 
     def fetch_data(self):
         commits = self._fetch_commits()

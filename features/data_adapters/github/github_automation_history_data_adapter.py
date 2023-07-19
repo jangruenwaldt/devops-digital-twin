@@ -25,17 +25,17 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
             raw_automation_history.extend(data)
 
         if self.enable_logs:
-            print(f'Fetched {len(raw_automation_history)} automation runs')
+            print(f'Total: {len(raw_automation_history)} automation runs')
 
         return raw_automation_history
 
     def _fetch_history_of_workflow(self, all_workflows_history_cache, wf):
         api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/actions/workflows/{wf["id"]}/runs' \
                   f'?per_page=100&created=>{Config.get_automation_history_since()}'
-        cache_data = [el for el in all_workflows_history_cache if el['workflow_id'] == wf['id']]
+        cached_data = [el for el in all_workflows_history_cache if el['workflow_id'] == wf['id']]
 
-        if cache_data is not None and len(cache_data) > 0:
-            latest_workflow_run = max(cache_data, key=lambda x: x.get('updated_at', ''))
+        if cached_data is not None and len(cached_data) > 0:
+            latest_workflow_run = max(cached_data, key=lambda x: x.get('updated_at', ''))
 
             def check_if_existing_wf_reached(new_data):
                 runs = new_data['workflow_runs']
@@ -43,9 +43,16 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
 
             newly_fetched_data = self._fetch_from_paginated_counted_api(api_url, 'workflow_runs',
                                                                         stopping_condition=check_if_existing_wf_reached)
-            return self._merge_data(cache_data, newly_fetched_data, merge_key='id')
+            if self.enable_logs:
+                print(
+                    f'Fetched {len(newly_fetched_data)} workflows from GitHub API,'
+                    f' found {len(cached_data)} workflows in cache.')
+            return self._merge_data(cached_data, newly_fetched_data, merge_key='id')
         else:
-            return self._fetch_from_paginated_counted_api(api_url, 'workflow_runs')
+            data = self._fetch_from_paginated_counted_api(api_url, 'workflow_runs')
+            if self.enable_logs:
+                print(f'Fetched {len(data)} workflows from GitHub API')
+            return data
 
     @staticmethod
     def _transform_api_response_to_data_format(data):

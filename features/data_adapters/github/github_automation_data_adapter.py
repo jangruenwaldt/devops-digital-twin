@@ -12,7 +12,12 @@ class GitHubAutomationDataAdapter(GitHubDataFetcher):
 
     def _fetch_workflows(self):
         api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/actions/workflows'
-        return self._fetch_from_paginated_counted_api(api_url, 'workflows')
+        data = self._fetch_from_paginated_counted_api(api_url, 'workflows')
+
+        if self.enable_logs:
+            print(f'Fetched {len(data)} workflows from GitHub API')
+
+        return data
 
     def fetch_data(self):
         workflows = self._fetch_workflows()
