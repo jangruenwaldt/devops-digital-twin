@@ -1,11 +1,10 @@
 from datetime import datetime
 
 from features.data_adapters.github.github_data_fetcher import GitHubDataFetcher
-from utils.cache import Cache
-from utils.cached_request import CachedRequest
 from utils.config import Config
 from utils.constants.constants import DataTypes, DataSources
 from utils.data_manager import DataManager
+from utils.request import Request
 
 
 class GitHubDeploymentDataAdapter(GitHubDataFetcher):
@@ -13,7 +12,7 @@ class GitHubDeploymentDataAdapter(GitHubDataFetcher):
         super().__init__(repo_url)
 
     def _get_latest_commit_hash_in_release(self, tag_name):
-        tag_object = CachedRequest.get_json(
+        tag_object = Request.get_json(
             f'https://api.github.com/repos/{self.owner}/{self.repo_name}/git/refs/tags/{tag_name}',
             headers=Config().get_github_request_header())
         return tag_object['object']['sha']

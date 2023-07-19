@@ -1,5 +1,5 @@
-from utils.cached_request import CachedRequest
 from utils.config import Config
+from utils.request import Request
 
 
 class GitHubUtils:
@@ -19,4 +19,4 @@ class GitHubUtils:
     def fetch_repo_info_from_api(repo_url):
         owner, repo_name = GitHubUtils.get_owner_and_repo_name(repo_url)
         api_url = f'https://api.github.com/repos/{owner}/{repo_name}'
-        return CachedRequest.get_json(api_url, headers=Config.get_github_request_header())
+        return Request.get_json(api_url, headers=Config.get_github_request_header())
