@@ -4,7 +4,7 @@ from utils.neo4j import Neo4j
 class TwinLinkCreator:
 
     @staticmethod
-    def create_links(twin_name):
+    def create_links():
         print(f'Adding links to twin')
 
         TwinLinkCreator._add_commits_links()
