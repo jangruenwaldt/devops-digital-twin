@@ -1,5 +1,6 @@
 import json
 import os
+from datetime import datetime
 
 from destinations import ROOT_DIR
 
@@ -20,6 +21,13 @@ class Config:
     @staticmethod
     def get_enable_logs():
         return CONFIG_DATA.get('enable_logs', None) == 'true'
+
+    @staticmethod
+    def get_automation_history_since():
+        config_value = CONFIG_DATA.get('automation_history_since', None)
+        if config_value is not None:
+            return datetime.strptime(config_value, '%Y-%m-%d').isoformat()
+        return None
 
     @staticmethod
     def get_main_branch():
