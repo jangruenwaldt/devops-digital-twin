@@ -17,18 +17,35 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
     def _fetch_automation_runs(self):
         workflows = self._get_workflows()
 
+        cached_data = DataManager.retrieve_raw_api_data(DataTypes.AUTOMATION_HISTORY, DataSources.GITHUB, self.owner,
+                                                        self.repo_name)
         raw_automation_history = []
-        for wf_data in workflows:
-            api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/actions/workflows/{wf_data["id"]}/runs' \
-                      f'?per_page=100&created=>{Config.get_automation_history_since()}'
-
-            workflow_runs = self._fetch_from_paginated_counted_api(api_url, 'workflow_runs')
-            raw_automation_history.extend(workflow_runs)
+        for wf in workflows:
+            data = self._fetch_history_of_workflow(cached_data, wf)
+            raw_automation_history.extend(data)
 
         if self.enable_logs:
             print(f'Fetched {len(raw_automation_history)} automation runs')
 
         return raw_automation_history
+
+    def _fetch_history_of_workflow(self, all_workflows_history_cache, wf):
+        api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/actions/workflows/{wf["id"]}/runs' \
+                  f'?per_page=100&created=>{Config.get_automation_history_since()}'
+        cache_data = [el for el in all_workflows_history_cache if el['workflow_id'] == wf['id']]
+
+        if cache_data is not None and len(cache_data) > 0:
+            latest_workflow_run = max(cache_data, key=lambda x: x.get('updated_at', ''))
+
+            def check_if_existing_wf_reached(new_data):
+                runs = new_data['workflow_runs']
+                return max(runs, key=lambda x: x.get('updated_at', ''))['id'] == latest_workflow_run['id']
+
+            newly_fetched_data = self._fetch_from_paginated_counted_api(api_url, 'workflow_runs',
+                                                                        stopping_condition=check_if_existing_wf_reached)
+            return self._merge_data(cache_data, newly_fetched_data, merge_key='id')
+        else:
+            return self._fetch_from_paginated_counted_api(api_url, 'workflow_runs')
 
     @staticmethod
     def _transform_api_response_to_data_format(data):

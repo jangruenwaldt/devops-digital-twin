@@ -33,7 +33,7 @@ class GitHubDataFetcher:
     #     #   "data": [..]
     #     # }
     @staticmethod
-    def _fetch_from_paginated_counted_api(api_url, data_object_key):
+    def _fetch_from_paginated_counted_api(api_url, data_object_key, stopping_condition=None):
         data = []
         headers = Config.get_github_request_header()
         if '?' in api_url:
@@ -42,7 +42,7 @@ class GitHubDataFetcher:
             api_url += '?per_page=100'
 
         while api_url is not None:
-            new_data, api_url = Request.get_paginated(api_url, headers=headers)
+            new_data, api_url = Request.get_paginated(api_url, headers=headers, stopping_condition=stopping_condition)
             data.extend(new_data[data_object_key])
 
         return data
