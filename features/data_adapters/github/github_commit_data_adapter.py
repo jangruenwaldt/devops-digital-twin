@@ -32,13 +32,22 @@ class GitHubCommitDataAdapter(GitHubDataFetcher):
     def _fetch_commits(self):
         api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/commits?sha={self.branch}'
 
-        cached_data = Cache.load(api_url)
+        cached_data = DataManager.retrieve_raw_api_data(DataTypes.COMMIT_DATA, DataSources.GITHUB, self.owner,
+                                                        self.repo_name)
         if cached_data is not None:
-            return cached_data
+            latest_commit = cached_data[0]  # relies on correct ordering!
 
-        all_commits = self._fetch_from_paginated_api(api_url)
-        Cache.update(api_url, all_commits)
-        return all_commits
+            def stop_if_existing_commit_reached(data):
+                for item in data:
+                    if 'sha' in item and item['sha'] == latest_commit['sha']:
+                        return True
+                return False
+
+            newly_fetched_data = self._fetch_from_paginated_api(api_url,
+                                                                stopping_condition=stop_if_existing_commit_reached)
+            return self._merge_data(cached_data, newly_fetched_data, merge_key='sha')
+        else:
+            return self._fetch_from_paginated_api(api_url)
 
     def fetch_data(self):
         commits = self._fetch_commits()
