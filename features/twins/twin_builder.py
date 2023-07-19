@@ -1,7 +1,11 @@
+from datetime import datetime
+
 from features.data_adapters.data_adapters import CommitDataAdapter, DeploymentDataAdapter, ProjectManagementDataAdapter, \
     AutomationDataAdapter, AutomationHistoryDataAdapter
 from features.twins.twin_link_creator import TwinLinkCreator
 from utils.config import Config
+from utils.data_manager import DataManager
+from utils.utils import Utils
 
 
 class TwinBuilder:
@@ -28,6 +32,8 @@ class TwinBuilder:
         if Config.get_enable_logs():
             print(f'Fetching/updating data for twin...'
                   f'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
+        DataManager.store_by_key('last_data_fetch', Utils.datetime_to_str(datetime.now()))
+
         commit_data_source = Config.get_commit_data_source()
         deployment_data_source = Config.get_deployment_data_source()
         project_management_data_source = Config.get_project_management_data_source()
