@@ -21,13 +21,19 @@ class GitHubDeploymentDataAdapter(GitHubDataFetcher):
     def _fetch_releases(self):
         api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/releases'
 
-        cached_data = Cache.load(api_url)
+        cached_data = DataManager.retrieve_raw_api_data(DataTypes.DEPLOYMENT_DATA, DataSources.GITHUB, self.owner,
+                                                        self.repo_name)
         if cached_data is not None:
-            return cached_data
+            latest_release = max(cached_data, key=lambda x: x.get('published_at', ''))
 
-        all_releases = self._fetch_from_paginated_api(api_url)
-        Cache.update(api_url, all_releases)
-        return all_releases
+            def check_if_existing_release_reached(new_data):
+                return max(new_data, key=lambda x: x.get('published_at', ''))['tag_name'] == latest_release['tag_name']
+
+            newly_fetched_data = self._fetch_from_paginated_api(api_url,
+                                                                stopping_condition=check_if_existing_release_reached)
+            return self._merge_data(cached_data, newly_fetched_data, merge_key='tag_name')
+        else:
+            return self._fetch_from_paginated_api(api_url)
 
     def fetch_data(self):
         releases = self._fetch_releases()

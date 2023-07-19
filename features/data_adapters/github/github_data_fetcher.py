@@ -13,7 +13,7 @@ class GitHubDataFetcher:
         self.enable_logs = Config.get_enable_logs()
 
     @staticmethod
-    def _fetch_from_paginated_api(api_url):
+    def _fetch_from_paginated_api(api_url, stopping_condition=None):
         data = []
         headers = Config.get_github_request_header()
         if '?' in api_url:
@@ -22,7 +22,7 @@ class GitHubDataFetcher:
             api_url += '?per_page=100'
 
         while api_url is not None:
-            new_data, api_url = Request.get_paginated(api_url, headers=headers)
+            new_data, api_url = Request.get_paginated(api_url, headers=headers, stopping_condition=stopping_condition)
             data.extend(new_data)
 
         return data
@@ -46,3 +46,14 @@ class GitHubDataFetcher:
             data.extend(new_data[data_object_key])
 
         return data
+
+    # Merges the two arrays with JSON objects, while preferring elements from new_data if both contain the same element
+    # Used to merge cached and newly fetched API responses
+    @staticmethod
+    def _merge_data(cached_data, newly_fetched_data, merge_key):
+        merged_data_map = {item[merge_key]: item for item in cached_data}
+
+        for item in newly_fetched_data:
+            merged_data_map[item[merge_key]] = item
+
+        return list(merged_data_map.values())
