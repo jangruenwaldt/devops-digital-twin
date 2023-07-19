@@ -13,8 +13,8 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
         self.automation_run_history_timeframe_in_months = automation_run_history_timeframe_in_months
 
     def _fetch_workflows(self):
-        api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/actions/workflows'
-        return self._fetch_from_paginated_counted_api(api_url, 'workflows')
+        # relies on the fact that we always fetch the workflows before the workflow history
+        return DataManager.retrieve_twin_data(DataTypes.AUTOMATION_DATA, self.owner, self.repo_name)
 
     def _fetch_automation_runs(self):
         workflows = self._fetch_workflows()
