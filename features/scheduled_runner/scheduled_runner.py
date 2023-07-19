@@ -34,6 +34,11 @@ class ScheduledRunner:
         if last_data_fetch is not None:
             minutes_passed_since_last_run = (datetime.now() - last_data_fetch).total_seconds() / 60
             minutes_until_next_run = Config.get_update_interval_in_hours() * 60 - minutes_passed_since_last_run
+            if Config.get_enable_logs():
+                print(f'Last data fetch was {last_data_fetch}, i.e. {minutes_passed_since_last_run} minutes ago. '
+                      f'The next fetch will therefore be in {minutes_until_next_run} minutes.')
+        elif Config.get_enable_logs():
+            print(f'No previous fetches were found, fetching data immediately...')
 
         if minutes_until_next_run <= 0:
             TwinBuilder.build()
