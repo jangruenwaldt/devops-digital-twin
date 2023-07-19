@@ -1,7 +1,7 @@
 from datetime import datetime
 
 from features.data_adapters.github.github_data_fetcher import GitHubDataFetcher
-from utils.constants.constants import DataTypes
+from utils.constants.constants import DataTypes, DataSources
 from utils.data_manager import DataManager
 
 
@@ -33,7 +33,8 @@ class GitHubProjectManagementDataAdapter(GitHubDataFetcher):
 
     def fetch_data(self):
         raw_issues = self._fetch_issues()
-        DataManager.store_raw_api_data(DataTypes.ISSUES_DATA, self.owner, self.repo_name, raw_issues)
+        DataManager.store_raw_api_data(DataTypes.ISSUES_DATA, self.owner, self.repo_name, DataSources.GITHUB,
+                                       raw_issues)
 
         issue_data_list = self._transform_api_response_into_data_format(self.enable_logs, raw_issues)
         DataManager.store_twin_data(DataTypes.ISSUES_DATA, self.owner, self.repo_name, issue_data_list)

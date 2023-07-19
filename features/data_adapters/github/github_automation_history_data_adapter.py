@@ -3,7 +3,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 from features.data_adapters.github.github_data_fetcher import GitHubDataFetcher
-from utils.constants.constants import DataTypes
+from utils.constants.constants import DataTypes, DataSources
 from utils.data_manager import DataManager
 
 
@@ -18,7 +18,8 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
 
     def _fetch_automation_runs(self):
         workflows = self._fetch_workflows()
-        automation_history = []
+
+        raw_automation_history = []
         for wf_data in workflows:
             earliest_valid_date = (datetime.now() - relativedelta(
                 months=self.automation_run_history_timeframe_in_months)).isoformat()
@@ -27,11 +28,12 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
                       f'?per_page=100&created=>{earliest_valid_date}'
 
             workflow_runs = self._fetch_from_paginated_counted_api(api_url, 'workflow_runs')
-            data = list(map(self._transform_api_response_to_data_format, workflow_runs))
+            raw_automation_history.extend(workflow_runs)
 
-            automation_history.extend(data)
+        if self.enable_logs:
+            print(f'Fetched {len(raw_automation_history)} automation runs')
 
-        return automation_history
+        return raw_automation_history
 
     @staticmethod
     def _transform_api_response_to_data_format(data):
@@ -56,9 +58,9 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
         }
 
     def fetch_data(self):
-        automation_runs = self._fetch_automation_runs()
+        raw_automation_history = self._fetch_automation_runs()
+        DataManager.store_raw_api_data(DataTypes.AUTOMATION_HISTORY, self.owner, self.repo_name, DataSources.GITHUB,
+                                       raw_automation_history)
 
-        if self.enable_logs:
-            print(f'Fetched {len(automation_runs)} automation runs')
-
-        DataManager.store_twin_data(DataTypes.AUTOMATION_HISTORY, self.owner, self.repo_name, automation_runs)
+        automation_history = list(map(self._transform_api_response_to_data_format, raw_automation_history))
+        DataManager.store_twin_data(DataTypes.AUTOMATION_HISTORY, self.owner, self.repo_name, automation_history)
