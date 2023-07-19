@@ -59,7 +59,7 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
 
     def fetch_data(self):
         raw_automation_history = self._fetch_automation_runs()
-        DataManager.store_raw_api_data(DataTypes.AUTOMATION_HISTORY, self.owner, self.repo_name, DataSources.GITHUB,
+        DataManager.store_raw_api_data(DataTypes.AUTOMATION_HISTORY, DataSources.GITHUB, self.owner, self.repo_name,
                                        raw_automation_history)
 
         automation_history = list(map(self._transform_api_response_to_data_format, raw_automation_history))

@@ -42,7 +42,7 @@ class GitHubCommitDataAdapter(GitHubDataFetcher):
 
     def fetch_data(self):
         commits = self._fetch_commits()
-        DataManager.store_raw_api_data(DataTypes.COMMIT_DATA, self.owner, self.repo_name, DataSources.GITHUB, commits)
+        DataManager.store_raw_api_data(DataTypes.COMMIT_DATA, DataSources.GITHUB, self.owner, self.repo_name, commits)
 
         export_data = self._transform_api_response_to_data_format(commits, self.enable_logs)
         DataManager.store_twin_data(DataTypes.COMMIT_DATA, self.owner, self.repo_name, export_data)

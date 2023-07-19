@@ -31,7 +31,7 @@ class GitHubDeploymentDataAdapter(GitHubDataFetcher):
 
     def fetch_data(self):
         releases = self._fetch_releases()
-        DataManager.store_raw_api_data(DataTypes.DEPLOYMENT_DATA, self.owner, self.repo_name, DataSources.GITHUB,
+        DataManager.store_raw_api_data(DataTypes.DEPLOYMENT_DATA, DataSources.GITHUB, self.owner, self.repo_name,
                                        releases)
 
         deployment_data = self._transform_api_response_to_data_format(self.enable_logs, releases)
