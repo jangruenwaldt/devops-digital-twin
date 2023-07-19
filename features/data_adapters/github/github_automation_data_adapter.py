@@ -16,8 +16,7 @@ class GitHubAutomationDataAdapter(GitHubDataFetcher):
 
     def fetch_data(self):
         workflows = self._fetch_workflows()
-        DataManager.store_raw_api_data(DataTypes.AUTOMATION_DATA, DataSources.GITHUB, self.owner, self.repo_name,
-                                       workflows)
+        # No caching here, as workflows can not be cached since they might always have changed
 
         automation_data = self._transform_api_response_to_data_format(self.enable_logs, workflows)
         DataManager.store_twin_data(DataTypes.AUTOMATION_DATA, self.owner, self.repo_name, automation_data)
