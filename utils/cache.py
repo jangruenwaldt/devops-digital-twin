@@ -3,7 +3,7 @@ import json
 import os
 
 from destinations import ROOT_DIR
-from utils.constants.twin_constants import TwinConstants
+from utils.constants.constants import TwinConstants
 
 API_DATA_DIR = os.path.join(ROOT_DIR, TwinConstants.DATA_DIR_NAME, TwinConstants.API_DATA_DIR_NAME)
 

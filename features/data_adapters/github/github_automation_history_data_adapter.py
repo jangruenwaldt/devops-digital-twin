@@ -3,7 +3,7 @@ from datetime import datetime
 from dateutil.relativedelta import relativedelta
 
 from features.data_adapters.github.github_data_fetcher import GitHubDataFetcher
-from utils.constants.twin_constants import DataTypes
+from utils.constants.constants import DataTypes
 from utils.data_manager import DataManager
 
 

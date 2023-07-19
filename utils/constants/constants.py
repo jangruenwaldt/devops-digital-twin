@@ -10,3 +10,7 @@ class DataTypes:
     ISSUES_DATA = 'issues'
     AUTOMATION_DATA = 'automations'
     AUTOMATION_HISTORY = 'automations_history'
+
+
+class DataSources:
+    GITHUB = 'github'

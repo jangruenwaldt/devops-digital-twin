@@ -7,7 +7,7 @@ from features.twins.project_management_twin import ProjectManagementTwin
 from features.twins.twin_link_creator import TwinLinkCreator
 from features.data_adapters.github.utils.github_utils import GitHubUtils
 from utils.neo4j import Neo4j
-from utils.constants.twin_constants import TwinConstants, DataTypes
+from utils.constants.constants import TwinConstants, DataTypes
 
 
 class TwinBuilder:
