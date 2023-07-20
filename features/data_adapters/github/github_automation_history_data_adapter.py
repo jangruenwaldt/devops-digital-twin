@@ -32,7 +32,10 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
     def _fetch_history_of_workflow(self, all_workflows_history_cache, wf):
         api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/actions/workflows/{wf["id"]}/runs' \
                   f'?per_page=100&created=>{Config.get_automation_history_since()}'
-        cached_data = [el for el in all_workflows_history_cache if el['workflow_id'] == wf['id']]
+
+        cached_data = []
+        if all_workflows_history_cache is not None:
+            cached_data = [el for el in all_workflows_history_cache if el['workflow_id'] == wf['id']]
 
         if cached_data is not None and len(cached_data) > 0:
             latest_workflow_run = max(cached_data, key=lambda x: x.get('updated_at', ''))
