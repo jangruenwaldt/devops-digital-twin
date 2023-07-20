@@ -4,6 +4,8 @@
   "db_user": "neo4j",
   "db_pw": "password",
   "main_branch": "master",
+  "twin_owner": "jangruenwaldt",
+  "twin_name": "xss-escape-django",
   "commit_data_source": "https://github.com/jangruenwaldt/xss-escape-django",
   "deployment_data_source": "https://github.com/jangruenwaldt/xss-escape-django",
   "project_management_data_source": "https://github.com/jangruenwaldt/xss-escape-django",
@@ -11,5 +13,6 @@
   "automations_history_data_source": "https://github.com/jangruenwaldt/xss-escape-django",
   "update_interval_in_hours" : "24",
   "enable_logs" : "true",
-  "automation_history_since": "2023-01-25"
+  "automation_history_since": "2023-01-25",
+  "force_update_on_first_launch" : "true"
 }

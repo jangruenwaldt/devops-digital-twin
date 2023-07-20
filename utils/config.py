@@ -19,6 +19,18 @@ class Config:
         return CONFIG_DATA.get('personal_access_token', None)
 
     @staticmethod
+    def get_twin_owner():
+        return CONFIG_DATA.get('twin_owner', None)
+
+    @staticmethod
+    def get_twin_name():
+        return CONFIG_DATA.get('twin_name', None)
+
+    @staticmethod
+    def get_force_update_on_first_launch():
+        return CONFIG_DATA.get('force_update_on_first_launch', None) == 'true'
+
+    @staticmethod
     def get_enable_logs():
         return CONFIG_DATA.get('enable_logs', None) == 'true'
 

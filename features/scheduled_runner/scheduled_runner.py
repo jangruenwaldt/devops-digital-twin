@@ -40,7 +40,7 @@ class ScheduledRunner:
         elif Config.get_enable_logs():
             print(f'No previous fetches were found, fetching data immediately...')
 
-        if minutes_until_next_run <= 0:
+        if minutes_until_next_run <= 0 or Config.get_force_update_on_first_launch():
             TwinBuilder.build()
             ScheduledRunner._add_schedule_from_config_setting()
         else:
