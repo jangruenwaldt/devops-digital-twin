@@ -29,6 +29,8 @@ and a Grafana instance.
    repositories you plan on using as a twin data source. 
 4. Run `docker compose up --build` and it will spin up a container which contains a long-running script that will update
    the database every X hours (configurable via config).
+5. Explore the data in grafana, which is running on `http://localhost:3000/`, using 'admin' as both username and
+   password.
 
 ## Currently supported
 
