@@ -23,6 +23,17 @@ services:
     environment:
       - NEO4J_AUTH=neo4j/password
 
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - 3000:3000
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    environment:
+      - GF_INSTALL_PLUGINS=kniepdennis-neo4j-datasource
+
 volumes:
-  data-volume:
+  data-volume: {}
+  grafana-storage: {}
 
