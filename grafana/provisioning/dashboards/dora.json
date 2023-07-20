@@ -18,14 +18,13 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 1,
   "links": [],
   "liveNow": false,
   "panels": [
     {
       "datasource": {
         "type": "kniepdennis-neo4j-datasource",
-        "uid": "d3d49a04-e0f4-452b-95d6-91cb41182756"
+        "uid": "P13FD9E770BE36698"
       },
       "fieldConfig": {
         "defaults": {
@@ -104,7 +103,7 @@
           "cypherQuery": "match (n:Deployment) return datetime(n.published_at), n.id",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
-            "uid": "d3d49a04-e0f4-452b-95d6-91cb41182756"
+            "uid": "P13FD9E770BE36698"
           },
           "refId": "A"
         }
