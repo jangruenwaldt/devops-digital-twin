@@ -4,11 +4,11 @@ from utils.neo4j import Neo4j
 class DeploymentsTwin:
 
     @staticmethod
-    def construct_from_json(json_url):
-        print(f'Constructing DeploymentsTwin from {json_url}')
+    def construct_from_json(path):
+        print(f'Constructing DeploymentsTwin from {path}')
         DeploymentsTwin._add_indices()
 
-        DeploymentsTwin._add_deployment_nodes(json_url)
+        DeploymentsTwin._add_deployment_nodes(path)
         DeploymentsTwin._add_succeeds_relationship()
         DeploymentsTwin._add_initial_deploy_relationship()
 
@@ -83,11 +83,11 @@ RETURN batches, total
         print(result2)
 
     @staticmethod
-    def _add_deployment_nodes(json_url):
+    def _add_deployment_nodes(path):
         add_deployment_nodes_query = f'''
 CALL apoc.periodic.iterate(
 "
-    CALL apoc.load.json('{json_url}') YIELD value RETURN value
+    CALL apoc.load.json('file://{path}') YIELD value RETURN value
 ",
 "
     WITH value AS deploy_data

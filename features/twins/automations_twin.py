@@ -4,21 +4,21 @@ from utils.neo4j import Neo4j
 class AutomationsTwin:
 
     @staticmethod
-    def construct_from_json(automations_json_url, automation_runs_json_url):
-        print(f'Constructing AutomationsTwin from {automations_json_url} and {automation_runs_json_url}')
+    def construct_from_json(automations_json_path, automation_runs_json_path):
+        print(f'Constructing AutomationsTwin from {automations_json_path} and {automation_runs_json_path}')
         AutomationsTwin._add_indices()
 
-        AutomationsTwin._add_automation_nodes(automations_json_url)
-        AutomationsTwin._add_automation_history(automation_runs_json_url)
+        AutomationsTwin._add_automation_nodes(automations_json_path)
+        AutomationsTwin._add_automation_history(automation_runs_json_path)
 
     @staticmethod
     def _add_indices():
         Neo4j.get_graph().run('CREATE INDEX automation_id IF NOT EXISTS FOR (c:Automation) ON (c.id)')
 
     @staticmethod
-    def _add_automation_nodes(json_url):
+    def _add_automation_nodes(path):
         query = f'''
-CALL apoc.load.json('{json_url}') YIELD value as automation_data
+CALL apoc.load.json('file://{path}') YIELD value as automation_data
 
 WITH automation_data
 MERGE (a:Automation {{id: automation_data.id}})
@@ -35,11 +35,11 @@ RETURN 1
         print(result)
 
     @staticmethod
-    def _add_automation_history(json_url):
+    def _add_automation_history(path):
         add_automation_run_nodes_query = f'''
 CALL apoc.periodic.iterate(
 "
-    CALL apoc.load.json('{json_url}') YIELD value RETURN value as run_data
+    CALL apoc.load.json('file://{path}') YIELD value RETURN value as run_data
 ",
 "
     MERGE (r:AutomationRun {{id: run_data.id}})

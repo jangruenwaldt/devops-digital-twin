@@ -4,11 +4,11 @@ from utils.neo4j import Neo4j
 class ProjectManagementTwin:
 
     @staticmethod
-    def construct_from_json(json_url):
-        print(f'Constructing ProjectManagementTwin from {json_url}')
+    def construct_from_json(path):
+        print(f'Constructing ProjectManagementTwin from {path}')
         ProjectManagementTwin._add_indices()
 
-        ProjectManagementTwin._add_issue_nodes(json_url)
+        ProjectManagementTwin._add_issue_nodes(path)
 
     @staticmethod
     def _add_indices():
@@ -16,11 +16,11 @@ class ProjectManagementTwin:
         Neo4j.get_graph().run('CREATE INDEX issue_label_id IF NOT EXISTS FOR (c:IssueLabel) ON (c.id)')
 
     @staticmethod
-    def _add_issue_nodes(json_url):
+    def _add_issue_nodes(path):
         query = f'''
 CALL apoc.periodic.iterate(
 "
-    CALL apoc.load.json('{json_url}') YIELD value RETURN value as issue_data
+    CALL apoc.load.json('file://{path}') YIELD value RETURN value as issue_data
 ",
 "
     MERGE (i:Issue {{id: issue_data.id}})

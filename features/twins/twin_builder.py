@@ -1,9 +1,16 @@
+import os
 from datetime import datetime
 
+from destinations import TWIN_DATA_EXPORT_DIR
 from features.data_adapters.data_adapters import CommitDataAdapter, DeploymentDataAdapter, ProjectManagementDataAdapter, \
     AutomationDataAdapter, AutomationHistoryDataAdapter
+from features.twins.automations_twin import AutomationsTwin
+from features.twins.deployments_twin import DeploymentsTwin
+from features.twins.git_twin import GitTwin
+from features.twins.project_management_twin import ProjectManagementTwin
 from features.twins.twin_link_creator import TwinLinkCreator
 from utils.config import Config
+from utils.constants.constants import DataTypes
 from utils.data_manager import DataManager
 from utils.utils import Utils
 
@@ -21,11 +28,20 @@ class TwinBuilder:
         if Config.get_enable_logs():
             print(f'Constructing twin in neo4j...'
                   f'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
-        # GitTwin.construct_from_json(commit_data)
-        # DeploymentsTwin.construct_from_json(deployment_data)
-        # ProjectManagementTwin.construct_from_json(issue_data)
-        # AutomationsTwin.construct_from_json(automation_data, automation_history_data)
-        # TwinLinkCreator.create_links()
+        data_dir = os.path.join(TWIN_DATA_EXPORT_DIR, Config.get_twin_owner(), Config.get_twin_name())
+
+        commit_data = os.path.join(data_dir, f'{DataTypes.COMMIT_DATA}.json')
+        deployment_data = os.path.join(data_dir, f'{DataTypes.DEPLOYMENT_DATA}.json')
+        project_management_data = os.path.join(data_dir, f'{DataTypes.PROJECT_MANAGEMENT_DATA}.json')
+        automation_data = os.path.join(data_dir, f'{DataTypes.AUTOMATION_DATA}.json')
+        automation_history_data = os.path.join(data_dir, f'{DataTypes.AUTOMATION_HISTORY}.json')
+
+        GitTwin.construct_from_json(commit_data)
+        DeploymentsTwin.construct_from_json(deployment_data)
+        ProjectManagementTwin.construct_from_json(project_management_data)
+        AutomationsTwin.construct_from_json(automation_data, automation_history_data)
+
+        TwinLinkCreator.create_links()
 
     @staticmethod
     def fetch():
