@@ -1,7 +1,5 @@
 # DevOps Digital Twin
 
-[![Python integration test](https://github.com/jangruenwaldt/devops-digital-twin/actions/workflows/ci.yaml/badge.svg)](https://github.com/jangruenwaldt/devops-digital-twin/actions/workflows/ci.yaml)
-
 Fetch DevOps system data into JSON via Python, and then store it in neo4j. Exploration and visualization with Grafana.
 
 ## What is this, and what makes it new and different?
