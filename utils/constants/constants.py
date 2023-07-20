@@ -8,7 +8,7 @@ class TwinConstants:
 class DataTypes:
     COMMIT_DATA = 'commits'
     DEPLOYMENT_DATA = 'deployments'
-    ISSUES_DATA = 'issues'
+    PROJECT_MANAGEMENT_DATA = 'project_management'
     AUTOMATION_DATA = 'automations'
     AUTOMATION_HISTORY = 'automations_history'
 

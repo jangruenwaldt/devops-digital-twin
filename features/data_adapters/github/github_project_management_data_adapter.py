@@ -12,7 +12,7 @@ class GitHubProjectManagementDataAdapter(GitHubDataFetcher):
     def _fetch_issues(self):
         api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/issues?state=all'
 
-        old_data = DataManager.retrieve_raw_api_data(DataTypes.ISSUES_DATA, DataSources.GITHUB, self.owner,
+        old_data = DataManager.retrieve_raw_api_data(DataTypes.PROJECT_MANAGEMENT_DATA, DataSources.GITHUB, self.owner,
                                                      self.repo_name)
         if old_data is not None:
             # Get the latest edited issue in the old data
@@ -43,11 +43,11 @@ class GitHubProjectManagementDataAdapter(GitHubDataFetcher):
 
     def fetch_data(self):
         raw_issues = self._fetch_issues()
-        DataManager.store_raw_api_data(DataTypes.ISSUES_DATA, DataSources.GITHUB, self.owner, self.repo_name,
+        DataManager.store_raw_api_data(DataTypes.PROJECT_MANAGEMENT_DATA, DataSources.GITHUB, self.owner, self.repo_name,
                                        raw_issues)
 
         issue_data_list = self._transform_api_response_into_data_format(self.enable_logs, raw_issues)
-        DataManager.store_twin_data(DataTypes.ISSUES_DATA, self.owner, self.repo_name, issue_data_list)
+        DataManager.store_twin_data(DataTypes.PROJECT_MANAGEMENT_DATA, self.owner, self.repo_name, issue_data_list)
 
     def _transform_api_response_into_data_format(self, enable_logs, issues):
         issue_data_list = []
