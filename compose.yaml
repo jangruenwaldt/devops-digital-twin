@@ -1,5 +1,5 @@
 services:
-  python-data-update:
+  python-data-update-service:
     build:
       context: .
     ports:
