@@ -1,8 +1,5 @@
 {
   "personal_access_token": "",
-  "db_address": "bolt://neo4j:7687",
-  "db_user": "neo4j",
-  "db_pw": "password",
   "main_branch": "master",
   "twin_owner": "jangruenwaldt",
   "twin_name": "xss-escape-django",

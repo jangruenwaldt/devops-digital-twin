@@ -72,17 +72,18 @@ class Config:
             return int(config_value)
         return 24
 
+    # db connection hardcoded as db is run via Docker
     @staticmethod
     def get_db_user():
-        return CONFIG_DATA.get('db_user', None)
+        return 'neo4j'
 
     @staticmethod
     def get_db_pw():
-        return CONFIG_DATA.get('db_pw', None)
+        return 'password'
 
     @staticmethod
     def get_db_address():
-        return CONFIG_DATA.get('db_address', None)
+        return 'bolt://neo4j:7687'
 
     @staticmethod
     def get_github_request_header():
