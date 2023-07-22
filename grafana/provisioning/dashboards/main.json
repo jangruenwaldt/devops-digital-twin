@@ -144,7 +144,7 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
-      "description": "How long each CI job ran in minutes",
+      "description": "How long each CI job ran in seconds",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -218,7 +218,7 @@
       },
       "targets": [
         {
-          "cypherQuery": "MATCH (a:AutomationRun)\nWHERE a.run_started_at IS NOT NULL AND a.updated_at IS NOT NULL\nRETURN DATE(DATETIME(a.run_started_at)) AS Date, duration.inSeconds(datetime(a.run_started_at), datetime(a.updated_at)).seconds/60.0 AS RunTimeInMinutes\nORDER BY Date",
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\n\nOPTIONAL MATCH (a:AutomationRun)\nWHERE a.updated_at IS NOT NULL AND date(datetime(a.run_started_at)) = date\n\nRETURN date, \n        toInteger(CASE \n         WHEN a IS NULL THEN 0  \n         ELSE duration.inSeconds(datetime(a.run_started_at), datetime(a.updated_at)).seconds\n         END) AS RunTimeInMinutes",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -525,13 +525,13 @@
     "list": []
   },
   "time": {
-    "from": "now-2d",
+    "from": "now-30d",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "DevOps Digital Twin Dashboard",
   "uid": "a49a1264-f31e-4333-a906-0f4a2c5340f8",
-  "version": 14,
+  "version": 15,
   "weekStart": ""
 }
