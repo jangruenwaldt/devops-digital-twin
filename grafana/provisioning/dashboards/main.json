@@ -114,7 +114,7 @@
       "pluginVersion": "10.0.2",
       "targets": [
         {
-          "cypherQuery": "MATCH (i:Issue)\nWHERE i.closed_at IS NOT NULL\nRETURN DATE(DATETIME(i.closed_at)) AS Date, COUNT(i) AS ClosedIssues\nORDER BY Date",
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\n\nOPTIONAL MATCH (i:Issue) WHERE date(datetime(i.closed_at)) = date\n\nRETURN date, count(i) as closedIssues",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -525,13 +525,13 @@
     "list": []
   },
   "time": {
-    "from": "now-30d",
+    "from": "now-2d",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "DevOps Digital Twin Dashboard",
   "uid": "a49a1264-f31e-4333-a906-0f4a2c5340f8",
-  "version": 10,
+  "version": 12,
   "weekStart": ""
 }
