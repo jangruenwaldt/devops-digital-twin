@@ -1,4 +1,4 @@
-FROM neo4j:latest
+FROM neo4j:5.10.0
 
 ENV NEO4J_apoc_export_file_enabled=true \
     NEO4J_apoc_import_file_enabled=true \
