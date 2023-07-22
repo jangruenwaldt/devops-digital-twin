@@ -32,9 +32,8 @@ services:
     volumes:
       - grafana-storage:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning
-      - ./grafana/files:/var/lib/grafana/files
-    command:
-      - unzip /var/lib/grafana/files/kniepdennis-neo4j-datasource-1.2.0.zip -d /var/lib/grafana/plugins/kniepdennis-neo4j-datasource
+    environment:
+      - GF_INSTALL_PLUGINS=kniepdennis-neo4j-datasource
 
 volumes:
   data-volume: {}
