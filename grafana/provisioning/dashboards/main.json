@@ -218,7 +218,7 @@
       },
       "targets": [
         {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\n\nOPTIONAL MATCH (a:AutomationRun)\nWHERE a.updated_at IS NOT NULL AND date(datetime(a.run_started_at)) = date\n\nRETURN date, \n        toInteger(CASE \n         WHEN a IS NULL THEN 0  \n         ELSE duration.inSeconds(datetime(a.run_started_at), datetime(a.updated_at)).seconds\n         END) AS RunTimeInMinutes",
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\n\nOPTIONAL MATCH (a:AutomationRun)\nWHERE a.updated_at IS NOT NULL AND date(datetime(a.run_started_at)) = date\n\nRETURN date, \n        toInteger(CASE \n         WHEN a IS NULL THEN 0  \n         ELSE duration.inSeconds(datetime(a.run_started_at), datetime(a.updated_at)).seconds\n         END) AS RunTimeInSeconds",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -532,6 +532,6 @@
   "timezone": "",
   "title": "DevOps Digital Twin Dashboard",
   "uid": "a49a1264-f31e-4333-a906-0f4a2c5340f8",
-  "version": 15,
+  "version": 16,
   "weekStart": ""
 }
