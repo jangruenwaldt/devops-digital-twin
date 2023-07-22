@@ -23,16 +23,12 @@ class GitHubProjectManagementDataAdapter(GitHubDataFetcher):
             new_api_url = f'{api_url}&since={since_date}'
             new_data = self._fetch_from_paginated_api(new_api_url)
 
-            # The last updated issue will be fetched again, just remove it
-            cleaned_data = new_data[:-1]
-
-            # Combine the two into one data object
-            combined_data = old_data + cleaned_data
             if self.enable_logs:
                 print(
                     f'Fetched {len(new_data)} issues from GitHub API,'
                     f' found {len(old_data)} issues in cache.')
-            return combined_data
+
+            return self._merge_data(old_data, new_data, merge_key='id')
         else:
             data = self._fetch_from_paginated_api(api_url)
 
@@ -43,7 +39,8 @@ class GitHubProjectManagementDataAdapter(GitHubDataFetcher):
 
     def fetch_data(self):
         raw_issues = self._fetch_issues()
-        DataManager.store_raw_api_data(DataTypes.PROJECT_MANAGEMENT_DATA, DataSources.GITHUB, self.owner, self.repo_name,
+        DataManager.store_raw_api_data(DataTypes.PROJECT_MANAGEMENT_DATA, DataSources.GITHUB, self.owner,
+                                       self.repo_name,
                                        raw_issues)
 
         issue_data_list = self._transform_api_response_into_data_format(self.enable_logs, raw_issues)
