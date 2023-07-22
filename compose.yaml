@@ -22,6 +22,7 @@ services:
       - data-volume:/app/data
     environment:
       - NEO4J_AUTH=neo4j/password
+    restart: always
 
   grafana:
     image: grafana/grafana
