@@ -1,7 +1,6 @@
 from datetime import datetime
 
 from features.data_adapters.github.github_data_fetcher import GitHubDataFetcher
-from utils.cache import Cache
 from utils.constants.constants import DataTypes, DataSources
 from utils.data_manager import DataManager
 
