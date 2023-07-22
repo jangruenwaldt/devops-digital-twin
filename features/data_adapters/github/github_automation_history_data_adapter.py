@@ -48,13 +48,13 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
                                                                         stopping_condition=check_if_existing_wf_reached)
             if self.enable_logs:
                 print(
-                    f'Fetched {len(newly_fetched_data)} workflows from GitHub API,'
-                    f' found {len(cached_data)} workflows in cache.')
+                    f'Fetched {len(newly_fetched_data)} workflow runs from GitHub API,'
+                    f' found {len(cached_data)} workflow runs in cache.')
             return self._merge_data(cached_data, newly_fetched_data, merge_key='id')
         else:
             data = self._fetch_from_paginated_counted_api(api_url, 'workflow_runs')
             if self.enable_logs:
-                print(f'Fetched {len(data)} workflows from GitHub API')
+                print(f'Fetched {len(data)} workflow runs from GitHub API')
             return data
 
     @staticmethod
