@@ -2,6 +2,8 @@ import time
 
 import requests
 
+from utils.config import Config
+
 
 class Request:
     RATE_LIMIT_BACKOFF_SECONDS = 3600
@@ -18,6 +20,8 @@ class Request:
 
     @staticmethod
     def _make_request(url, headers=None):
+        if Config.get_enable_logs():
+            print(f'Fetching from {url}')
         response = requests.get(url, headers=headers)
         while Request._rate_limit_reached(response):
             Request._handle_rate_limit()
