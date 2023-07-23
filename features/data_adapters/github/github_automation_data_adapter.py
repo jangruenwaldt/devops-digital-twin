@@ -40,7 +40,7 @@ class GitHubAutomationDataAdapter(GitHubDataFetcher):
                 'updated_at': datetime.strptime(wf_data['updated_at'], '%Y-%m-%dT%H:%M:%S.%f%z').replace(
                     microsecond=0).isoformat(),
                 'url': wf_data['url'],
-                'is_deployment': wf_data['name'] == Config.get_deployment_automation_name()
+                'is_deployment_job': wf_data['name'] == Config.get_deployment_automation_name()
             }
             if enable_logs:
                 print(f'Workflow {wf_data["name"]} data added.')

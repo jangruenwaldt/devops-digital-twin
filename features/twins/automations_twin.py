@@ -28,7 +28,8 @@ SET
     a.state = automation_data.state,
     a.created_at = automation_data.created_at,
     a.updated_at = automation_data.updated_at,
-    a.url = automation_data.url
+    a.url = automation_data.url,
+    a.is_deployment_job = automation_data.is_deployment_job
 RETURN 1
 '''
         result = Neo4j.run_query(query)
