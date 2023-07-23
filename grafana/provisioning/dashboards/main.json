@@ -693,6 +693,70 @@
       ],
       "title": "Lead time (average)",
       "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "kniepdennis-neo4j-datasource",
+        "uid": "P13FD9E770BE36698"
+      },
+      "description": "How long the deployment job runs",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "dthms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 18
+      },
+      "id": 17,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.5.6",
+      "targets": [
+        {
+          "cypherQuery": "MATCH (a:Automation)\nWHERE a.is_deployment_job = true\n\nWITH a.name as deployment_job_name\n\nMATCH (run:AutomationRun {name: deployment_job_name})\n\nRETURN avg(duration.inSeconds(datetime(run.run_started_at), datetime(run.updated_at)).seconds)",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Deployment speed (in s)",
+      "type": "stat"
     }
   ],
   "refresh": "",
@@ -710,6 +774,6 @@
   "timezone": "",
   "title": "DevOps Digital Twin Dashboard",
   "uid": "a49a1264-f31e-4333-a906-0f4a2c5340f8",
-  "version": 1,
+  "version": 12,
   "weekStart": ""
 }
