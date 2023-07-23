@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from features.data_adapters.github.github_data_fetcher import GitHubDataFetcher
+from utils.config import Config
 from utils.constants.constants import DataTypes, DataSources
 from utils.data_manager import DataManager
 
@@ -39,6 +40,7 @@ class GitHubAutomationDataAdapter(GitHubDataFetcher):
                 'updated_at': datetime.strptime(wf_data['updated_at'], '%Y-%m-%dT%H:%M:%S.%f%z').replace(
                     microsecond=0).isoformat(),
                 'url': wf_data['url'],
+                'is_deployment': wf_data['name'] == Config.get_deployment_automation_name()
             }
             if enable_logs:
                 print(f'Workflow {wf_data["name"]} data added.')

@@ -27,6 +27,10 @@ class Config:
         return CONFIG_DATA.get('twin_name', None)
 
     @staticmethod
+    def get_deployment_automation_name():
+        return CONFIG_DATA.get('deployment_automation_name', None)
+
+    @staticmethod
     def get_force_update_on_first_launch():
         return CONFIG_DATA.get('force_update_on_first_launch', None) == 'true'
 
