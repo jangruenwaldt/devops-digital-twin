@@ -8,7 +8,7 @@ from features.twins.automations_twin import AutomationsTwin
 from features.twins.deployments_twin import DeploymentsTwin
 from features.twins.git_twin import GitTwin
 from features.twins.project_management_twin import ProjectManagementTwin
-from features.twins.twin_link_creator import TwinLinkCreator
+from features.twins.twin_meta_data_manager import TwinMetaDataManager
 from utils.config import Config
 from utils.constants.constants import DataTypes
 from utils.data_manager import DataManager
@@ -21,6 +21,7 @@ class TwinBuilder:
     def build():
         TwinBuilder.fetch()
         TwinBuilder.construct_twin()
+        TwinMetaDataManager.add_metadata()
         TwinBuilder.print_usage_info()
 
     @staticmethod
@@ -41,7 +42,7 @@ class TwinBuilder:
         ProjectManagementTwin.construct_from_json(project_management_data)
         AutomationsTwin.construct_from_json(automation_data, automation_history_data)
 
-        TwinLinkCreator.create_links()
+        TwinMetaDataManager.add_metadata()
 
     @staticmethod
     def fetch():
@@ -55,6 +56,7 @@ class TwinBuilder:
         project_management_data_source = Config.get_project_management_data_source()
         automations_data_source = Config.get_automations_data_source()
         automations_history_data_source = Config.get_automations_history_data_source()
+
         CommitDataAdapter.fetch_data(commit_data_source, branch=Config.get_main_branch())
         DeploymentDataAdapter.fetch_data(deployment_data_source)
         ProjectManagementDataAdapter.fetch_data(project_management_data_source)
