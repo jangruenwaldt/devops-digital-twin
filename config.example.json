@@ -15,7 +15,7 @@
   "deployment_automation_name": "Greetings",
   "project_management_incident_categories": [
     "incident",
-    "crash help-wanted",
-    "you can combine two categories as seen above. Both have to be present to be considered an incident."
+    "crash&help-wanted",
+    "you can combine two categories using the & sign. Both have to be present to be considered an incident."
   ]
 }
