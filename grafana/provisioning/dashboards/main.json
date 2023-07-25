@@ -826,6 +826,69 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
+      "description": "All tasks that are recognize as incident according to config",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 12
+      },
+      "id": 20,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.5.6",
+      "targets": [
+        {
+          "cypherQuery": "MATCH (n:TwinMetaData)\nWITH n.project_management_incident_categories as categories\n\nMATCH (issue:Issue)-[r:HAS_LABEL]->(l:IssueLabel)\nWHERE datetime(issue.created_at) >= datetime({epochMillis: ${__from}}) AND datetime(issue.created_at) <= datetime({epochMillis: ${__to}})\n\nWITH issue, collect(l.name) as issueLabels, categories\nWHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\")))\n\nRETURN count(issue)",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Incidents",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "kniepdennis-neo4j-datasource",
+        "uid": "P13FD9E770BE36698"
+      },
       "description": "How long the deployment job runs",
       "fieldConfig": {
         "defaults": {
@@ -901,6 +964,6 @@
   "timezone": "",
   "title": "DevOps Digital Twin Dashboard",
   "uid": "a49a1264-f31e-4333-a906-0f4a2c5340f8",
-  "version": 12,
+  "version": 15,
   "weekStart": ""
 }
