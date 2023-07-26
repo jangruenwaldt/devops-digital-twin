@@ -10,24 +10,6 @@ class GitHubCommitDataAdapter(GitHubDataFetcher):
         super().__init__(repo_url)
         self.branch = branch
 
-    @staticmethod
-    def _get_commit_author(commit):
-        # GitHub API 'quirk', sometimes only committer is set and author is None,
-        # and sometimes author is set but committer is 'web-flow' when done via web UI, so we
-        # give priority to the author field unless it is None.
-        if commit['author'] is None:
-            if commit['committer'] is None:
-                author = "unknown"
-            else:
-                author = commit['committer']['login']
-        else:
-            author = commit['author']['login']
-
-        # In some cases, it is still web-flow. Then, we use the ['commit]['author']['name'] field instead
-        if author == 'web-flow' or author == 'unknown':
-            return commit['commit']['author']['name']
-        return author
-
     def _fetch_commits(self):
         api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/commits?sha={self.branch}'
 
@@ -36,11 +18,8 @@ class GitHubCommitDataAdapter(GitHubDataFetcher):
         if cached_data is not None:
             latest_commit = cached_data[0]  # relies on correct ordering!
 
-            def stop_if_existing_commit_reached(data):
-                for item in data:
-                    if 'sha' in item and item['sha'] == latest_commit['sha']:
-                        return True
-                return False
+            def stop_if_existing_commit_reached(new_data):
+                return latest_commit['sha'] in map(lambda x: x.get('sha', ''), new_data)
 
             newly_fetched_data = self._fetch_from_paginated_api(api_url,
                                                                 stopping_condition=stop_if_existing_commit_reached)
@@ -67,11 +46,11 @@ class GitHubCommitDataAdapter(GitHubDataFetcher):
     def _transform_api_response_to_data_format(self, commits, enable_logs):
         export_data = []
         for commit in reversed(commits):
-            author = self._get_commit_author(commit)
             commit_data = {
                 'message': commit['commit']['message'],
                 'hash': commit['sha'],
-                'author': author,
+                'author': commit['author'].get('login', 'unknown'),
+                'committer': commit['committer'].get('login', 'unknown'),
                 'date': datetime.strptime(commit['commit']['committer']['date'], '%Y-%m-%dT%H:%M:%SZ').replace(
                     microsecond=0).isoformat(),
                 'branch': self.branch,
