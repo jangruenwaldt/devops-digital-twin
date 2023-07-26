@@ -905,7 +905,7 @@
               },
               {
                 "color": "red",
-                "value": 80
+                "value": 3600
               }
             ]
           },
@@ -945,7 +945,7 @@
           "refId": "A"
         }
       ],
-      "title": "Deployment speed (in s)",
+      "title": "Deployment speed",
       "type": "stat"
     }
   ],

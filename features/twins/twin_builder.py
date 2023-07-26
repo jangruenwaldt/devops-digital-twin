@@ -20,16 +20,17 @@ class TwinBuilder:
 
     @staticmethod
     def build():
-        TwinBuilder.fetch()
-        if TwinBuilder.would_existing_data_be_overwritten():
+        TwinBuilder._fetch()
+
+        if TwinBuilder._would_existing_data_be_overwritten():
             return
         else:
-            TwinBuilder.construct_twin()
+            TwinBuilder._construct_twin()
             TwinMetaDataManager.add_metadata()
-            TwinBuilder.print_usage_info()
+            TwinBuilder._print_usage_info()
 
     @staticmethod
-    def would_existing_data_be_overwritten():
+    def _would_existing_data_be_overwritten():
         data = Neo4j.run_query('Match (n:TwinMetaData) return n as twin_meta_data').data()
         meta_data = data[0]['twin_meta_data']
 
@@ -68,7 +69,7 @@ class TwinBuilder:
             return True
 
     @staticmethod
-    def construct_twin():
+    def _construct_twin():
         if Config.get_enable_logs():
             print(f'Constructing twin in neo4j...'
                   f'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
@@ -88,7 +89,7 @@ class TwinBuilder:
         TwinMetaDataManager.add_metadata()
 
     @staticmethod
-    def fetch():
+    def _fetch():
         if Config.get_enable_logs():
             print(f'Fetching/updating data for twin...'
                   f'@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@')
@@ -107,7 +108,7 @@ class TwinBuilder:
         AutomationHistoryDataAdapter.fetch_data(automations_history_data_source)
 
     @staticmethod
-    def print_usage_info():
+    def _print_usage_info():
         print(""""
 @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@
 @@@@@@@@@@@@@@@@@@@@@@    DONE CONSTRUCTING TWIN    @@@@@@@@@@@@@@@@@@@@@@
