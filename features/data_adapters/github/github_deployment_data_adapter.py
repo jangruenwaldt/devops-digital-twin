@@ -5,7 +5,6 @@ from utils.cached_request import CachedRequest
 from utils.config import Config
 from utils.constants.constants import DataTypes, DataSources
 from utils.data_manager import DataManager
-from utils.request import Request
 
 
 class GitHubDeploymentDataAdapter(GitHubDataFetcher):
@@ -27,7 +26,7 @@ class GitHubDeploymentDataAdapter(GitHubDataFetcher):
             latest_release = max(cached_data, key=lambda x: x.get('published_at', ''))
 
             def check_if_existing_release_reached(new_data):
-                return max(new_data, key=lambda x: x.get('published_at', ''))['tag_name'] == latest_release['tag_name']
+                return latest_release['tag_name'] in map(lambda x: x.get('tag_name', ''), new_data)
 
             newly_fetched_data = self._fetch_from_paginated_api(api_url,
                                                                 stopping_condition=check_if_existing_release_reached)
