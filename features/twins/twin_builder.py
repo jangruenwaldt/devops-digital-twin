@@ -12,6 +12,7 @@ from features.twins.twin_meta_data_manager import TwinMetaDataManager
 from utils.config import Config
 from utils.constants.constants import DataTypes
 from utils.data_manager import DataManager
+from utils.neo4j import Neo4j
 from utils.utils import Utils
 
 
@@ -20,9 +21,51 @@ class TwinBuilder:
     @staticmethod
     def build():
         TwinBuilder.fetch()
-        TwinBuilder.construct_twin()
-        TwinMetaDataManager.add_metadata()
-        TwinBuilder.print_usage_info()
+        if TwinBuilder.would_existing_data_be_overwritten():
+            return
+        else:
+            TwinBuilder.construct_twin()
+            TwinMetaDataManager.add_metadata()
+            TwinBuilder.print_usage_info()
+
+    @staticmethod
+    def would_existing_data_be_overwritten():
+        data = Neo4j.run_query('Match (n:TwinMetaData) return n as twin_meta_data').data()
+        meta_data = data[0]['twin_meta_data']
+
+        commit_data_source = meta_data['commit_data_source']
+        deployment_data_source = meta_data['deployment_data_source']
+        project_management_data_source = meta_data['project_management_data_source']
+        automations_data_source = meta_data['automations_data_source']
+        automations_history_data_source = meta_data['automations_history_data_source']
+
+        def is_different(old_source, new_source):
+            return old_source is not None and old_source != new_source
+
+        would_existing_data_be_overwritten = is_different(commit_data_source, Config.get_commit_data_source()) or \
+                                             is_different(deployment_data_source,
+                                                          Config.get_deployment_data_source()) or \
+                                             is_different(project_management_data_source,
+                                                          Config.get_project_management_data_source()) or \
+                                             is_different(automations_data_source,
+                                                          Config.get_automations_data_source()) or \
+                                             is_different(automations_history_data_source,
+                                                          Config.get_automations_history_data_source())
+
+        if not would_existing_data_be_overwritten:
+            print('Data sources did not change.')
+            return False
+        elif Config.get_override_existing_data():
+            print('The data sources changed since the last time the twin was built. '
+                  'Since override_existing_data is set to true, the database will be wiped '
+                  'before the twin is built.')
+            Neo4j.wipe_database()
+            return False
+        else:
+            print('The data sources changed since the last time the twin was built. '
+                  'If you want to proceed, please set override_existing_data to true '
+                  'in the config.')
+            return True
 
     @staticmethod
     def construct_twin():
