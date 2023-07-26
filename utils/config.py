@@ -43,6 +43,10 @@ class Config:
         return CONFIG_DATA.get('enable_logs', None) == 'true'
 
     @staticmethod
+    def get_override_existing_data():
+        return CONFIG_DATA.get('override_existing_data', None) == 'true'
+
+    @staticmethod
     def get_automation_history_since():
         config_value = CONFIG_DATA.get('automation_history_since', None)
         if config_value is not None:
