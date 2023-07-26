@@ -32,6 +32,9 @@ class TwinBuilder:
     @staticmethod
     def _would_existing_data_be_overwritten():
         data = Neo4j.run_query('Match (n:TwinMetaData) return n as twin_meta_data').data()
+        if len(data) == 0:
+            return False
+
         meta_data = data[0]['twin_meta_data']
 
         commit_data_source = meta_data['commit_data_source']
