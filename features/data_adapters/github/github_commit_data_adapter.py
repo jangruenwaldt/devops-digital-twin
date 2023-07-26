@@ -3,6 +3,7 @@ from datetime import datetime
 from features.data_adapters.github.github_data_fetcher import GitHubDataFetcher
 from utils.constants.constants import DataTypes, DataSources
 from utils.data_manager import DataManager
+from utils.utils import Utils
 
 
 class GitHubCommitDataAdapter(GitHubDataFetcher):
@@ -49,8 +50,8 @@ class GitHubCommitDataAdapter(GitHubDataFetcher):
             commit_data = {
                 'message': commit['commit']['message'],
                 'hash': commit['sha'],
-                'author': commit['author'].get('login', 'unknown'),
-                'committer': commit['committer'].get('login', 'unknown'),
+                'author': Utils.deep_get(commit, 'author.login'),
+                'committer': Utils.deep_get(commit, 'committer.login'),
                 'date': datetime.strptime(commit['commit']['committer']['date'], '%Y-%m-%dT%H:%M:%SZ').replace(
                     microsecond=0).isoformat(),
                 'branch': self.branch,

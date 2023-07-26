@@ -1,4 +1,5 @@
 from datetime import datetime
+from functools import reduce
 
 
 class Utils:
@@ -12,3 +13,8 @@ class Utils:
     @staticmethod
     def datetime_to_str(dt):
         return str(int(dt.timestamp()))
+
+    # Source: https://stackoverflow.com/questions/25833613/safe-method-to-get-value-of-nested-dictionary
+    def deep_get(dictionary, keys, default=None):
+        return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default, keys.split("."),
+                      dictionary)
