@@ -50,8 +50,8 @@ class GitHubCommitDataAdapter(GitHubDataFetcher):
             commit_data = {
                 'message': commit['commit']['message'],
                 'hash': commit['sha'],
-                'author': Utils.deep_get(commit, 'author.login'),
-                'committer': Utils.deep_get(commit, 'committer.login'),
+                'author': Utils.deep_get(commit, 'author.login', default='unknown'),
+                'committer': Utils.deep_get(commit, 'committer.login', default='unknown'),
                 'date': datetime.strptime(commit['commit']['committer']['date'], '%Y-%m-%dT%H:%M:%SZ').replace(
                     microsecond=0).isoformat(),
                 'branch': self.branch,
