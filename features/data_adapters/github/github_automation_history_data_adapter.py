@@ -42,7 +42,7 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
 
             def check_if_existing_wf_reached(new_data):
                 runs = new_data['workflow_runs']
-                return max(runs, key=lambda x: x.get('updated_at', ''))['id'] == latest_workflow_run['id']
+                return latest_workflow_run['id'] in map(lambda x: x.get('id', ''), runs)
 
             newly_fetched_data = self._fetch_from_paginated_counted_api(api_url, 'workflow_runs',
                                                                         stopping_condition=check_if_existing_wf_reached)
