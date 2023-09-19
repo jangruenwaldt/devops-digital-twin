@@ -461,7 +461,7 @@
           "refId": "A"
         }
       ],
-      "title": "Deployment speed",
+      "title": "Deployment time",
       "type": "stat"
     },
     {
@@ -1029,6 +1029,6 @@
   "timezone": "",
   "title": "DevOps Tech Debt Metrics",
   "uid": "a49a1264-f31e-4333-a906-0f4a2c5340f8",
-  "version": 22,
+  "version": 23,
   "weekStart": ""
 }
