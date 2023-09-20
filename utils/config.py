@@ -31,6 +31,10 @@ class Config:
         return CONFIG_DATA.get('project_management_incident_categories', None)
 
     @staticmethod
+    def get_test_automation_names():
+        return CONFIG_DATA.get('test_automation_names', None)
+
+    @staticmethod
     def get_deployment_automation_name():
         return CONFIG_DATA.get('deployment_automation_name', None)
 

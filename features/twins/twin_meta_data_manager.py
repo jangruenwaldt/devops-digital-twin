@@ -33,15 +33,17 @@ class TwinMetaDataManager:
 
     @staticmethod
     def _add_meta_data_node():
-        # wrap in double quotes but escape double quotes beforehand
-        deployment_automation_name = Config.get_deployment_automation_name().replace('"', '\\"')
-        deployment_automation_name_wrapped = f'"{deployment_automation_name}"'
+        deployment_automation_name_wrapped = TwinMetaDataManager._wrap_in_quotes(
+            Config.get_deployment_automation_name())
+        test_automation_names_wrapped = TwinMetaDataManager._wrap_in_quotes(
+            Config.get_test_automation_names())
 
         query = f'''
                 MERGE (m:TwinMetaData)
                 SET
                     m.project_management_incident_categories = {Config.get_project_management_incident_categories()},
                     m.deployment_automation_name = {deployment_automation_name_wrapped},
+                    m.test_automation_names = {test_automation_names_wrapped},
                     m.commit_data_source = '{Config.get_commit_data_source()}',
                     m.deployment_data_source = '{Config.get_deployment_data_source()}',
                     m.project_management_data_source = '{Config.get_project_management_data_source()}',
@@ -50,3 +52,9 @@ class TwinMetaDataManager:
         '''
         result = Neo4j.run_query(query)
         print(result)
+
+    # wrap in double quotes but escape double quotes beforehand
+    @staticmethod
+    def _wrap_in_quotes(input_string):
+        input_string_with_escaped_quotes = input_string.replace('"', '\\"')
+        return f'"{input_string_with_escaped_quotes}"'
