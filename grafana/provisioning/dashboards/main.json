@@ -389,7 +389,7 @@
       },
       "targets": [
         {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)-[:INITIAL_DEPLOY]->(deployed_commit:Commit)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\n\nWITH deployment, deployed_commit\nORDER BY deployment.published_at\n\nRETURN datetime(deployment.published_at) as date, toInteger(duration.inSeconds(datetime(deployed_commit.date), datetime(deployment.published_at)).seconds / 3600.0) as leadTimeInHours",
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)-[:INITIAL_DEPLOY]->(deployed_commit:Commit)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\n\nWITH deployment, deployed_commit\nORDER BY deployment.published_at\n\nRETURN datetime(deployment.published_at) as date, avg(duration.inSeconds(datetime(deployed_commit.date), datetime(deployment.published_at)).seconds) / 3600.0 as leadTimeInHours",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
