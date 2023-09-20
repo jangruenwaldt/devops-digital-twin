@@ -800,41 +800,11 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
-      "description": "How many bugs were opened compared to closed bugs, weekly. A value of 0.2 means 0.2 new bugs were opened per closed bug.",
+      "description": "Runs per day",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 0,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+            "mode": "thresholds"
           },
           "mappings": [],
           "thresholds": {
@@ -846,36 +816,39 @@
               },
               {
                 "color": "red",
-                "value": 80
+                "value": 3600
               }
             ]
-          }
+          },
+          "unit": "none"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 5,
+        "h": 3,
         "w": 6,
         "x": 12,
         "y": 12
       },
-      "id": 1,
+      "id": 22,
       "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
         },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
+        "textMode": "auto"
       },
-      "pluginVersion": "10.0.2",
+      "pluginVersion": "9.5.6",
       "targets": [
         {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\n\nOPTIONAL MATCH (closedBugs:Issue)-[:HAS_LABEL]->(:IssueLabel {name: 'bug'}) \nWHERE date(datetime(closedBugs.closed_at)) = date\n\nOPTIONAL MATCH (openedBugs:Issue)-[:HAS_LABEL]->(:IssueLabel {name: 'bug'}) \nWHERE date(datetime(closedBugs.created_at)) = date\n\nWITH date,\nCASE \n    WHEN count(closedBugs) = 0 THEN count(openedBugs)\n    ELSE count(openedBugs) / count(closedBugs)\n  END AS openedBugsPerClosedBug\n\nRETURN date({year:date.year, week:date.week}) AS week, AVG(openedBugsPerClosedBug) AS avgOpenedBugsPerClosedBug",
+          "cypherQuery": "MATCH (a:Automation)\nWHERE a.is_deployment_job = true\n\nWITH a.name as deployment_job_name\n\nMATCH (run:AutomationRun {name: deployment_job_name})\n\nRETURN avg(duration.inSeconds(datetime(run.run_started_at), datetime(run.updated_at)).seconds)",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -883,8 +856,8 @@
           "refId": "A"
         }
       ],
-      "title": "Bugs opened vs bugs closed",
-      "type": "timeseries"
+      "title": "Test runs per day",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -947,6 +920,161 @@
         }
       ],
       "title": "Change Failure Rate",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "kniepdennis-neo4j-datasource",
+        "uid": "P13FD9E770BE36698"
+      },
+      "description": "How many bugs were opened compared to closed bugs, weekly. A value of 0.2 means 0.2 new bugs were opened per closed bug.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 15
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.2",
+      "targets": [
+        {
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\n\nOPTIONAL MATCH (closedBugs:Issue)-[:HAS_LABEL]->(:IssueLabel {name: 'bug'}) \nWHERE date(datetime(closedBugs.closed_at)) = date\n\nOPTIONAL MATCH (openedBugs:Issue)-[:HAS_LABEL]->(:IssueLabel {name: 'bug'}) \nWHERE date(datetime(closedBugs.created_at)) = date\n\nWITH date,\nCASE \n    WHEN count(closedBugs) = 0 THEN count(openedBugs)\n    ELSE count(openedBugs) / count(closedBugs)\n  END AS openedBugsPerClosedBug\n\nRETURN date({year:date.year, week:date.week}) AS week, AVG(openedBugsPerClosedBug) AS avgOpenedBugsPerClosedBug",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Bugs opened vs bugs closed",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "kniepdennis-neo4j-datasource",
+        "uid": "P13FD9E770BE36698"
+      },
+      "description": "Average test run duration in hh:mm:ss",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 3600
+              }
+            ]
+          },
+          "unit": "dthms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 12,
+        "y": 15
+      },
+      "id": 23,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.5.6",
+      "targets": [
+        {
+          "cypherQuery": "MATCH (a:Automation)\nWHERE a.is_deployment_job = true\n\nWITH a.name as deployment_job_name\n\nMATCH (run:AutomationRun {name: deployment_job_name})\n\nRETURN avg(duration.inSeconds(datetime(run.run_started_at), datetime(run.updated_at)).seconds)",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Average test run duration",
       "type": "stat"
     },
     {
