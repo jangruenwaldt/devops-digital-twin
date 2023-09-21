@@ -878,7 +878,7 @@
       "pluginVersion": "9.5.6",
       "targets": [
         {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\n\nOPTIONAL MATCH (a:AutomationRun) WHERE date(datetime(a.run_started_at)) = date\n\nRETURN date, count(a) as runs",
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\n\nMATCH (m:TwinMetaData)\n\nOPTIONAL MATCH (a:AutomationRun) WHERE date(datetime(a.run_started_at)) = date and a.name in m.test_automation_names\n\nRETURN date, count(a) as runs",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
