@@ -31,7 +31,7 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
 
     def _fetch_history_of_workflow(self, all_workflows_history_cache, wf):
         api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/actions/workflows/{wf["id"]}/runs' \
-                  f'?per_page=100&created=>{Config.get_automation_history_since()}&branch={Config.get_main_branch()}'
+                  f'?per_page=100&created=>{Config.get_automation_history_since()}'
 
         cached_data = []
         if all_workflows_history_cache is not None:
