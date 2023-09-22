@@ -669,7 +669,7 @@
           "refId": "A"
         }
       ],
-      "title": "CI Mean Time To Recovery (Main branch)",
+      "title": "CI Time To Recovery (Main branch)",
       "type": "timeseries"
     },
     {
@@ -923,7 +923,7 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
-      "description": "How long the deployment job runs",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -953,7 +953,7 @@
         "x": 12,
         "y": 12
       },
-      "id": 17,
+      "id": 27,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -979,7 +979,7 @@
           "refId": "A"
         }
       ],
-      "title": "Deployment time",
+      "title": "CI Mean Time To Recovery (Main Branch)",
       "type": "stat"
     },
     {
@@ -1114,41 +1114,11 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
+      "description": "How long the deployment job runs",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "axisSoftMax": 100,
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 50,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+            "mode": "thresholds"
           },
           "mappings": [],
           "thresholds": {
@@ -1160,35 +1130,39 @@
               },
               {
                 "color": "red",
-                "value": 80
+                "value": 3600
               }
             ]
-          }
+          },
+          "unit": "dthms"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 5,
+        "h": 3,
         "w": 6,
         "x": 12,
         "y": 15
       },
-      "id": 21,
+      "id": 17,
       "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
         },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
+        "textMode": "auto"
       },
+      "pluginVersion": "9.5.6",
       "targets": [
         {
-          "cypherQuery": "MATCH (m:TwinMetaData)\nMATCH (run:AutomationRun {name: m.deployment_automation_name})\n\nWITH date(datetime(run.run_started_at)) AS date, CASE run.conclusion WHEN 'success' THEN 1 ELSE 0 END AS wasSuccess\n\nRETURN date, (SUM(wasSuccess) * 100.0 / COUNT(*)) AS successRate\nORDER BY date",
+          "cypherQuery": "MATCH (a:Automation)\nWHERE a.is_deployment_job = true\n\nWITH a.name as deployment_job_name\n\nMATCH (run:AutomationRun {name: deployment_job_name})\n\nRETURN avg(duration.inSeconds(datetime(run.run_started_at), datetime(run.updated_at)).seconds)",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -1196,8 +1170,8 @@
           "refId": "A"
         }
       ],
-      "title": "Deployment Success Rate",
-      "type": "timeseries"
+      "title": "Deployment time",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -1415,6 +1389,96 @@
       ],
       "title": "CI Success Rate (All other branches)",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "kniepdennis-neo4j-datasource",
+        "uid": "P13FD9E770BE36698"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMax": 100,
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 18
+      },
+      "id": 21,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "cypherQuery": "MATCH (m:TwinMetaData)\nMATCH (run:AutomationRun {name: m.deployment_automation_name})\n\nWITH date(datetime(run.run_started_at)) AS date, CASE run.conclusion WHEN 'success' THEN 1 ELSE 0 END AS wasSuccess\n\nRETURN date, (SUM(wasSuccess) * 100.0 / COUNT(*)) AS successRate\nORDER BY date",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Deployment Success Rate",
+      "type": "timeseries"
     }
   ],
   "refresh": "",
@@ -1425,8 +1489,8 @@
     "list": []
   },
   "time": {
-    "from": "now-15d",
-    "to": "now"
+    "from": "now-16d",
+    "to": "now-5d"
   },
   "timepicker": {},
   "timezone": "",
