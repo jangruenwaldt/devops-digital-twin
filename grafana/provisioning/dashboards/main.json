@@ -907,7 +907,7 @@
       },
       "targets": [
         {
-          "cypherQuery": "MATCH (m:TwinMetaData)\nCALL {\n  MATCH (c:Commit)\n\n  WITH c\n  LIMIT 1\n  \n  RETURN c.branch as main_branch\n}\nMATCH (run:AutomationRun)\nWHERE run.head_branch = main_branch\n\nWITH date(datetime(run.run_started_at)) AS date, CASE run.conclusion WHEN 'success' THEN 1 ELSE 0 END AS wasSuccess\nWHERE date.weekDay <> 6 AND date.weekDay <> 7\n\nRETURN date, (SUM(wasSuccess) * 100.0 / COUNT(*)) AS successRate\nORDER BY date",
+          "cypherQuery": "MATCH (m:TwinMetaData)\nCALL {\n  MATCH (c:Commit)\n\n  WITH c\n  LIMIT 1\n  \n  RETURN c.branch as main_branch\n}\nMATCH (run:AutomationRun)\nWHERE run.head_branch = main_branch\n\nWITH date(datetime(run.run_started_at)) AS date, CASE run.conclusion WHEN 'failure' THEN 0 ELSE 1 END AS wasSuccess\nWHERE date.weekDay <> 6 AND date.weekDay <> 7\n\nRETURN date, (SUM(wasSuccess) * 100.0 / COUNT(*)) AS successRate\nORDER BY date",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -1379,7 +1379,7 @@
       },
       "targets": [
         {
-          "cypherQuery": "MATCH (m:TwinMetaData)\nCALL {\n  MATCH (c:Commit)\n\n  WITH c\n  LIMIT 1\n  \n  RETURN c.branch as main_branch\n}\nMATCH (run:AutomationRun)\nWHERE run.head_branch <> main_branch\n\nWITH date(datetime(run.run_started_at)) AS date, CASE run.conclusion WHEN 'success' THEN 1 ELSE 0 END AS wasSuccess\nWHERE date.weekDay <> 6 AND date.weekDay <> 7\n\nRETURN date, (SUM(wasSuccess) * 100.0 / COUNT(*)) AS successRate\nORDER BY date",
+          "cypherQuery": "MATCH (m:TwinMetaData)\nCALL {\n  MATCH (c:Commit)\n\n  WITH c\n  LIMIT 1\n  \n  RETURN c.branch as main_branch\n}\nMATCH (run:AutomationRun)\nWHERE run.head_branch <> main_branch\n\nWITH date(datetime(run.run_started_at)) AS date, CASE run.conclusion WHEN 'failure' THEN 0 ELSE 1 END AS wasSuccess\nWHERE date.weekDay <> 6 AND date.weekDay <> 7\n\nRETURN date, (SUM(wasSuccess) * 100.0 / COUNT(*)) AS successRate\nORDER BY date",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
