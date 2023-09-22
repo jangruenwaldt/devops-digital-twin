@@ -98,7 +98,7 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
-      "description": "Deployment Frequency in hours. How much time lies between two deployments on average.",
+      "description": "Deployment / Release Frequency in hours. How much time lies between two deployments on average. Depends on project type if release or deployment is used.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -154,7 +154,7 @@
           "refId": "A"
         }
       ],
-      "title": "Deployment Frequency",
+      "title": "Deployment / Release Frequency",
       "type": "stat"
     },
     {
@@ -425,7 +425,7 @@
               "tooltip": false,
               "viz": false
             },
-            "lineInterpolation": "linear",
+            "lineInterpolation": "smooth",
             "lineWidth": 1,
             "pointSize": 5,
             "scaleDistribution": {
