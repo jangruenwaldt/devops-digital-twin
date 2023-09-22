@@ -27,6 +27,8 @@ class Request:
             Request._handle_rate_limit()
             response = requests.get(url, headers=headers)
 
+        # TODO: should probably print to console the error, but try again after back-off for X seconds for sporadic
+        #  issues.
         response.raise_for_status()
         return response
 
