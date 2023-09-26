@@ -26,6 +26,12 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
+      "gridPos": {
+        "h": 2,
+        "w": 6,
+        "x": 0,
+        "y": 0
+      },
       "id": 14,
       "options": {
         "code": {
@@ -33,7 +39,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "# DORA metrics\nor open-source alternative metric",
+        "content": "# DORA metrics",
         "mode": "markdown"
       },
       "pluginVersion": "9.5.6",
@@ -86,6 +92,70 @@
       },
       "pluginVersion": "9.5.6",
       "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "kniepdennis-neo4j-datasource",
+        "uid": "P13FD9E770BE36698"
+      },
+      "description": "Deployment / Release Frequency in hours. How much time lies between two deployments on average. Depends on project type if release or deployment is used.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 168
+              }
+            ]
+          },
+          "unit": "h"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 0,
+        "y": 2
+      },
+      "id": 10,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.5.6",
+      "targets": [
+        {
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\n\nWITH deployment\nORDER BY deployment.published_at\n\nWITH collect(deployment.published_at) AS deploymentDates\n\nUNWIND range(0, size(deploymentDates) - 2) AS i\nWITH deploymentDates[i] AS currentDeployment, deploymentDates[i+1] AS nextDeployment\n\nRETURN avg(duration.inSeconds(datetime(currentDeployment), datetime(nextDeployment)).seconds / 3600.0) AS deploymentFrequencyInHours",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Deployment / Release Frequency",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -335,11 +405,41 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
-      "description": "Deployment / Release Frequency in hours. How much time lies between two deployments on average. Depends on project type if release or deployment is used.",
+      "description": "Lead time in hours per deployment. Time from commit to deploy.",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
@@ -351,39 +451,35 @@
               },
               {
                 "color": "red",
-                "value": 168
+                "value": 80
               }
             ]
-          },
-          "unit": "h"
+          }
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 3,
+        "h": 5,
         "w": 6,
         "x": 0,
-        "y": 3
+        "y": 5
       },
-      "id": 10,
+      "id": 12,
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
         },
-        "textMode": "auto"
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
-      "pluginVersion": "9.5.6",
       "targets": [
         {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\n\nWITH deployment\nORDER BY deployment.published_at\n\nWITH collect(deployment.published_at) AS deploymentDates\n\nUNWIND range(0, size(deploymentDates) - 2) AS i\nWITH deploymentDates[i] AS currentDeployment, deploymentDates[i+1] AS nextDeployment\n\nRETURN avg(duration.inSeconds(datetime(currentDeployment), datetime(nextDeployment)).seconds / 3600.0) AS deploymentFrequencyInHours",
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)-[:INITIAL_DEPLOY]->(deployed_commit:Commit)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\n\nWITH deployment, deployed_commit\nORDER BY deployment.published_at\n\nRETURN datetime(deployment.published_at) as date, avg(duration.inSeconds(datetime(deployed_commit.date), datetime(deployment.published_at)).seconds) / 3600.0 as leadTimeInHours",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -391,8 +487,8 @@
           "refId": "A"
         }
       ],
-      "title": "Deployment / Release Frequency",
-      "type": "stat"
+      "title": "Lead time (per deployment)",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -482,96 +578,6 @@
         }
       ],
       "title": "Deployment Success Rate",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "kniepdennis-neo4j-datasource",
-        "uid": "P13FD9E770BE36698"
-      },
-      "description": "Lead time in hours per deployment. Time from commit to deploy.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 50,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "smooth",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 6,
-        "x": 0,
-        "y": 6
-      },
-      "id": 12,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)-[:INITIAL_DEPLOY]->(deployed_commit:Commit)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\n\nWITH deployment, deployed_commit\nORDER BY deployment.published_at\n\nRETURN datetime(deployment.published_at) as date, avg(duration.inSeconds(datetime(deployed_commit.date), datetime(deployment.published_at)).seconds) / 3600.0 as leadTimeInHours",
-          "datasource": {
-            "type": "kniepdennis-neo4j-datasource",
-            "uid": "P13FD9E770BE36698"
-          },
-          "refId": "A"
-        }
-      ],
-      "title": "Lead time (per deployment)",
       "type": "timeseries"
     },
     {
@@ -758,30 +764,6 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
-      "gridPos": {
-        "h": 2,
-        "w": 6,
-        "x": 18,
-        "y": 10
-      },
-      "id": 29,
-      "options": {
-        "code": {
-          "language": "plaintext",
-          "showLineNumbers": false,
-          "showMiniMap": false
-        },
-        "content": "# Stability",
-        "mode": "markdown"
-      },
-      "pluginVersion": "9.5.6",
-      "type": "text"
-    },
-    {
-      "datasource": {
-        "type": "kniepdennis-neo4j-datasource",
-        "uid": "P13FD9E770BE36698"
-      },
       "description": "Time from commit to deploy in hours",
       "fieldConfig": {
         "defaults": {
@@ -810,7 +792,7 @@
         "h": 3,
         "w": 6,
         "x": 0,
-        "y": 11
+        "y": 10
       },
       "id": 11,
       "options": {
@@ -840,6 +822,30 @@
       ],
       "title": "Mean Lead Time",
       "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "kniepdennis-neo4j-datasource",
+        "uid": "P13FD9E770BE36698"
+      },
+      "gridPos": {
+        "h": 2,
+        "w": 6,
+        "x": 18,
+        "y": 10
+      },
+      "id": 29,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "# Stability",
+        "mode": "markdown"
+      },
+      "pluginVersion": "9.5.6",
+      "type": "text"
     },
     {
       "datasource": {
@@ -1116,9 +1122,9 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 3,
+        "w": 6,
         "x": 0,
-        "y": 14
+        "y": 13
       },
       "id": 18,
       "options": {
@@ -1147,69 +1153,6 @@
         }
       ],
       "title": "Change Failure Rate",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "kniepdennis-neo4j-datasource",
-        "uid": "P13FD9E770BE36698"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 20
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 3,
-        "y": 14
-      },
-      "id": 30,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "9.5.6",
-      "targets": [
-        {
-          "cypherQuery": "MATCH (n:TwinMetaData)\nWITH n.project_management_incident_categories as categories\n\nMATCH (issue:Issue)-[r:HAS_LABEL]->(l:IssueLabel)\nWHERE datetime(issue.created_at) >= datetime({epochMillis: ${__from}}) AND datetime(issue.created_at) <= datetime({epochMillis: ${__to}})\n\nWITH issue, collect(l.name) as issueLabels, categories\nWHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\")))\n\nWITH collect(issue) as incident_issues\n\nMATCH (d:Deployment)\nOPTIONAL MATCH (n:Deployment)-[:SUCCEEDS]->(d)\nWITH d, COALESCE(n.published_at, datetime()) as nextPublishedAt, incident_issues\n\nWITH d, NOT isEmpty([issue IN incident_issues WHERE datetime(issue.created_at) >= datetime(d.published_at) AND datetime(issue.created_at) < datetime(nextPublishedAt)]) as has_incident\n\nRETURN sum(CASE WHEN has_incident THEN 1 ELSE 0 END) * 1.0 / count(*) as incident_rate",
-          "datasource": {
-            "type": "kniepdennis-neo4j-datasource",
-            "uid": "P13FD9E770BE36698"
-          },
-          "refId": "A"
-        }
-      ],
-      "title": "Bug Issue Rate",
       "type": "stat"
     },
     {
@@ -1335,9 +1278,9 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 3,
+        "w": 6,
         "x": 0,
-        "y": 17
+        "y": 16
       },
       "id": 19,
       "options": {
@@ -1366,70 +1309,6 @@
         }
       ],
       "title": "MTTR",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "kniepdennis-neo4j-datasource",
-        "uid": "P13FD9E770BE36698"
-      },
-      "description": "How long it takes for bugs to be closed",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 3600
-              }
-            ]
-          },
-          "unit": "dtdhms"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 3,
-        "y": 17
-      },
-      "id": 31,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "9.5.6",
-      "targets": [
-        {
-          "cypherQuery": "MATCH (n:TwinMetaData)\nWITH n.project_management_incident_categories as categories\n\nMATCH (issue:Issue)-[r:HAS_LABEL]->(l:IssueLabel)\nWHERE datetime(issue.created_at) >= datetime({epochMillis: ${__from}}) AND datetime(issue.created_at) <= datetime({epochMillis: ${__to}})\n\nWITH issue, collect(l.name) as issueLabels, categories\nWHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\"))) AND issue.state = 'closed'\n\nRETURN avg(duration.inSeconds(datetime(issue.created_at), datetime(issue.closed_at)).seconds) as meanTimeToRecoverInSeconds",
-          "datasource": {
-            "type": "kniepdennis-neo4j-datasource",
-            "uid": "P13FD9E770BE36698"
-          },
-          "refId": "A"
-        }
-      ],
-      "title": "Time To Repair Code",
       "type": "stat"
     },
     {
@@ -1665,6 +1544,6 @@
   "timezone": "",
   "title": "DevOps Tech Debt Metrics",
   "uid": "a49a1264-f31e-4333-a906-0f4a2c5340f8",
-  "version": 48,
+  "version": 49,
   "weekStart": ""
 }
