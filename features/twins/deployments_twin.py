@@ -27,7 +27,7 @@ CALL apoc.periodic.iterate(
     OPTIONAL MATCH (latest_commit:Commit {hash: deployment.latest_included_commit})
     
     WITH deployment
-    ORDER BY deployment.published_at
+    ORDER BY latest_commit.date
     WHERE latest_commit is not null
     
     RETURN deployment
