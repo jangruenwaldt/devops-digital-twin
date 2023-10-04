@@ -23,6 +23,9 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
         for wf in workflows:
             data = self._fetch_history_of_workflow(cached_data, wf)
             raw_automation_history.extend(data)
+            # Store results here to not lose progress if it fails later.
+            DataManager.store_raw_api_data(DataTypes.AUTOMATION_HISTORY, DataSources.GITHUB, self.owner, self.repo_name,
+                                           raw_automation_history)
 
         if self.enable_logs:
             print(f'Total: {len(raw_automation_history)} automation runs')
