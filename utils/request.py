@@ -27,15 +27,32 @@ class Request:
     def _make_request(url, headers=None):
         if Config.get_enable_logs():
             print(f'Fetching from {url}')
-        response = requests.get(url, headers=headers)
-        while Request._rate_limit_reached(response):
-            Request._handle_rate_limit()
-            response = requests.get(url, headers=headers)
 
-        # TODO: should probably print to console the error, but try again after back-off for X seconds for sporadic
-        #  issues.
-        response.raise_for_status()
-        return response
+        max_retries = 3
+        retries = 0
+        backoff_seconds = 5
+
+        while retries < max_retries:
+            try:
+                response = requests.get(url, headers=headers)
+                while Request._rate_limit_reached(response):
+                    Request._handle_rate_limit()
+                    response = requests.get(url, headers=headers)
+
+                response.raise_for_status()
+                return response
+            except requests.exceptions.RequestException as e:
+                print(f"Error: {e}")
+                print(f"Retry attempt {retries + 1} in {backoff_seconds} seconds...")
+
+                retries += 1
+                if retries < max_retries:
+                    time.sleep(backoff_seconds)
+                else:
+                    print(f"Max retries reached. Request failed: {url}")
+                    raise e
+
+        return None
 
     @staticmethod
     def get_json(url, headers=None):
