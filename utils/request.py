@@ -10,8 +10,13 @@ class Request:
 
     @staticmethod
     def _rate_limit_reached(response):
-        return response.status_code == 403 and 'X-RateLimit-Remaining' in response.headers and response.headers[
-            'X-RateLimit-Remaining'] == '0'
+        rate_limit_readable = response.status_code == 403 and 'X-RateLimit-Remaining' in response.headers
+        if rate_limit_readable:
+            limit_remaining = response.headers['X-RateLimit-Remaining']
+            print(f'Remaining rate limit: {limit_remaining}')
+            return limit_remaining == '0'
+        else:
+            return False
 
     @staticmethod
     def _handle_rate_limit():
