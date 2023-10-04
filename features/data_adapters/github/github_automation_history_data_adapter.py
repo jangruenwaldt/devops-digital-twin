@@ -42,6 +42,13 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
 
             fetch_limit_changed = DataManager.retrieve_by_key(
                 'automation_history_fetched_since') != Config.get_automation_history_since()
+            if fetch_limit_changed:
+                print('Fetch limit changed since last time, re-fetching all workflows in relevant timeframe.')
+                print(
+                    f'Was before: {DataManager.retrieve_by_key("automation_history_fetched_since")},'
+                    f' is now: {Config.get_automation_history_since()}')
+            else:
+                print(f'Fetch limit unchanged: {Config.get_automation_history_since()}')
 
             def check_if_existing_wf_reached(new_data):
                 # Have to re-fetch all data as settings changed (would be possible to optimize by skipping existing)
