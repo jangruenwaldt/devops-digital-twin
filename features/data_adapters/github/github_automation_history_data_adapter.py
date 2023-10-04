@@ -40,7 +40,13 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
         if cached_data is not None and len(cached_data) > 0:
             latest_workflow_run = max(cached_data, key=lambda x: x.get('updated_at', ''))
 
+            fetch_limit_changed = DataManager.retrieve_by_key(
+                'automation_history_fetched_since') != Config.get_automation_history_since()
+
             def check_if_existing_wf_reached(new_data):
+                # Have to re-fetch all data as settings changed (would be possible to optimize by skipping existing)
+                if fetch_limit_changed:
+                    return False
                 runs = new_data['workflow_runs']
                 return latest_workflow_run['id'] in map(lambda x: x.get('id', ''), runs)
 
@@ -83,6 +89,7 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
         raw_automation_history = self._fetch_automation_runs()
         DataManager.store_raw_api_data(DataTypes.AUTOMATION_HISTORY, DataSources.GITHUB, self.owner, self.repo_name,
                                        raw_automation_history)
+        DataManager.store_by_key('automation_history_fetched_since', Config.get_automation_history_since())
 
         automation_history = list(map(self._transform_api_response_to_data_format, raw_automation_history))
         DataManager.store_twin_data(DataTypes.AUTOMATION_HISTORY, self.owner, self.repo_name, automation_history)
