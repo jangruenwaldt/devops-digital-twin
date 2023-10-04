@@ -28,7 +28,7 @@ class Request:
         if Config.get_enable_logs():
             print(f'Fetching from {url}')
 
-        max_retries = 3
+        max_retries = 10
         retries = 0
         backoff_seconds = 5
 
