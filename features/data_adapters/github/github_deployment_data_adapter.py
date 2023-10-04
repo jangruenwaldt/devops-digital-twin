@@ -12,10 +12,16 @@ class GitHubDeploymentDataAdapter(GitHubDataFetcher):
         super().__init__(repo_url)
 
     def _get_latest_commit_hash_in_release(self, tag_name):
-        tag_object = CachedRequest.get_json(
+        api_response = CachedRequest.get_json(
             f'https://api.github.com/repos/{self.owner}/{self.repo_name}/git/refs/tags/{tag_name}',
             headers=Config().get_github_request_header())
-        return tag_object['object']['sha']
+        tag_object = api_response['object']
+
+        # Edge case: API sometimes returns type tag instead of type commit, needs another request
+        if 'type' in tag_object and tag_object['type'] == 'tag':
+            commit_response = CachedRequest.get_json(tag_object['url'], headers=Config().get_github_request_header())
+            tag_object = commit_response['object']
+        return tag_object['sha']
 
     def _fetch_releases(self):
         api_url = f'https://api.github.com/repos/{self.owner}/{self.repo_name}/releases'
