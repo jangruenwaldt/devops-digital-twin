@@ -39,7 +39,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "# DORA metrics",
+        "content": "### Open-source DevOps metrics",
         "mode": "markdown"
       },
       "pluginVersion": "9.5.6",
