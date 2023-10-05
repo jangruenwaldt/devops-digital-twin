@@ -154,7 +154,7 @@
           "refId": "A"
         }
       ],
-      "title": "Deployment / Release Frequency",
+      "title": "Release Frequency",
       "type": "stat"
     },
     {
@@ -1568,13 +1568,13 @@
     "list": []
   },
   "time": {
-    "from": "now-1y",
+    "from": "now-6M",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "DevOps Tech Debt Metrics",
   "uid": "a49a1264-f31e-4333-a906-0f4a2c5340f8",
-  "version": 52,
+  "version": 53,
   "weekStart": ""
 }
