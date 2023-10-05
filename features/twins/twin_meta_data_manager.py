@@ -40,7 +40,7 @@ class TwinMetaDataManager:
         query = f'''
                 MERGE (m:TwinMetaData)
                 SET
-                    m.project_management_incident_categories = {Config.get_project_management_incident_categories()},
+                    m.project_management_bug_categories = {Config.project_management_bug_categories()},
                     m.deployment_automation_name = {deployment_automation_name_wrapped},
                     m.test_automation_names = [{', '.join(test_automation_names_wrapped)}],
                     m.commit_data_source = '{Config.get_commit_data_source()}',

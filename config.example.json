@@ -16,7 +16,7 @@
   "test_automation_name" : [
     "Run Tests"
   ],
-  "project_management_incident_categories": [
+  "project_management_bug_categories": [
     "incident",
     "crash&help-wanted",
     "you can combine two categories using the & sign. Both have to be present to be considered an incident."

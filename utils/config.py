@@ -27,8 +27,8 @@ class Config:
         return CONFIG_DATA.get('twin_name', None)
 
     @staticmethod
-    def get_project_management_incident_categories():
-        return CONFIG_DATA.get('project_management_incident_categories', None)
+    def project_management_bug_categories():
+        return CONFIG_DATA.get('project_management_bug_categories', None)
 
     @staticmethod
     def get_test_automation_names():
