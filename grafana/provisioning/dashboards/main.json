@@ -1253,6 +1253,7 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
+      "description": "For the primary application you work on, what percentage of changes requested imply a bug correction or code repair (e.g., malfunction of the application)? (Ruiz et al.)",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1300,7 +1301,7 @@
       "pluginVersion": "9.5.6",
       "targets": [
         {
-          "cypherQuery": "MATCH (n:TwinMetaData)\nWITH n.project_management_bug_categories as categories\n\nMATCH (issue:Issue)-[r:HAS_LABEL]->(l:IssueLabel)\nWHERE datetime(issue.created_at) >= datetime({epochMillis: ${__from}}) AND datetime(issue.created_at) <= datetime({epochMillis: ${__to}})\n\nWITH issue, collect(l.name) as issueLabels, categories\nWHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\")))\n\nWITH collect(issue) as incident_issues\n\nMATCH (d:Deployment)\nOPTIONAL MATCH (n:Deployment)-[:SUCCEEDS]->(d)\nWITH d, COALESCE(n.published_at, datetime()) as nextPublishedAt, incident_issues\n\nWITH d, NOT isEmpty([issue IN incident_issues WHERE datetime(issue.created_at) >= datetime(d.published_at) AND datetime(issue.created_at) < datetime(nextPublishedAt)]) as has_incident\n\nRETURN sum(CASE WHEN has_incident THEN 1 ELSE 0 END) * 1.0 / count(*) as incident_rate",
+          "cypherQuery": "RETURN 54",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -1308,7 +1309,7 @@
           "refId": "A"
         }
       ],
-      "title": "Change Failure Rate",
+      "title": "Bug Issue Rate",
       "type": "stat"
     },
     {
@@ -1575,6 +1576,6 @@
   "timezone": "",
   "title": "DevOps Tech Debt Metrics",
   "uid": "a49a1264-f31e-4333-a906-0f4a2c5340f8",
-  "version": 53,
+  "version": 56,
   "weekStart": ""
 }
