@@ -1081,7 +1081,7 @@
       "pluginVersion": "10.0.2",
       "targets": [
         {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\n\nOPTIONAL MATCH (closedBugs:Issue)-[:HAS_LABEL]->(:IssueLabel {name: 'bug'}) \nWHERE date(datetime(closedBugs.closed_at)) = date\n\nOPTIONAL MATCH (openedBugs:Issue)-[:HAS_LABEL]->(:IssueLabel {name: 'bug'}) \nWHERE date(datetime(closedBugs.created_at)) = date\n\nWITH date,\nCASE \n    WHEN count(closedBugs) = 0 THEN count(openedBugs)\n    ELSE count(openedBugs) / count(closedBugs)\n  END AS openedBugsPerClosedBug\n\nRETURN date({year:date.year, week:date.week}) AS week, AVG(openedBugsPerClosedBug) AS avgOpenedBugsPerClosedBug",
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\n\nOPTIONAL MATCH (closedBugs:Issue)-[:HAS_LABEL]->(:IssueLabel {name: 'Bug'}) \nWHERE date(datetime(closedBugs.closed_at)) = date\n\nOPTIONAL MATCH (openedBugs:Issue)-[:HAS_LABEL]->(:IssueLabel {name: 'Bug'}) \nWHERE date(datetime(closedBugs.created_at)) = date\n\nWITH date,\nCASE \n    WHEN count(closedBugs) = 0 THEN count(openedBugs)\n    ELSE count(openedBugs) / count(closedBugs)\n  END AS openedBugsPerClosedBug\n\nRETURN date({year:date.year, week:date.week}) AS week, AVG(openedBugsPerClosedBug) AS avgOpenedBugsPerClosedBug",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -1257,7 +1257,37 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
           "thresholds": {
@@ -1278,30 +1308,28 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 3,
+        "h": 4,
         "w": 6,
         "x": 0,
         "y": 16
       },
       "id": 18,
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
         },
-        "textMode": "auto"
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "9.5.6",
       "targets": [
         {
-          "cypherQuery": "RETURN 54",
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\n\nMATCH (n:TwinMetaData)\nWITH n.project_management_bug_categories as categories, date\n\nOPTIONAL MATCH (issue:Issue)\n  WHERE date(datetime(issue.created_at)) = date\n\nWITH date, count(issue) as overallOpened, categories\n\nCALL {\nWITH date, categories\n\nOPTIONAL MATCH (issue:Issue)-[r:HAS_LABEL]->(l:IssueLabel)\n  WHERE date(datetime(issue.created_at)) = date\n\nWITH collect(l.name) as issueLabels, categories\n  WHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\")))\n\nRETURN count(*) as bugIssuesOpened\n}\n\nRETURN date,\nCASE\n         WHEN overallOpened = 0 THEN bugIssuesOpened\n         ELSE 100 * bugIssuesOpened / overallOpened\n         END AS bugIssueRate\n\n",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -1309,8 +1337,8 @@
           "refId": "A"
         }
       ],
-      "title": "Bug Issue Rate",
-      "type": "stat"
+      "title": "Bug Issue Rate (Daily)",
+      "type": "timeseries"
     },
     {
       "datasource": {
