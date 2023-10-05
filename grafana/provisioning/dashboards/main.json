@@ -1097,6 +1097,7 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
+      "description": "Time To Repair Code - how long does it generally take to repair the code when an bug or a defect that impacts users occurs (e.g., bug issues)? (Ruiz et al.)",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1112,11 +1113,11 @@
               },
               {
                 "color": "red",
-                "value": 20
+                "value": 3600
               }
             ]
           },
-          "unit": "percent"
+          "unit": "dtdhms"
         },
         "overrides": []
       },
@@ -1126,7 +1127,7 @@
         "x": 0,
         "y": 13
       },
-      "id": 18,
+      "id": 19,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -1144,7 +1145,7 @@
       "pluginVersion": "9.5.6",
       "targets": [
         {
-          "cypherQuery": "MATCH (n:TwinMetaData)\nWITH n.project_management_incident_categories as categories\n\nMATCH (issue:Issue)-[r:HAS_LABEL]->(l:IssueLabel)\nWHERE datetime(issue.created_at) >= datetime({epochMillis: ${__from}}) AND datetime(issue.created_at) <= datetime({epochMillis: ${__to}})\n\nWITH issue, collect(l.name) as issueLabels, categories\nWHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\")))\n\nWITH collect(issue) as incident_issues\n\nMATCH (d:Deployment)\nOPTIONAL MATCH (n:Deployment)-[:SUCCEEDS]->(d)\nWITH d, COALESCE(n.published_at, datetime()) as nextPublishedAt, incident_issues\n\nWITH d, NOT isEmpty([issue IN incident_issues WHERE datetime(issue.created_at) >= datetime(d.published_at) AND datetime(issue.created_at) < datetime(nextPublishedAt)]) as has_incident\n\nRETURN sum(CASE WHEN has_incident THEN 1 ELSE 0 END) * 1.0 / count(*) as incident_rate",
+          "cypherQuery": "MATCH (n:TwinMetaData)\nWITH n.project_management_incident_categories as categories\n\nMATCH (issue:Issue)-[r:HAS_LABEL]->(l:IssueLabel)\nWHERE datetime(issue.created_at) >= datetime({epochMillis: ${__from}}) AND datetime(issue.created_at) <= datetime({epochMillis: ${__to}})\n\nWITH issue, collect(l.name) as issueLabels, categories\nWHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\"))) AND issue.state = 'closed'\n\nRETURN avg(duration.inSeconds(datetime(issue.created_at), datetime(issue.closed_at)).seconds) as meanTimeToRecoverInSeconds",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -1152,7 +1153,7 @@
           "refId": "A"
         }
       ],
-      "title": "Change Failure Rate",
+      "title": "Time To Repair Code",
       "type": "stat"
     },
     {
@@ -1252,7 +1253,6 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
-      "description": "Mean Time To Recover - how long it takes for incidents to be resolved",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1268,11 +1268,11 @@
               },
               {
                 "color": "red",
-                "value": 3600
+                "value": 20
               }
             ]
           },
-          "unit": "dtdhms"
+          "unit": "percent"
         },
         "overrides": []
       },
@@ -1282,7 +1282,7 @@
         "x": 0,
         "y": 16
       },
-      "id": 19,
+      "id": 18,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -1300,7 +1300,7 @@
       "pluginVersion": "9.5.6",
       "targets": [
         {
-          "cypherQuery": "MATCH (n:TwinMetaData)\nWITH n.project_management_incident_categories as categories\n\nMATCH (issue:Issue)-[r:HAS_LABEL]->(l:IssueLabel)\nWHERE datetime(issue.created_at) >= datetime({epochMillis: ${__from}}) AND datetime(issue.created_at) <= datetime({epochMillis: ${__to}})\n\nWITH issue, collect(l.name) as issueLabels, categories\nWHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\"))) AND issue.state = 'closed'\n\nRETURN avg(duration.inSeconds(datetime(issue.created_at), datetime(issue.closed_at)).seconds) as meanTimeToRecoverInSeconds",
+          "cypherQuery": "MATCH (n:TwinMetaData)\nWITH n.project_management_incident_categories as categories\n\nMATCH (issue:Issue)-[r:HAS_LABEL]->(l:IssueLabel)\nWHERE datetime(issue.created_at) >= datetime({epochMillis: ${__from}}) AND datetime(issue.created_at) <= datetime({epochMillis: ${__to}})\n\nWITH issue, collect(l.name) as issueLabels, categories\nWHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\")))\n\nWITH collect(issue) as incident_issues\n\nMATCH (d:Deployment)\nOPTIONAL MATCH (n:Deployment)-[:SUCCEEDS]->(d)\nWITH d, COALESCE(n.published_at, datetime()) as nextPublishedAt, incident_issues\n\nWITH d, NOT isEmpty([issue IN incident_issues WHERE datetime(issue.created_at) >= datetime(d.published_at) AND datetime(issue.created_at) < datetime(nextPublishedAt)]) as has_incident\n\nRETURN sum(CASE WHEN has_incident THEN 1 ELSE 0 END) * 1.0 / count(*) as incident_rate",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -1308,7 +1308,7 @@
           "refId": "A"
         }
       ],
-      "title": "MTTR",
+      "title": "Change Failure Rate",
       "type": "stat"
     },
     {
