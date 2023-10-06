@@ -16,7 +16,7 @@ if os.path.isfile(CONFIG_PATH):
 class Config:
 
     @staticmethod
-    def get_deployment_regex():
+    def get_deployment_filter_regex():
         return CONFIG_DATA.get('deployment_regex', None)
 
     @staticmethod

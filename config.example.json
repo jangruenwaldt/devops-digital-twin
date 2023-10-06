@@ -21,5 +21,6 @@
     "crash&help-wanted",
     "you can combine two categories using the & sign. Both have to be present to be considered an incident."
   ],
-  "override_existing_data" : "false"
+  "override_existing_data" : "false",
+  "deployment_regex" : "^v5\\.\\d+\\.\\d+$"
 }

@@ -85,6 +85,10 @@ RETURN batches, total
 
     @staticmethod
     def _add_deployment_nodes(path):
+        optional_deployment_filter = ''
+        if Config.get_deployment_filter_regex() is not None:
+            optional_deployment_filter = f"WHERE deploy_data.name =~ '{Config.get_deployment_filter_regex()}'"
+
         add_deployment_nodes_query = f'''
 CALL apoc.periodic.iterate(
 "
@@ -92,7 +96,7 @@ CALL apoc.periodic.iterate(
 ",
 "
     WITH value AS deploy_data
-    WHERE deploy_data.name =~ '{Config.get_deployment_regex()}'
+    {optional_deployment_filter}
     
     MERGE (added_deploy:Deployment {{id: deploy_data.id}})
     SET
