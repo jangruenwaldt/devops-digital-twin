@@ -1293,7 +1293,7 @@
         "x": 0,
         "y": 16
       },
-      "id": 18,
+      "id": 32,
       "options": {
         "legend": {
           "calcs": [],
@@ -1309,7 +1309,7 @@
       "pluginVersion": "9.5.6",
       "targets": [
         {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\n\nMATCH (n:TwinMetaData)\nWITH n.project_management_bug_categories as categories, date\n\nOPTIONAL MATCH (issue:Issue)\n  WHERE date(datetime(issue.created_at)) = date\n\nWITH date, count(issue) as overallOpened, categories\n\nCALL {\nWITH date, categories\n\nOPTIONAL MATCH (issue:Issue)-[r:HAS_LABEL]->(l:IssueLabel)\n  WHERE date(datetime(issue.created_at)) = date\n\nWITH collect(l.name) as issueLabels, categories\n  WHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\")))\n\nRETURN count(*) as bugIssuesOpened\n}\n\nRETURN date,\nCASE\n         WHEN overallOpened = 0 THEN bugIssuesOpened\n         ELSE 100 * bugIssuesOpened / overallOpened\n         END AS bugIssueRate\n\n",
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\n\nMATCH (n:TwinMetaData)\nWITH n.project_management_bug_categories as categories, date\n\nOPTIONAL MATCH (issue:Issue)-[r:HAS_LABEL]-(i:IssueLabel) // Exclude issues without any labels, usually irrelevant.\n  WHERE date(datetime(issue.created_at)) = date\n\nWITH date, count(issue) as overallOpened, categories\n\nCALL {\nWITH date, categories\n\nOPTIONAL MATCH (issue:Issue)-[r:HAS_LABEL]->(l:IssueLabel)\n  WHERE date(datetime(issue.created_at)) = date\n\nWITH collect(l.name) as issueLabels, categories\n  WHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\")))\n\nRETURN count(*) as bugIssuesOpened\n}\n\nRETURN date,\nCASE\n         WHEN overallOpened = 0 THEN bugIssuesOpened\n         ELSE 100 * bugIssuesOpened / overallOpened\n         END AS bugIssueRate\n\n",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -1317,7 +1317,7 @@
           "refId": "A"
         }
       ],
-      "title": "Bug Issue Rate (Daily)",
+      "title": "Bug Issue Rate (per day)",
       "type": "timeseries"
     },
     {
@@ -1414,6 +1414,98 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
+      "description": "For the primary application you work on, what percentage of changes requested imply a bug correction or code repair (e.g., malfunction of the application)? (Ruiz et al.)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 20
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 0,
+        "y": 20
+      },
+      "id": 18,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.5.6",
+      "targets": [
+        {
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\n\nMATCH (n:TwinMetaData)\nWITH n.project_management_bug_categories as categories, date\n\nOPTIONAL MATCH (issue:Issue)-[r:HAS_LABEL]-(i:IssueLabel) // Exclude issues without any labels, usually irrelevant.\n  WHERE date(datetime(issue.created_at)) = date\n\nWITH date, count(issue) as overallOpened, categories\n\nCALL {\nWITH date, categories\n\nOPTIONAL MATCH (issue:Issue)-[r:HAS_LABEL]->(l:IssueLabel)\n  WHERE date(datetime(issue.created_at)) = date\n\nWITH collect(l.name) as issueLabels, categories\n  WHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\")))\n\nRETURN count(*) as bugIssuesOpened\n}\n\nRETURN date, bugIssuesOpened, overallOpened,\nCASE\n         WHEN overallOpened = 0 THEN bugIssuesOpened\n         ELSE bugIssuesOpened / overallOpened\n         END AS bugIssueRate\n\n",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Opened Bugs vs All Requested Changes",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "kniepdennis-neo4j-datasource",
+        "uid": "P13FD9E770BE36698"
+      },
       "description": "Mean test run duration in hh:mm:ss",
       "fieldConfig": {
         "defaults": {
@@ -1489,6 +1581,6 @@
   "timezone": "",
   "title": "DevOps Tech Debt Metrics",
   "uid": "a49a1264-f31e-4333-a906-0f4a2c5340f8",
-  "version": 61,
+  "version": 62,
   "weekStart": ""
 }
