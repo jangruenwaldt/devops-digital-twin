@@ -1,3 +1,4 @@
+from utils.config import Config
 from utils.neo4j import Neo4j
 
 
@@ -91,6 +92,8 @@ CALL apoc.periodic.iterate(
 ",
 "
     WITH value AS deploy_data
+    WHERE deploy_data.name =~ '{Config.get_deployment_regex()}'
+    
     MERGE (added_deploy:Deployment {{id: deploy_data.id}})
     SET
     added_deploy.name = deploy_data.name,

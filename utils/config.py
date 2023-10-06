@@ -14,6 +14,11 @@ if os.path.isfile(CONFIG_PATH):
 
 
 class Config:
+
+    @staticmethod
+    def get_deployment_regex():
+        return CONFIG_DATA.get('deployment_regex', None)
+
     @staticmethod
     def get_pat():
         return CONFIG_DATA.get('personal_access_token', None)
