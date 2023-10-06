@@ -75,6 +75,11 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
 
     @staticmethod
     def _transform_api_response_to_data_format(data):
+        triggering_actor = data.get('triggering_actor', {})
+        if triggering_actor is not None:
+            started_by = triggering_actor.get('login', None)
+        else:
+            started_by = None
         return {
             'id': data['id'],
             'name': data['name'],
@@ -91,7 +96,7 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
                 microsecond=0).isoformat(),
             'updated_at': datetime.strptime(data['updated_at'], '%Y-%m-%dT%H:%M:%SZ').replace(
                 microsecond=0).isoformat(),
-            'started_by': data.get('triggering_actor', {}).get('login', None),
+            'started_by': started_by,
             'run_attempt': data['run_attempt'],
         }
 
