@@ -262,6 +262,7 @@
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
+            "axisSoftMax": 100,
             "barAlignment": 0,
             "drawStyle": "line",
             "fillOpacity": 50,
@@ -310,7 +311,7 @@
         "x": 12,
         "y": 2
       },
-      "id": 8,
+      "id": 26,
       "options": {
         "legend": {
           "calcs": [],
@@ -325,7 +326,7 @@
       },
       "targets": [
         {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\nWHERE date.weekDay <> 6 AND date.weekDay <> 7\n\n\nOPTIONAL MATCH (r:AutomationRun) \nWHERE date(datetime(r.run_started_at)) = date\n\nRETURN date, count(r) as runs",
+          "cypherQuery": "MATCH (m:TwinMetaData)\nCALL {\n  MATCH (c:Commit)\n\n  WITH c\n  LIMIT 1\n  \n  RETURN c.branch as main_branch\n}\nMATCH (run:AutomationRun)\nWHERE run.head_branch <> main_branch\n\nWITH date(datetime(run.run_started_at)) AS date, CASE run.conclusion WHEN 'failure' THEN 0 ELSE 1 END AS wasSuccess\nWHERE date.weekDay <> 6 AND date.weekDay <> 7\n\nRETURN date, (SUM(wasSuccess) * 100.0 / COUNT(*)) AS successRate\nORDER BY date",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -333,7 +334,7 @@
           "refId": "A"
         }
       ],
-      "title": "CI Runs per day",
+      "title": "CI Success Rate (All other branches)",
       "type": "timeseries"
     },
     {
@@ -733,7 +734,7 @@
         "x": 12,
         "y": 7
       },
-      "id": 25,
+      "id": 8,
       "options": {
         "legend": {
           "calcs": [],
@@ -748,7 +749,7 @@
       },
       "targets": [
         {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (m:TwinMetaData)\nWITH fromDate, toDate, m.main_branch as main_branch\n\nMATCH (failedRun:AutomationRun {head_branch: main_branch, conclusion: 'failure'})\nWHERE date(datetime(failedRun.run_started_at)) > fromDate\nAND date(datetime(failedRun.run_started_at)) < toDate\n\nCALL {\nWITH failedRun, main_branch\nMATCH (run:AutomationRun {head_branch: main_branch, conclusion: 'success', name: failedRun.name})\nWHERE run.run_started_at > failedRun.updated_at\n\nRETURN run\nORDER BY run.updated_at ASC\nLIMIT 1\n}\n\nWITH run, failedRun\nORDER BY run.updated_at\n\nRETURN date(datetime(run.run_started_at)), duration.inSeconds(datetime(failedRun.updated_at), datetime(run.run_started_at)).seconds/60 as timeToRecoveryInMinutes",
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\nWHERE date.weekDay <> 6 AND date.weekDay <> 7\n\n\nOPTIONAL MATCH (r:AutomationRun) \nWHERE date(datetime(r.run_started_at)) = date\n\nRETURN date, count(r) as runs",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -756,7 +757,7 @@
           "refId": "A"
         }
       ],
-      "title": "CI Time To Recovery (Main branch)",
+      "title": "CI Runs per day",
       "type": "timeseries"
     },
     {
@@ -1334,7 +1335,6 @@
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
-            "axisSoftMax": 100,
             "barAlignment": 0,
             "drawStyle": "line",
             "fillOpacity": 50,
@@ -1383,7 +1383,7 @@
         "x": 6,
         "y": 17
       },
-      "id": 26,
+      "id": 25,
       "options": {
         "legend": {
           "calcs": [],
@@ -1398,7 +1398,7 @@
       },
       "targets": [
         {
-          "cypherQuery": "MATCH (m:TwinMetaData)\nCALL {\n  MATCH (c:Commit)\n\n  WITH c\n  LIMIT 1\n  \n  RETURN c.branch as main_branch\n}\nMATCH (run:AutomationRun)\nWHERE run.head_branch <> main_branch\n\nWITH date(datetime(run.run_started_at)) AS date, CASE run.conclusion WHEN 'failure' THEN 0 ELSE 1 END AS wasSuccess\nWHERE date.weekDay <> 6 AND date.weekDay <> 7\n\nRETURN date, (SUM(wasSuccess) * 100.0 / COUNT(*)) AS successRate\nORDER BY date",
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (m:TwinMetaData)\nWITH fromDate, toDate, m.main_branch as main_branch\n\nMATCH (failedRun:AutomationRun {head_branch: main_branch, conclusion: 'failure'})\nWHERE date(datetime(failedRun.run_started_at)) > fromDate\nAND date(datetime(failedRun.run_started_at)) < toDate\n\nCALL {\nWITH failedRun, main_branch\nMATCH (run:AutomationRun {head_branch: main_branch, conclusion: 'success', name: failedRun.name})\nWHERE run.run_started_at > failedRun.updated_at\n\nRETURN run\nORDER BY run.updated_at ASC\nLIMIT 1\n}\n\nWITH run, failedRun\nORDER BY run.updated_at\n\nRETURN date(datetime(run.run_started_at)), duration.inSeconds(datetime(failedRun.updated_at), datetime(run.run_started_at)).seconds/60 as timeToRecoveryInMinutes",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -1406,7 +1406,7 @@
           "refId": "A"
         }
       ],
-      "title": "CI Success Rate (All other branches)",
+      "title": "CI Time To Recovery (Main branch)",
       "type": "timeseries"
     },
     {
@@ -1482,13 +1482,13 @@
     "list": []
   },
   "time": {
-    "from": "now-6M",
+    "from": "now-90d",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "",
   "title": "DevOps Tech Debt Metrics",
   "uid": "a49a1264-f31e-4333-a906-0f4a2c5340f8",
-  "version": 56,
+  "version": 61,
   "weekStart": ""
 }
