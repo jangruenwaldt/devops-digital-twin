@@ -64,7 +64,8 @@ class GitHubProjectManagementDataAdapter(GitHubDataFetcher):
                 'updated_at': issue['updated_at'],
                 'closed_at': datetime.strptime(issue['closed_at'], '%Y-%m-%dT%H:%M:%SZ').replace(
                     microsecond=0).isoformat() if issue['closed_at'] is not None else None,
-                'body': issue['body']
+                'body': issue['body'],
+                'state_reason': issue['state_reason']
             }
 
             label_list = []
