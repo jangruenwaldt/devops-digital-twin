@@ -30,6 +30,12 @@ and a Grafana instance.
 5. Explore the data in grafana, which is running on `http://localhost:3000/`, using 'admin' as both username and
    password.
 
+## Debugging
+
+- To just debug python code itself, neo4j needs to be running inside docker. To do this, launch as above, then terminate
+  the python-update-data service within Docker.
+- Then run the script again, within your IDE directly.
+
 ## Currently supported
 
 - Importing all components listed below into neo4j, exploration via any tool that supports neo4j.
