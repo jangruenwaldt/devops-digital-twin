@@ -36,7 +36,8 @@ CALL apoc.periodic.iterate(
     i.body = issue_data.body,
     i.created_by = issue_data.user.login,
     i.assignee = apoc.convert.toJson(issue_data.assignee),
-    i.milestone = apoc.convert.toJson(issue_data.milestone)
+    i.milestone = apoc.convert.toJson(issue_data.milestone),
+    i.state_reason = issue_data.state_reason
     
     MERGE (author:Author {{id: issue_data.user.login}})
     MERGE (author)-[r:CREATED_ISSUE]->(i)
