@@ -53,6 +53,7 @@ class GitHubDeploymentDataAdapter(GitHubDataFetcher):
         releases = self._fetch_releases()
         DataManager.store_raw_api_data(DataTypes.DEPLOYMENT_DATA, DataSources.GITHUB, self.owner, self.repo_name,
                                        releases)
+        print(f'API returned ${len(releases)} releases. Mapping and storing in JSON now.')
 
         deployment_data = self._transform_api_response_to_data_format(self.enable_logs, releases)
         DataManager.store_twin_data(DataTypes.DEPLOYMENT_DATA, self.owner, self.repo_name, deployment_data)
@@ -77,7 +78,5 @@ class GitHubDeploymentDataAdapter(GitHubDataFetcher):
                 'latest_included_commit': latest_commit_hash,
                 'previous_deployment': None if len(deployment_data) == 0 else deployment_data[-1]['name'],
             }
-            if enable_logs:
-                print(f'Deployment with tag {name} added.')
             deployment_data.append(deployment)
         return deployment_data

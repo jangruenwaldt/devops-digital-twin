@@ -42,6 +42,7 @@ class GitHubProjectManagementDataAdapter(GitHubDataFetcher):
         DataManager.store_raw_api_data(DataTypes.PROJECT_MANAGEMENT_DATA, DataSources.GITHUB, self.owner,
                                        self.repo_name,
                                        raw_issues)
+        print(f'API returned ${len(raw_issues)} issues. Mapping and storing in JSON now.')
 
         issue_data_list = self._transform_api_response_into_data_format(self.enable_logs, raw_issues)
         DataManager.store_twin_data(DataTypes.PROJECT_MANAGEMENT_DATA, self.owner, self.repo_name, issue_data_list)
@@ -86,6 +87,4 @@ class GitHubProjectManagementDataAdapter(GitHubDataFetcher):
             issue_data['labels'] = label_list
 
             issue_data_list.append(issue_data)
-            if enable_logs:
-                print(f'Added issue with id {issue["id"]}')
         return issue_data_list
