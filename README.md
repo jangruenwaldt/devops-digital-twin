@@ -34,7 +34,8 @@ and a Grafana instance.
 
 - To just debug python code itself, neo4j needs to be running inside docker. To do this, launch as above, then terminate
   the python-update-data service within Docker.
-- Then run the script again, within your IDE directly.
+- Then run the script again, within your IDE directly. Note that data volume from docker won't be accessible, which is
+  why this should not be used to fetch lots of data. The cache from Docker would not be re-used.
 
 ## Currently supported
 
