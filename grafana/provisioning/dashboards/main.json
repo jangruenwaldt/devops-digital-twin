@@ -87,7 +87,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "# Continuous Deployment",
+        "content": "# Continuous Release",
         "mode": "markdown"
       },
       "pluginVersion": "9.5.6",
@@ -342,7 +342,7 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
-      "description": "How long the deployment job runs",
+      "description": "How long the release job runs",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -390,7 +390,7 @@
       "pluginVersion": "9.5.6",
       "targets": [
         {
-          "cypherQuery": "MATCH (a:Automation)\nWHERE a.is_deployment_job = true\n\nWITH a.name as deployment_job_name\n\nMATCH (run:AutomationRun {name: deployment_job_name})\n\nRETURN avg(duration.inSeconds(datetime(run.run_started_at), datetime(run.updated_at)).seconds)",
+          "cypherQuery": "MATCH (m:TwinMetaData)\n\nMATCH (run:AutomationRun {name: m.deployment_automation_name})\n\nRETURN avg(duration.inSeconds(datetime(run.run_started_at), datetime(run.updated_at)).seconds)",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -398,7 +398,7 @@
           "refId": "A"
         }
       ],
-      "title": "Deployment time",
+      "title": "Release time",
       "type": "stat"
     },
     {
@@ -578,7 +578,7 @@
           "refId": "A"
         }
       ],
-      "title": "Deployment Success Rate",
+      "title": "Release Success Rate",
       "type": "timeseries"
     },
     {
@@ -1574,7 +1574,7 @@
     "list": []
   },
   "time": {
-    "from": "now-90d",
+    "from": "now-6M",
     "to": "now"
   },
   "timepicker": {},
