@@ -1498,7 +1498,7 @@
           "refId": "A"
         }
       ],
-      "title": "Opened Bugs vs All Requested Changes",
+      "title": "Opened Bugs vs All Opened Issues",
       "type": "timeseries"
     },
     {
