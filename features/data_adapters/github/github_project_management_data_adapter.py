@@ -49,6 +49,10 @@ class GitHubProjectManagementDataAdapter(GitHubDataFetcher):
     def _transform_api_response_into_data_format(self, enable_logs, issues):
         issue_data_list = []
         for issue in issues:
+            # Exclude PRs for now.
+            if 'pull_request' in issue:
+                continue
+
             issue_data = {
                 'url': issue['url'],
                 'id': issue['id'],
