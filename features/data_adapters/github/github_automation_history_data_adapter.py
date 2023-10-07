@@ -46,32 +46,46 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
             fetch_limit_changed = DataManager.retrieve_by_key(
                 'automation_history_fetched_since') != Config.get_automation_history_since()
             if fetch_limit_changed:
-                print('Fetch limit changed since last time, re-fetching all workflows in relevant timeframe.')
+                print('Fetch limit changed since last time, re-fetching all workflows from fetch limit to now.')
                 print(
                     f'Was before: {DataManager.retrieve_by_key("automation_history_fetched_since")},'
                     f' is now: {Config.get_automation_history_since()}')
             else:
-                print(f'Fetch limit unchanged: {Config.get_automation_history_since()}')
+                print(f'Fetch limit unchanged: {Config.get_automation_history_since()}. Fetching only workflows'
+                      f'after {latest_workflow_run}, as all previous already fetched.')
+                api_url_without_query_param = api_url.split('?')[0]
+                api_url = api_url_without_query_param + f'?created>={latest_workflow_run}'
 
-            def check_if_existing_wf_reached(new_data):
-                # Have to re-fetch all data as settings changed (would be possible to optimize by skipping existing)
-                if fetch_limit_changed:
-                    return False
-                runs = new_data['workflow_runs']
-                return latest_workflow_run['id'] in map(lambda x: x.get('id', ''), runs)
+            newly_fetched_data = self._fetch_from_workflow_history_api(api_url)
 
-            newly_fetched_data = self._fetch_from_paginated_counted_api(api_url, 'workflow_runs',
-                                                                        stopping_condition=check_if_existing_wf_reached)
             if self.enable_logs:
                 print(
                     f'Fetched {len(newly_fetched_data)} workflow runs from GitHub API,'
                     f' found {len(cached_data)} workflow runs in cache.')
             return self._merge_data(cached_data, newly_fetched_data, merge_key='id')
         else:
-            data = self._fetch_from_paginated_counted_api(api_url, 'workflow_runs')
+            data = self._fetch_from_workflow_history_api(api_url)
             if self.enable_logs:
                 print(f'Fetched {len(data)} workflow runs from GitHub API')
             return data
+
+    def _fetch_from_workflow_history_api(self, api_url, was_cached_data_reached=None):
+        # Unfortunately, GitHub API only gives us the first 10 pages. Page 11 will be empty. Therefore, once page 10
+        # is reached, we have to adjust our fetching URL to filter by created earlier than the last run that was
+        # returned to us.
+        newly_fetched_data = []
+        while True:
+            data = self._fetch_from_paginated_counted_api(api_url, 'workflow_runs')
+            newly_fetched_data.extend(data)
+
+            # Perfect 1000 results most likely means page limit was reached, even if not, no problem.
+            if (len(newly_fetched_data) % 1000) == 0 and len(data) != 0:
+                oldest_el = newly_fetched_data[-1]['run_started_at']
+                api_url_without_query_param = api_url.split('?')[0]
+                api_url = api_url_without_query_param + f'?created={Config.get_automation_history_since()}..{oldest_el}'
+            else:
+                break
+        return newly_fetched_data
 
     @staticmethod
     def _transform_api_response_to_data_format(data):
