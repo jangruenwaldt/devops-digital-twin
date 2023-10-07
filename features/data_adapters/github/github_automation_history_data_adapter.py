@@ -105,7 +105,7 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
         DataManager.store_raw_api_data(DataTypes.AUTOMATION_HISTORY, DataSources.GITHUB, self.owner, self.repo_name,
                                        raw_automation_history)
         DataManager.store_by_key('automation_history_fetched_since', Config.get_automation_history_since())
-        print(f'API returned ${len(raw_automation_history)} automation runs. Mapping and storing in JSON now.')
+        print(f'API returned {len(raw_automation_history)} automation runs. Mapping and storing in JSON now.')
 
         automation_history = list(map(self._transform_api_response_to_data_format, raw_automation_history))
         DataManager.store_twin_data(DataTypes.AUTOMATION_HISTORY, self.owner, self.repo_name, automation_history)
