@@ -1309,7 +1309,7 @@
       "pluginVersion": "9.5.6",
       "targets": [
         {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\n\nMATCH (n:TwinMetaData)\nWITH n.project_management_bug_categories as categories, date\n\nOPTIONAL MATCH (issue:Issue)-[r:HAS_LABEL]-(i:IssueLabel) // Exclude issues without any labels, usually irrelevant.\n  WHERE date(datetime(issue.created_at)) = date\n\nWITH date, count(issue) as overallOpened, categories\n\nCALL {\nWITH date, categories\n\nOPTIONAL MATCH (issue:Issue)-[r:HAS_LABEL]->(l:IssueLabel)\n  WHERE date(datetime(issue.created_at)) = date\n\nWITH collect(l.name) as issueLabels, categories\n  WHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\")))\n\nRETURN count(*) as bugIssuesOpened\n}\n\nRETURN date,\nCASE\n         WHEN overallOpened = 0 THEN bugIssuesOpened\n         ELSE 100 * bugIssuesOpened / overallOpened\n         END AS bugIssueRate\n\n",
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, toInteger(duration.inDays(fromDate, toDate).days / 7) + 1 AS totalWeeks\n\nUNWIND range(0, totalWeeks) AS weeksToAdd\n\nMATCH (n:TwinMetaData)\n\nWITH n.project_management_bug_categories as categories, fromDate + duration({ days: weeksToAdd * 7 }) as fromDate, fromDate + duration({ days: (weeksToAdd + 1) * 7 }) as toDate\n\n// Exclude issues without any labels, usually irrelevant.\nOPTIONAL MATCH (issue:Issue)-[r:HAS_LABEL]-(i:IssueLabel)\n  WHERE date(datetime(issue.created_at)) >= fromDate AND date(datetime(issue.created_at)) <= toDate\n\nWITH fromDate, toDate, count(issue) as overallOpened, categories\n\nCALL {\nWITH fromDate, toDate, categories\n\nOPTIONAL MATCH (issue:Issue)-[r:HAS_LABEL]->(l:IssueLabel)\n  WHERE date(datetime(issue.created_at)) >= fromDate AND date(datetime(issue.created_at)) <= toDate\n\nWITH collect(l.name) as issueLabels, categories\n  WHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\")))\n\nRETURN count(*) as bugIssuesOpened\n}\n\nRETURN fromDate,\n       CASE\n         WHEN overallOpened = 0 THEN bugIssuesOpened\n         ELSE 100 * bugIssuesOpened / overallOpened\n         END AS bugIssueRate\n",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -1317,7 +1317,7 @@
           "refId": "A"
         }
       ],
-      "title": "Bug Issue Rate (per day)",
+      "title": "Bug Issue Rate (per week)",
       "type": "timeseries"
     },
     {
