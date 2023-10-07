@@ -60,8 +60,11 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
 
             if self.enable_logs:
                 print(
-                    f'Fetched {len(newly_fetched_data)} workflow runs from GitHub API,'
-                    f' found {len(cached_data)} workflow runs in cache.')
+                    f'Fetched {len(newly_fetched_data)} workflow runs from GitHub API.')
+                if fetch_limit_changed:
+                    print(f'Previously: {len(cached_data)} workflow runs in cache (but fetch limit changed).')
+                else:
+                    print(f'Now merging with {len(cached_data)} workflow runs in cache.')
             return self._merge_data(cached_data, newly_fetched_data, merge_key='id')
         else:
             data = self._fetch_from_workflow_history_api(api_url)
