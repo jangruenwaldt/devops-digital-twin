@@ -16,6 +16,10 @@
   "test_automation_name" : [
     "Run Tests"
   ],
+  "ci_automation_names": [
+    "Run Tests",
+    "Run Build"
+  ],
   "project_management_bug_categories": [
     "incident",
     "crash&help-wanted",

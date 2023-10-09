@@ -35,6 +35,7 @@ class TwinMetaDataManager:
     def _add_meta_data_node():
         deployment_automation_name_wrapped = TwinMetaDataManager._wrap_in_quotes(
             Config.get_deployment_automation_name())
+        ci_automation_names_wrapped = map(TwinMetaDataManager._wrap_in_quotes, Config.get_ci_automation_names())
         test_automation_names_wrapped = map(TwinMetaDataManager._wrap_in_quotes, Config.get_test_automation_names())
 
         query = f'''
@@ -44,6 +45,7 @@ class TwinMetaDataManager:
                     m.project_management_bug_categories = {Config.project_management_bug_categories()},
                     m.deployment_automation_name = {deployment_automation_name_wrapped},
                     m.test_automation_names = [{', '.join(test_automation_names_wrapped)}],
+                    m.ci_automation_names = [{', '.join(ci_automation_names_wrapped)}],
                     m.commit_data_source = '{Config.get_commit_data_source()}',
                     m.deployment_data_source = '{Config.get_deployment_data_source()}',
                     m.project_management_data_source = '{Config.get_project_management_data_source()}',

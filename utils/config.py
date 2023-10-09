@@ -40,6 +40,10 @@ class Config:
         return CONFIG_DATA.get('test_automation_names', None)
 
     @staticmethod
+    def get_ci_automation_names():
+        return CONFIG_DATA.get('ci_automation_names', None)
+
+    @staticmethod
     def get_deployment_automation_name():
         return CONFIG_DATA.get('deployment_automation_name', None)
 
