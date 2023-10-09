@@ -42,6 +42,8 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
 
         if cached_data is not None and len(cached_data) > 0:
             latest_workflow_run = max(cached_data, key=lambda x: x.get('updated_at', ''))
+            print(f'Found {len(cached_data)} workflows in cache for workflow "{wf["name"]}",'
+                  f'latest one at: {latest_workflow_run}')
 
             fetch_limit_changed = DataManager.retrieve_by_key(
                 'automation_history_fetched_since') != Config.get_automation_history_since()
@@ -67,6 +69,7 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
                     print(f'Now merging with {len(cached_data)} workflow runs in cache.')
             return self._merge_data(cached_data, newly_fetched_data, merge_key='id')
         else:
+            print(f'Found no existing data in cache for workflow "{wf["name"]}", fetching from scratch.')
             data = self._fetch_from_workflow_history_api(api_url)
             if self.enable_logs:
                 print(f'Fetched {len(data)} workflow runs from GitHub API')
