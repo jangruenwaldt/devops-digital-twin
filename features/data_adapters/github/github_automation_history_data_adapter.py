@@ -75,7 +75,7 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
                 print(f'Fetched {len(data)} workflow runs from GitHub API')
             return data
 
-    def _fetch_from_workflow_history_api(self, api_url, was_cached_data_reached=None):
+    def _fetch_from_workflow_history_api(self, api_url):
         # Unfortunately, GitHub API only gives us the first 10 pages. Page 11 will be empty. Therefore, once page 10
         # is reached, we have to adjust our fetching URL to filter by created earlier than the last run that was
         # returned to us.
