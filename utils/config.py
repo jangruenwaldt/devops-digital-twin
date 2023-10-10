@@ -13,6 +13,7 @@ if os.path.isfile(CONFIG_PATH):
         CONFIG_DATA = json.load(f)
 
 
+# TODO: Should probably add ConfigChecker class that reports if all mandatory attributes are added.
 class Config:
 
     @staticmethod
