@@ -45,7 +45,7 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
         if cached_data is not None and len(cached_data) > 0:
             latest_workflow_run = max(cached_data, key=lambda x: x.get('updated_at', ''))
             print(f'Found {len(cached_data)} workflows in cache for workflow "{wf["name"]}",'
-                  f'latest one at: {latest_workflow_run}')
+                  f'latest one at: {latest_workflow_run["updated_at"]}')
 
             fetch_limit_changed = DataManager.retrieve_by_key(
                 'automation_history_fetched_since') != Config.get_automation_history_since()
