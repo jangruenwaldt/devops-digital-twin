@@ -687,7 +687,7 @@
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
-            "drawStyle": "line",
+            "drawStyle": "bars",
             "fillOpacity": 50,
             "gradientMode": "none",
             "hideFrom": {
@@ -749,7 +749,7 @@
       },
       "targets": [
         {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (m:TwinMetaData)\nWITH fromDate, toDate, m.main_branch as main_branch, m.ci_automation_names as ci_names\n\nMATCH (failedRun:AutomationRun {head_branch: main_branch, conclusion: 'failure'})\nWHERE failedRun.name in ci_names\nAND date(datetime(failedRun.run_started_at)) > fromDate\nAND date(datetime(failedRun.run_started_at)) < toDate\n\nCALL {\nWITH failedRun, main_branch, ci_names\nMATCH (run:AutomationRun {head_branch: main_branch, conclusion: 'success', name: failedRun.name})\nWHERE run.name in ci_names\nAND run.run_started_at > failedRun.updated_at\n\nRETURN run\nORDER BY run.updated_at ASC\nLIMIT 1\n}\n\nWITH run, failedRun\nORDER BY run.updated_at\n\nRETURN date(datetime(run.run_started_at)), duration.inSeconds(datetime(failedRun.updated_at), datetime(run.run_started_at)).seconds/60 as timeToRecoveryInMinutes",
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (m:TwinMetaData)\nWITH fromDate, toDate, m.main_branch as main_branch, m.ci_automation_names as ci_names\n\nMATCH (failedRun:AutomationRun {head_branch: main_branch, conclusion: 'failure'})\nWHERE failedRun.name in ci_names\nAND date(datetime(failedRun.run_started_at)) >= fromDate\nAND date(datetime(failedRun.run_started_at)) <= toDate\n\nCALL {\nWITH failedRun, main_branch\nMATCH (run:AutomationRun {head_branch: main_branch, conclusion: 'success', name: failedRun.name})\nWHERE datetime(run.updated_at) >= datetime(failedRun.updated_at)\n\nRETURN run\nORDER BY run.updated_at ASC\nLIMIT 1\n}\n\nWITH run, failedRun\nORDER BY run.updated_at\n\nRETURN datetime(failedRun.run_started_at), duration.inSeconds(datetime(failedRun.updated_at), datetime(run.run_started_at)).seconds/60 as timeToRecoveryInMinutes",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -1553,6 +1553,6 @@
   "timezone": "",
   "title": "DevOps Tech Debt Metrics",
   "uid": "a49a1264-f31e-4333-a906-0f4a2c5340f8",
-  "version": 72,
+  "version": 79,
   "weekStart": ""
 }
