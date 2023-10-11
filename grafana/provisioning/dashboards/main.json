@@ -26,11 +26,233 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
+      "id": 35,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "### CI tech debt indicators",
+        "mode": "markdown"
+      },
+      "pluginVersion": "9.5.6",
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "kniepdennis-neo4j-datasource",
+        "uid": "P13FD9E770BE36698"
+      },
+      "description": "CI and test duration takes less than 10 minutes and CI is stable on main branch: no more than 5 outages per month, and CI MTTR no longer than 30 min",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "bool"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 6,
+        "y": 0
+      },
+      "id": 36,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.5.6",
+      "targets": [
+        {
+          "cypherQuery": "RETURN 1",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "CI takes less than 10min",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "kniepdennis-neo4j-datasource",
+        "uid": "P13FD9E770BE36698"
+      },
+      "description": "No more than 5 outages per month",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "bool"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 12,
+        "y": 0
+      },
+      "id": 37,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.5.6",
+      "targets": [
+        {
+          "cypherQuery": "RETURN 0",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "CI stable on main branch",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "kniepdennis-neo4j-datasource",
+        "uid": "P13FD9E770BE36698"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "bool"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 18,
+        "y": 0
+      },
+      "id": 38,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.5.6",
+      "targets": [
+        {
+          "cypherQuery": "RETURN 0",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "CI MTTR no longer than 30 min",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "kniepdennis-neo4j-datasource",
+        "uid": "P13FD9E770BE36698"
+      },
       "gridPos": {
         "h": 2,
         "w": 12,
         "x": 0,
-        "y": 0
+        "y": 3
       },
       "id": 28,
       "options": {
@@ -54,7 +276,7 @@
         "h": 2,
         "w": 12,
         "x": 12,
-        "y": 0
+        "y": 3
       },
       "id": 13,
       "options": {
@@ -106,7 +328,7 @@
         "h": 3,
         "w": 6,
         "x": 0,
-        "y": 2
+        "y": 5
       },
       "id": 10,
       "options": {
@@ -174,7 +396,7 @@
         "h": 3,
         "w": 6,
         "x": 6,
-        "y": 2
+        "y": 5
       },
       "id": 34,
       "options": {
@@ -267,7 +489,7 @@
         "h": 5,
         "w": 6,
         "x": 12,
-        "y": 2
+        "y": 5
       },
       "id": 7,
       "options": {
@@ -357,7 +579,7 @@
         "h": 5,
         "w": 6,
         "x": 18,
-        "y": 2
+        "y": 5
       },
       "id": 9,
       "options": {
@@ -447,7 +669,7 @@
         "h": 5,
         "w": 6,
         "x": 0,
-        "y": 5
+        "y": 8
       },
       "id": 12,
       "options": {
@@ -508,7 +730,7 @@
         "h": 3,
         "w": 6,
         "x": 6,
-        "y": 5
+        "y": 8
       },
       "id": 11,
       "options": {
@@ -601,7 +823,7 @@
         "h": 5,
         "w": 6,
         "x": 12,
-        "y": 7
+        "y": 10
       },
       "id": 24,
       "options": {
@@ -690,7 +912,7 @@
         "h": 5,
         "w": 6,
         "x": 18,
-        "y": 7
+        "y": 10
       },
       "id": 25,
       "options": {
@@ -780,7 +1002,7 @@
         "h": 5,
         "w": 6,
         "x": 6,
-        "y": 8
+        "y": 11
       },
       "id": 21,
       "options": {
@@ -841,7 +1063,7 @@
         "h": 3,
         "w": 6,
         "x": 0,
-        "y": 10
+        "y": 13
       },
       "id": 17,
       "options": {
@@ -905,7 +1127,7 @@
         "h": 3,
         "w": 6,
         "x": 12,
-        "y": 12
+        "y": 15
       },
       "id": 33,
       "options": {
@@ -969,7 +1191,7 @@
         "h": 3,
         "w": 6,
         "x": 18,
-        "y": 12
+        "y": 15
       },
       "id": 27,
       "options": {
@@ -1009,7 +1231,7 @@
         "h": 2,
         "w": 6,
         "x": 0,
-        "y": 13
+        "y": 16
       },
       "id": 14,
       "options": {
@@ -1033,7 +1255,7 @@
         "h": 2,
         "w": 6,
         "x": 6,
-        "y": 13
+        "y": 16
       },
       "id": 31,
       "options": {
@@ -1081,7 +1303,7 @@
         "h": 3,
         "w": 6,
         "x": 0,
-        "y": 15
+        "y": 18
       },
       "id": 19,
       "options": {
@@ -1147,7 +1369,7 @@
         "h": 9,
         "w": 6,
         "x": 6,
-        "y": 15
+        "y": 18
       },
       "id": 30,
       "options": {
@@ -1215,7 +1437,7 @@
         "h": 3,
         "w": 6,
         "x": 12,
-        "y": 15
+        "y": 18
       },
       "id": 23,
       "options": {
@@ -1308,7 +1530,7 @@
         "h": 5,
         "w": 6,
         "x": 18,
-        "y": 15
+        "y": 18
       },
       "id": 26,
       "options": {
@@ -1399,7 +1621,7 @@
         "h": 4,
         "w": 6,
         "x": 0,
-        "y": 18
+        "y": 21
       },
       "id": 32,
       "options": {
@@ -1489,7 +1711,7 @@
         "h": 5,
         "w": 6,
         "x": 12,
-        "y": 18
+        "y": 21
       },
       "id": 8,
       "options": {
@@ -1580,7 +1802,7 @@
         "h": 4,
         "w": 6,
         "x": 0,
-        "y": 22
+        "y": 25
       },
       "id": 18,
       "options": {
