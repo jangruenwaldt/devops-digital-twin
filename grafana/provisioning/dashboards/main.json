@@ -444,9 +444,18 @@
             "uid": "P13FD9E770BE36698"
           },
           "refId": "A"
+        },
+        {
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\nWHERE date.weekDay <> 6 AND date.weekDay <> 7\n\nMATCH (m:TwinMetaData)\nOPTIONAL MATCH (r:AutomationRun) \nWHERE r.name in m.ci_automation_names\nAND date(datetime(r.run_started_at)) = date\n\nRETURN date, count(r) as runsPerDay",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "hide": false,
+          "refId": "B"
         }
       ],
-      "title": "CI Run Time",
+      "title": "CI Run Time vs Runs Per Day",
       "type": "timeseries"
     },
     {
