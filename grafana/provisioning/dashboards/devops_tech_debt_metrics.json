@@ -935,7 +935,7 @@
           "refId": "A"
         }
       ],
-      "title": "Mean Time To Repair Code",
+      "title": "Time To Repair Code",
       "type": "stat"
     },
     {
@@ -1271,7 +1271,7 @@
       "pluginVersion": "9.5.6",
       "targets": [
         {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (n:TwinMetaData)\nWITH fromDate, toDate, n.project_management_bug_categories as categories\n\nMATCH (issue:Issue {state: 'closed'})-[r:HAS_LABEL]->(l:IssueLabel)\nWHERE date(datetime(issue.created_at)) >= fromDate\nAND date(datetime(issue.created_at)) <= toDate\n\nWITH issue, collect(l.name) as issueLabels, categories\n\nWHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\"))) \n\nRETURN datetime(issue.updated_at) as date, duration.inSeconds(datetime(issue.created_at), datetime(issue.closed_at)).seconds as timeToRepairCodeInSeconds",
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (n:TwinMetaData)\nWITH fromDate, toDate, n.project_management_bug_categories as categories\n\nMATCH (issue:Issue {state: 'closed'})-[r:HAS_LABEL]->(l:IssueLabel)\nWHERE date(datetime(issue.created_at)) >= fromDate\nAND date(datetime(issue.created_at)) <= toDate\n\nWITH issue, collect(l.name) as issueLabels, categories\n\nWHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\"))) \n\nRETURN datetime(issue.closed_at) as date, duration.inSeconds(datetime(issue.created_at), datetime(issue.closed_at)).seconds as timeToRepairCodeInSeconds",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -1479,6 +1479,6 @@
   "timezone": "",
   "title": "DevOps Tech Debt Metrics",
   "uid": "a49a1264-f31e-4333-a906-0f4a2c5340f8",
-  "version": 5,
+  "version": 6,
   "weekStart": ""
 }
