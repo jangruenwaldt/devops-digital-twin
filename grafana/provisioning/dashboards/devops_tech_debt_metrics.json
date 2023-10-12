@@ -935,7 +935,7 @@
           "refId": "A"
         }
       ],
-      "title": "Time To Repair Code",
+      "title": "Mean Time To Repair Code",
       "type": "stat"
     },
     {
