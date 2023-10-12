@@ -561,7 +561,7 @@
             "axisPlacement": "auto",
             "axisSoftMax": 100,
             "barAlignment": 0,
-            "drawStyle": "line",
+            "drawStyle": "points",
             "fillOpacity": 50,
             "gradientMode": "none",
             "hideFrom": {
