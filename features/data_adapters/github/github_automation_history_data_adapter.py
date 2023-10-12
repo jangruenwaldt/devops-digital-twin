@@ -47,12 +47,13 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
             print(f'Found {len(cached_data)} workflows in cache for workflow "{wf["name"]}",'
                   f'latest one at: {latest_workflow_run["updated_at"]}')
 
-            fetch_limit_changed = DataManager.retrieve_by_key(
-                'automation_history_fetched_since') != Config.get_automation_history_since()
+            previous_fetch_limit = DataManager.retrieve_by_key(
+                f'automation_history_fetched_since_{self.owner}_{self.repo_name}')
+            fetch_limit_changed = previous_fetch_limit != Config.get_automation_history_since()
             if fetch_limit_changed:
                 print('Fetch limit changed since last time, re-fetching all workflows from fetch limit to now.')
                 print(
-                    f'Was before: {DataManager.retrieve_by_key("automation_history_fetched_since")},'
+                    f'Was before: {previous_fetch_limit},'
                     f' is now: {Config.get_automation_history_since()}')
             else:
                 print(f'Fetch limit unchanged: {Config.get_automation_history_since()}. Fetching only workflows'
@@ -126,7 +127,8 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
         raw_automation_history = self._fetch_automation_runs()
         DataManager.store_raw_api_data(DataTypes.AUTOMATION_HISTORY, DataSources.GITHUB, self.owner, self.repo_name,
                                        raw_automation_history)
-        DataManager.store_by_key('automation_history_fetched_since', Config.get_automation_history_since())
+        DataManager.store_by_key(f'automation_history_fetched_since_{self.owner}_{self.repo_name}',
+                                 Config.get_automation_history_since())
         print(f'API returned {len(raw_automation_history)} automation runs. Mapping and storing in JSON now.')
 
         automation_history = list(map(self._transform_api_response_to_data_format, raw_automation_history))
