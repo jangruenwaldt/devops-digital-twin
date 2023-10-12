@@ -33,7 +33,7 @@
           "showLineNumbers": false,
           "showMiniMap": false
         },
-        "content": "### CI tech debt indicators",
+        "content": "### CI tech debt metrics",
         "mode": "markdown"
       },
       "pluginVersion": "9.5.6",
