@@ -257,7 +257,7 @@
           "refId": "A"
         }
       ],
-      "title": "CI MTTR no longer than 30 min",
+      "title": "CI MTTR below 30 min",
       "type": "stat"
     },
     {
