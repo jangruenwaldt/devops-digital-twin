@@ -360,7 +360,7 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
-      "description": "Lead time in hours per commit. Lead time calculated as time from commit to deploy.",
+      "description": "Time since the last release, for each release. Unit on the axes.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -382,7 +382,7 @@
             },
             "lineInterpolation": "smooth",
             "lineWidth": 1,
-            "pointSize": 5,
+            "pointSize": 12,
             "scaleDistribution": {
               "type": "linear"
             },
@@ -409,7 +409,8 @@
                 "value": 80
               }
             ]
-          }
+          },
+          "unit": "s"
         },
         "overrides": []
       },
@@ -432,17 +433,10 @@
           "sort": "none"
         }
       },
+      "pluginVersion": "9.5.6",
       "targets": [
         {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)-[:INITIAL_DEPLOY]->(deployed_commit:Commit)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\n\nWITH deployment, deployed_commit\nORDER BY deployment.published_at\n\nRETURN datetime(deployed_commit.date) as date, duration.inSeconds(datetime(deployed_commit.date), datetime(deployment.published_at)).seconds / 3600.0 as leadTimeInHours",
-          "datasource": {
-            "type": "kniepdennis-neo4j-datasource",
-            "uid": "P13FD9E770BE36698"
-          },
-          "refId": "A"
-        },
-        {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\n\nWITH deployment\nORDER BY deployment.published_at\n\nRETURN datetime(deployment.published_at) as deployment_time, 0 as deployment",
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\n\nWITH deployment\nORDER BY deployment.published_at\nWITH collect(deployment) AS deployments\n\nUNWIND range(1, size(deployments) - 1) AS i\nWITH deployments[i - 1] AS previous, deployments[i] AS current\nWITH previous, current, \ndatetime(previous.published_at) AS previousDate, \ndatetime(current.published_at) AS currentDate\n\nRETURN currentDate,\n       toInteger(duration.inSeconds(previousDate, currentDate).seconds) AS timeBetweenReleases",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -451,7 +445,7 @@
           "refId": "B"
         }
       ],
-      "title": "Lead time (per commit)",
+      "title": "Releases",
       "type": "timeseries"
     },
     {
@@ -1749,6 +1743,6 @@
   "timezone": "",
   "title": "DevOps Tech Debt Metrics",
   "uid": "a49a1264-f31e-4333-a906-0f4a2c5340f8",
-  "version": 11,
+  "version": 12,
   "weekStart": ""
 }
