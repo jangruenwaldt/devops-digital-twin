@@ -755,7 +755,7 @@
           "refId": "A"
         }
       ],
-      "title": "CI Run Time (95th percentile)",
+      "title": "CI 95th Percentile Run Time",
       "type": "timeseries"
     },
     {
