@@ -697,7 +697,7 @@
               "mode": "none"
             },
             "thresholdsStyle": {
-              "mode": "off"
+              "mode": "area"
             }
           },
           "mappings": [],
@@ -709,8 +709,16 @@
                 "value": null
               },
               {
+                "color": "yellow",
+                "value": 120
+              },
+              {
+                "color": "orange",
+                "value": 300
+              },
+              {
                 "color": "red",
-                "value": 80
+                "value": 599.9996
               }
             ]
           },
