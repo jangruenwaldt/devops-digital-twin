@@ -1045,7 +1045,7 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
-      "description": "Mean CI run duration in hh:mm:ss",
+      "description": "Mean CI Run Time. CI run time is measure for how long a CI job ran.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1109,7 +1109,7 @@
           "refId": "A"
         }
       ],
-      "title": "Mean CI run duration",
+      "title": "Mean CI Run Time",
       "type": "stat"
     },
     {
