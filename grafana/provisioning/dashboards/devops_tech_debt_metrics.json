@@ -280,7 +280,7 @@
               }
             ]
           },
-          "unit": "dthms"
+          "unit": "s"
         },
         "overrides": []
       },
@@ -979,7 +979,7 @@
               }
             ]
           },
-          "unit": "dthms"
+          "unit": "s"
         },
         "overrides": []
       },
@@ -1135,7 +1135,7 @@
               }
             ]
           },
-          "unit": "dthms"
+          "unit": "s"
         },
         "overrides": []
       },
