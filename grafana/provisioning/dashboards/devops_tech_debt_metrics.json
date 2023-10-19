@@ -1554,6 +1554,70 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
+      "description": "CI Success Rate is calculated daily as the ratio of CI runs that passed to all CI runs. Then the mean of all values is displayed.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red",
+                "value": null
+              },
+              {
+                "color": "green",
+                "value": 100
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 12,
+        "y": 28
+      },
+      "id": 49,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.5.6",
+      "targets": [
+        {
+          "cypherQuery": "MATCH (m:TwinMetaData)\nCALL {\n  MATCH (c:Commit)\n\n  WITH c\n  LIMIT 1\n  \n  RETURN c.branch as main_branch\n}\nMATCH (m:TwinMetaData)\n\nMATCH (run:AutomationRun)\nWHERE run.name in m.ci_automation_names\nAND run.head_branch = main_branch\n\nWITH date(datetime(run.run_started_at)) AS date, CASE run.conclusion WHEN 'failure' THEN 0 ELSE 1 END AS wasSuccess\nWHERE date.weekDay <> 6 AND date.weekDay <> 7\n\nWITH date, (SUM(wasSuccess) * 100.0 / COUNT(*)) AS successRate\n\nRETURN percentileCont(successRate, 0.5)",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Mean CI Success Rate (Main branch)",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "kniepdennis-neo4j-datasource",
+        "uid": "P13FD9E770BE36698"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1610,7 +1674,7 @@
         "h": 5,
         "w": 6,
         "x": 12,
-        "y": 28
+        "y": 31
       },
       "id": 25,
       "options": {
