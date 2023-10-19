@@ -339,12 +339,20 @@
                 "value": null
               },
               {
+                "color": "yellow",
+                "value": 48
+              },
+              {
+                "color": "orange",
+                "value": 96
+              },
+              {
                 "color": "red",
-                "value": 3600
+                "value": 168
               }
             ]
           },
-          "unit": "dtdhms"
+          "unit": "h"
         },
         "overrides": []
       },
@@ -372,7 +380,7 @@
       "pluginVersion": "9.5.6",
       "targets": [
         {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (n:TwinMetaData)\nWITH fromDate, toDate, n.project_management_bug_categories as categories\n\nMATCH (issue:Issue {state: 'closed'})-[r:HAS_LABEL]->(l:IssueLabel)\nWHERE date(datetime(issue.created_at)) >= fromDate\nAND date(datetime(issue.created_at)) <= toDate\n\nWITH issue, collect(l.name) as issueLabels, categories\n\nWHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\"))) \n\nRETURN percentileCont(duration.inSeconds(datetime(issue.created_at), datetime(issue.closed_at)).seconds, 0.5) as timeToRepairCodeInSeconds",
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (n:TwinMetaData)\nWITH fromDate, toDate, n.project_management_bug_categories as categories\n\nMATCH (issue:Issue {state: 'closed'})-[r:HAS_LABEL]->(l:IssueLabel)\nWHERE date(datetime(issue.created_at)) >= fromDate\nAND date(datetime(issue.created_at)) <= toDate\n\nWITH issue, collect(l.name) as issueLabels, categories\n\nWHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\"))) \n\nRETURN percentileCont(duration.inSeconds(datetime(issue.created_at), datetime(issue.closed_at)).seconds, 0.5) / 3600 as timeToRepairCodeInSeconds",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
