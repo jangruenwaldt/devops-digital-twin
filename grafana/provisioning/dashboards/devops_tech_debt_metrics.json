@@ -130,7 +130,7 @@
       "pluginVersion": "9.5.6",
       "targets": [
         {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\n\nWITH deployment\nORDER BY deployment.published_at\n\nWITH collect(deployment.published_at) AS deploymentDates\n\nUNWIND range(0, size(deploymentDates) - 2) AS i\nWITH deploymentDates[i] AS currentDeployment, deploymentDates[i+1] AS nextDeployment\n\nRETURN percentileCont(duration.inSeconds(datetime(currentDeployment), datetime(nextDeployment)).seconds / 3600.0, 0.5) AS deploymentFrequencyInHours",
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\n\nWITH deployment\nORDER BY deployment.published_at\n\nWITH collect(deployment.published_at) AS deploymentDates\n\nUNWIND range(0, size(deploymentDates) - 2) AS i\nWITH deploymentDates[i] AS currentDeployment, deploymentDates[i+1] AS nextDeployment\n\nRETURN percentileCont(duration.inSeconds(datetime(currentDeployment), datetime(nextDeployment)).hours, 0.5) AS deploymentFrequencyInHours",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -1735,6 +1735,6 @@
   "timezone": "",
   "title": "DevOps Tech Debt Metrics",
   "uid": "a49a1264-f31e-4333-a906-0f4a2c5340f8",
-  "version": 33,
+  "version": 35,
   "weekStart": ""
 }
