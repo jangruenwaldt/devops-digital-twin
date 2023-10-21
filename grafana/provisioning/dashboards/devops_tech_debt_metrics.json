@@ -422,7 +422,7 @@
               "mode": "none"
             },
             "thresholdsStyle": {
-              "mode": "off"
+              "mode": "area"
             }
           },
           "mappings": [],
@@ -434,12 +434,20 @@
                 "value": null
               },
               {
+                "color": "orange",
+                "value": 168
+              },
+              {
+                "color": "yellow",
+                "value": 506
+              },
+              {
                 "color": "red",
-                "value": 80
+                "value": 1008
               }
             ]
           },
-          "unit": "s"
+          "unit": "h"
         },
         "overrides": []
       },
@@ -465,7 +473,7 @@
       "pluginVersion": "9.5.6",
       "targets": [
         {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\n\nWITH deployment\nORDER BY deployment.published_at\nWITH collect(deployment) AS deployments\n\nUNWIND range(1, size(deployments) - 1) AS i\nWITH deployments[i - 1] AS previous, deployments[i] AS current\nWITH previous, current, \ndatetime(previous.published_at) AS previousDate, \ndatetime(current.published_at) AS currentDate\n\nRETURN currentDate,\n       toInteger(duration.inSeconds(previousDate, currentDate).seconds) AS timeBetweenReleases",
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\n\nWITH deployment\nORDER BY deployment.published_at\nWITH collect(deployment) AS deployments\n\nUNWIND range(1, size(deployments) - 1) AS i\nWITH deployments[i - 1] AS previous, deployments[i] AS current\nWITH previous, current, \ndatetime(previous.published_at) AS previousDate, \ndatetime(current.published_at) AS currentDate\n\nRETURN currentDate,\n       toInteger(duration.inSeconds(previousDate, currentDate).hours) AS timeBetweenReleases",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
