@@ -812,7 +812,7 @@
               "mode": "none"
             },
             "thresholdsStyle": {
-              "mode": "off"
+              "mode": "area"
             }
           },
           "mappings": [],
@@ -824,11 +824,20 @@
                 "value": null
               },
               {
+                "color": "#EAB839",
+                "value": 168
+              },
+              {
+                "color": "orange",
+                "value": 506
+              },
+              {
                 "color": "red",
-                "value": 80
+                "value": 1008
               }
             ]
-          }
+          },
+          "unit": "h"
         },
         "overrides": []
       },
@@ -893,8 +902,16 @@
                 "value": null
               },
               {
+                "color": "#EAB839",
+                "value": 168
+              },
+              {
+                "color": "orange",
+                "value": 506
+              },
+              {
                 "color": "red",
-                "value": 80
+                "value": 1008
               }
             ]
           },
