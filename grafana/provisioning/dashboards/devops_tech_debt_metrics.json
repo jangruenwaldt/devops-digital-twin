@@ -602,7 +602,7 @@
             "axisPlacement": "auto",
             "axisSoftMax": 100,
             "barAlignment": 0,
-            "drawStyle": "points",
+            "drawStyle": "line",
             "fillOpacity": 50,
             "gradientMode": "none",
             "hideFrom": {
@@ -1672,7 +1672,7 @@
             "axisPlacement": "auto",
             "axisSoftMax": 100,
             "barAlignment": 0,
-            "drawStyle": "points",
+            "drawStyle": "line",
             "fillOpacity": 50,
             "gradientMode": "none",
             "hideFrom": {
