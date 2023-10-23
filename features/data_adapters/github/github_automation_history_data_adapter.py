@@ -44,6 +44,7 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
 
         if cached_data is not None and len(cached_data) > 0:
             latest_workflow_run = max(cached_data, key=lambda x: x.get('updated_at', ''))
+            latest_fetched_date = latest_workflow_run["updated_at"]
             print(f'Found {len(cached_data)} workflows in cache for workflow "{wf["name"]}",'
                   f'latest one at: {latest_workflow_run["updated_at"]}')
 
@@ -56,10 +57,10 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
                     f'Was before: {previous_fetch_limit},'
                     f' is now: {Config.get_automation_history_since()}')
             else:
-                print(f'Fetch limit unchanged: {Config.get_automation_history_since()}. Fetching only workflows'
-                      f'after {latest_workflow_run}, as all previous already fetched.')
+                print(f'Fetch limit unchanged: {Config.get_automation_history_since()}. Fetching only workflows '
+                      f'after {latest_fetched_date}, as all previous already fetched.')
                 api_url_without_query_param = api_url.split('?')[0]
-                api_url = api_url_without_query_param + f'?created>={latest_workflow_run}'
+                api_url = api_url_without_query_param + f'?created>={latest_fetched_date}'
 
             newly_fetched_data = self._fetch_from_workflow_history_api(api_url)
 
