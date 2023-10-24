@@ -317,11 +317,41 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
-      "description": "",
+      "description": "95h percentile CI run time per day. CI run time is measure for how long a CI job ran.",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "area"
+            }
           },
           "mappings": [],
           "thresholds": {
@@ -333,47 +363,44 @@
               },
               {
                 "color": "yellow",
-                "value": 30
+                "value": 120
               },
               {
                 "color": "orange",
-                "value": 60
+                "value": 300
               },
               {
                 "color": "red",
-                "value": 1080
+                "value": 599.9996
               }
             ]
           },
-          "unit": "m"
+          "unit": "s"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 3,
+        "h": 5,
         "w": 6,
         "x": 18,
         "y": 2
       },
-      "id": 27,
+      "id": 46,
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
         },
-        "textMode": "auto"
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
-      "pluginVersion": "9.5.6",
       "targets": [
         {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (m:TwinMetaData)\nWITH fromDate, toDate, m.main_branch as main_branch, m.ci_automation_names as ci_names\n\nMATCH (failedRun:AutomationRun {head_branch: main_branch, conclusion: 'failure'})\nWHERE failedRun.name in ci_names\nAND date(datetime(failedRun.run_started_at)) > fromDate\nAND date(datetime(failedRun.run_started_at)) < toDate\n\nCALL {\nWITH failedRun, main_branch, ci_names\nMATCH (run:AutomationRun {head_branch: main_branch, conclusion: 'success', name: failedRun.name})\nWHERE run.name in ci_names\nAND run.run_started_at > failedRun.updated_at\n\nRETURN run\nORDER BY run.updated_at ASC\nLIMIT 1\n}\n\nRETURN percentileCont(duration.inSeconds(datetime(failedRun.updated_at), datetime(run.run_started_at)).minutes, 0.5) as meanTimeToRecovery",
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\nWHERE date.weekDay <> 6 AND date.weekDay <> 7\n\nMATCH (m:TwinMetaData)\n\nOPTIONAL MATCH (a:AutomationRun)\nWHERE a.name in m.ci_automation_names\nAND a.updated_at IS NOT NULL \nAND date(datetime(a.run_started_at)) = date\n\nWITH date,\n       CASE \n         WHEN a IS NULL THEN 0  \n         ELSE duration.inSeconds(datetime(a.run_started_at), datetime(a.updated_at)).seconds\n         END AS runTimeInSeconds\n\nRETURN date, toFloat(percentileCont(runTimeInSeconds, 0.95)) as NinetyFifthPercentileRunTime",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -381,8 +408,8 @@
           "refId": "A"
         }
       ],
-      "title": "CI Mean Time To Recovery (Main Branch)",
-      "type": "stat"
+      "title": "CI 95th Percentile Run Time",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -590,41 +617,11 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
+      "description": "Mean CI Run Time. CI run time is measure for how long a CI job ran.",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "axisSoftMax": 100,
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 50,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
+            "mode": "thresholds"
           },
           "mappings": [],
           "thresholds": {
@@ -635,36 +632,48 @@
                 "value": null
               },
               {
+                "color": "yellow",
+                "value": 120
+              },
+              {
+                "color": "orange",
+                "value": 300
+              },
+              {
                 "color": "red",
-                "value": 80
+                "value": 600
               }
             ]
-          }
+          },
+          "unit": "s"
         },
         "overrides": []
       },
       "gridPos": {
-        "h": 5,
+        "h": 3,
         "w": 6,
-        "x": 18,
-        "y": 5
+        "x": 12,
+        "y": 7
       },
-      "id": 26,
+      "id": 33,
       "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
         },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
+        "textMode": "auto"
       },
+      "pluginVersion": "9.5.6",
       "targets": [
         {
-          "cypherQuery": "MATCH (m:TwinMetaData)\nCALL {\n  MATCH (c:Commit)\n\n  WITH c\n  LIMIT 1\n  \n  RETURN c.branch as main_branch\n}\nMATCH (run:AutomationRun)\nWHERE run.name in m.ci_automation_names\nAND run.head_branch <> main_branch\n\nWITH date(datetime(run.run_started_at)) AS date, CASE run.conclusion WHEN 'failure' THEN 0 ELSE 1 END AS wasSuccess\nWHERE date.weekDay <> 6 AND date.weekDay <> 7\n\nRETURN date, (SUM(wasSuccess) * 100.0 / COUNT(*)) AS successRate\nORDER BY date",
+          "cypherQuery": "match (m:TwinMetaData)\n\nWITH m.ci_automation_names as ci_names\n\nMATCH (run:AutomationRun)\nWHERE run.name in ci_names\n\nRETURN percentileCont(duration.inSeconds(datetime(run.run_started_at), datetime(run.updated_at)).seconds, 0.5)",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -672,15 +681,15 @@
           "refId": "A"
         }
       ],
-      "title": "CI Success Rate (All other branches)",
-      "type": "timeseries"
+      "title": "Mean CI Run Time",
+      "type": "stat"
     },
     {
       "datasource": {
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
-      "description": "95h percentile CI run time per day. CI run time is measure for how long a CI job ran.",
+      "description": "Mean test run time per day. Test run time is measure for how long a test job ran.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -734,7 +743,7 @@
               },
               {
                 "color": "red",
-                "value": 599.9996
+                "value": 600
               }
             ]
           },
@@ -745,10 +754,10 @@
       "gridPos": {
         "h": 5,
         "w": 6,
-        "x": 12,
+        "x": 18,
         "y": 7
       },
-      "id": 46,
+      "id": 48,
       "options": {
         "legend": {
           "calcs": [],
@@ -763,7 +772,7 @@
       },
       "targets": [
         {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\nWHERE date.weekDay <> 6 AND date.weekDay <> 7\n\nMATCH (m:TwinMetaData)\n\nOPTIONAL MATCH (a:AutomationRun)\nWHERE a.name in m.ci_automation_names\nAND a.updated_at IS NOT NULL \nAND date(datetime(a.run_started_at)) = date\n\nWITH date,\n       CASE \n         WHEN a IS NULL THEN 0  \n         ELSE duration.inSeconds(datetime(a.run_started_at), datetime(a.updated_at)).seconds\n         END AS runTimeInSeconds\n\nRETURN date, toFloat(percentileCont(runTimeInSeconds, 0.95)) as NinetyFifthPercentileRunTime",
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\nWHERE date.weekDay <> 6 AND date.weekDay <> 7\n\nMATCH (m:TwinMetaData)\n\nOPTIONAL MATCH (a:AutomationRun)\nWHERE a.name in m.test_automation_names\nAND a.updated_at IS NOT NULL \nAND date(datetime(a.run_started_at)) = date\n\nWITH date,\n       CASE \n         WHEN a IS NULL THEN 0  \n         ELSE duration.inSeconds(datetime(a.run_started_at), datetime(a.updated_at)).seconds\n         END AS runTimeInSeconds\n\nRETURN date, toFloat(percentileCont(runTimeInSeconds, 0.5)) as meanRunTime",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -771,7 +780,7 @@
           "refId": "A"
         }
       ],
-      "title": "CI 95th Percentile Run Time",
+      "title": "Mean Test Run Time",
       "type": "timeseries"
     },
     {
@@ -987,7 +996,95 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
-      "description": "How many CI jobs ran each day, all branches",
+      "description": "Mean test run time. Test run time is a measure for how long each test automation job ran.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 3600
+              }
+            ]
+          },
+          "unit": "s"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 12,
+        "y": 10
+      },
+      "id": 23,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.5.6",
+      "targets": [
+        {
+          "cypherQuery": "match (m:TwinMetaData)\n\nWITH m.test_automation_names as test_names\n\nMATCH (run:AutomationRun)\nWHERE run.name in test_names\n\nRETURN percentileCont(duration.inSeconds(datetime(run.run_started_at), datetime(run.updated_at)).seconds, 0.5)",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Mean Test Run Time",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "kniepdennis-neo4j-datasource",
+        "uid": "P13FD9E770BE36698"
+      },
+      "description": "Spacer",
+      "gridPos": {
+        "h": 1,
+        "w": 6,
+        "x": 18,
+        "y": 12
+      },
+      "id": 51,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "",
+        "mode": "markdown"
+      },
+      "pluginVersion": "9.5.6",
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "kniepdennis-neo4j-datasource",
+        "uid": "P13FD9E770BE36698"
+      },
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -998,6 +1095,7 @@
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
+            "axisSoftMax": 100,
             "barAlignment": 0,
             "drawStyle": "line",
             "fillOpacity": 50,
@@ -1020,7 +1118,7 @@
               "mode": "none"
             },
             "thresholdsStyle": {
-              "mode": "off"
+              "mode": "line+area"
             }
           },
           "mappings": [],
@@ -1028,12 +1126,12 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "red",
                 "value": null
               },
               {
-                "color": "red",
-                "value": 80
+                "color": "green",
+                "value": 100
               }
             ]
           }
@@ -1043,10 +1141,10 @@
       "gridPos": {
         "h": 5,
         "w": 6,
-        "x": 18,
-        "y": 10
+        "x": 12,
+        "y": 13
       },
-      "id": 45,
+      "id": 9,
       "options": {
         "legend": {
           "calcs": [],
@@ -1061,7 +1159,7 @@
       },
       "targets": [
         {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\nWHERE date.weekDay <> 6 AND date.weekDay <> 7\n\nMATCH (m:TwinMetaData)\nOPTIONAL MATCH (r:AutomationRun) \nWHERE r.name in m.ci_automation_names\nAND date(datetime(r.run_started_at)) = date\n\nRETURN date, count(r) as ciRunsPerDay",
+          "cypherQuery": "MATCH (m:TwinMetaData)\nCALL {\n  MATCH (c:Commit)\n\n  WITH c\n  LIMIT 1\n  \n  RETURN c.branch as main_branch\n}\nMATCH (m:TwinMetaData)\n\nMATCH (run:AutomationRun)\nWHERE run.name in m.ci_automation_names\nAND run.head_branch = main_branch\n\nWITH date(datetime(run.run_started_at)) AS date, CASE run.conclusion WHEN 'failure' THEN 0 ELSE 1 END AS wasSuccess\nWHERE date.weekDay <> 6 AND date.weekDay <> 7\n\nRETURN date, (SUM(wasSuccess) * 100.0 / COUNT(*)) AS successRate\nORDER BY date",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -1069,7 +1167,7 @@
           "refId": "A"
         }
       ],
-      "title": "CI runs per day",
+      "title": "CI Success Rate (Main Branch)",
       "type": "timeseries"
     },
     {
@@ -1077,7 +1175,7 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
-      "description": "Mean CI Run Time. CI run time is measure for how long a CI job ran.",
+      "description": "CI Success Rate is calculated daily as the ratio of CI runs that passed to all CI runs. Then the mean of all values is displayed.",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1088,34 +1186,26 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
+                "color": "red",
                 "value": null
               },
               {
-                "color": "yellow",
-                "value": 120
-              },
-              {
-                "color": "orange",
-                "value": 300
-              },
-              {
-                "color": "red",
-                "value": 600
+                "color": "green",
+                "value": 100
               }
             ]
           },
-          "unit": "s"
+          "unit": "percent"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 3,
         "w": 6,
-        "x": 12,
-        "y": 12
+        "x": 18,
+        "y": 13
       },
-      "id": 33,
+      "id": 49,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -1133,7 +1223,7 @@
       "pluginVersion": "9.5.6",
       "targets": [
         {
-          "cypherQuery": "match (m:TwinMetaData)\n\nWITH m.ci_automation_names as ci_names\n\nMATCH (run:AutomationRun)\nWHERE run.name in ci_names\n\nRETURN percentileCont(duration.inSeconds(datetime(run.run_started_at), datetime(run.updated_at)).seconds, 0.5)",
+          "cypherQuery": "MATCH (m:TwinMetaData)\nCALL {\n  MATCH (c:Commit)\n\n  WITH c\n  LIMIT 1\n  \n  RETURN c.branch as main_branch\n}\nMATCH (m:TwinMetaData)\n\nMATCH (run:AutomationRun)\nWHERE run.name in m.ci_automation_names\nAND run.head_branch = main_branch\n\nWITH date(datetime(run.run_started_at)) AS date, CASE run.conclusion WHEN 'failure' THEN 0 ELSE 1 END AS wasSuccess\nWHERE date.weekDay <> 6 AND date.weekDay <> 7\n\nWITH date, (SUM(wasSuccess) * 100.0 / COUNT(*)) AS successRate\n\nRETURN percentileCont(successRate, 0.5)",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -1141,7 +1231,7 @@
           "refId": "A"
         }
       ],
-      "title": "Mean CI Run Time",
+      "title": "Mean CI Success Rate (Main branch)",
       "type": "stat"
     },
     {
@@ -1313,196 +1403,7 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
-      "description": "Mean test run time per day. Test run time is measure for how long a test job ran.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 50,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "area"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 120
-              },
-              {
-                "color": "orange",
-                "value": 300
-              },
-              {
-                "color": "red",
-                "value": 600
-              }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 6,
-        "x": 12,
-        "y": 15
-      },
-      "id": 48,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\nWHERE date.weekDay <> 6 AND date.weekDay <> 7\n\nMATCH (m:TwinMetaData)\n\nOPTIONAL MATCH (a:AutomationRun)\nWHERE a.name in m.test_automation_names\nAND a.updated_at IS NOT NULL \nAND date(datetime(a.run_started_at)) = date\n\nWITH date,\n       CASE \n         WHEN a IS NULL THEN 0  \n         ELSE duration.inSeconds(datetime(a.run_started_at), datetime(a.updated_at)).seconds\n         END AS runTimeInSeconds\n\nRETURN date, toFloat(percentileCont(runTimeInSeconds, 0.5)) as meanRunTime",
-          "datasource": {
-            "type": "kniepdennis-neo4j-datasource",
-            "uid": "P13FD9E770BE36698"
-          },
-          "refId": "A"
-        }
-      ],
-      "title": "Mean Test Run Time",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "kniepdennis-neo4j-datasource",
-        "uid": "P13FD9E770BE36698"
-      },
-      "description": "How many test jobs ran each day, all branches",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 50,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 6,
-        "x": 18,
-        "y": 15
-      },
-      "id": 47,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\nWHERE date.weekDay <> 6 AND date.weekDay <> 7\n\nMATCH (m:TwinMetaData)\nOPTIONAL MATCH (r:AutomationRun) \nWHERE r.name in m.test_automation_names\nAND date(datetime(r.run_started_at)) = date\n\nRETURN date, count(r) as testRunsPerDay",
-          "datasource": {
-            "type": "kniepdennis-neo4j-datasource",
-            "uid": "P13FD9E770BE36698"
-          },
-          "refId": "A"
-        }
-      ],
-      "title": "Test runs per day",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "kniepdennis-neo4j-datasource",
-        "uid": "P13FD9E770BE36698"
-      },
-      "description": "Mean test run time. Test run time is a measure for how long each test automation job ran.",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -1517,22 +1418,30 @@
                 "value": null
               },
               {
+                "color": "yellow",
+                "value": 30
+              },
+              {
+                "color": "orange",
+                "value": 60
+              },
+              {
                 "color": "red",
-                "value": 3600
+                "value": 1080
               }
             ]
           },
-          "unit": "s"
+          "unit": "m"
         },
         "overrides": []
       },
       "gridPos": {
         "h": 3,
         "w": 6,
-        "x": 12,
-        "y": 20
+        "x": 18,
+        "y": 16
       },
-      "id": 23,
+      "id": 27,
       "options": {
         "colorMode": "value",
         "graphMode": "area",
@@ -1550,7 +1459,7 @@
       "pluginVersion": "9.5.6",
       "targets": [
         {
-          "cypherQuery": "match (m:TwinMetaData)\n\nWITH m.test_automation_names as test_names\n\nMATCH (run:AutomationRun)\nWHERE run.name in test_names\n\nRETURN percentileCont(duration.inSeconds(datetime(run.run_started_at), datetime(run.updated_at)).seconds, 0.5)",
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (m:TwinMetaData)\nWITH fromDate, toDate, m.main_branch as main_branch, m.ci_automation_names as ci_names\n\nMATCH (failedRun:AutomationRun {head_branch: main_branch, conclusion: 'failure'})\nWHERE failedRun.name in ci_names\nAND date(datetime(failedRun.run_started_at)) > fromDate\nAND date(datetime(failedRun.run_started_at)) < toDate\n\nCALL {\nWITH failedRun, main_branch, ci_names\nMATCH (run:AutomationRun {head_branch: main_branch, conclusion: 'success', name: failedRun.name})\nWHERE run.name in ci_names\nAND run.run_started_at > failedRun.updated_at\n\nRETURN run\nORDER BY run.updated_at ASC\nLIMIT 1\n}\n\nRETURN percentileCont(duration.inSeconds(datetime(failedRun.updated_at), datetime(run.run_started_at)).minutes, 0.5) as meanTimeToRecovery",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
@@ -1558,7 +1467,7 @@
           "refId": "A"
         }
       ],
-      "title": "Mean Test Run Time",
+      "title": "CI Mean Time To Recovery (Main Branch)",
       "type": "stat"
     },
     {
@@ -1569,8 +1478,8 @@
       "gridPos": {
         "h": 2,
         "w": 6,
-        "x": 18,
-        "y": 20
+        "x": 0,
+        "y": 18
       },
       "id": 31,
       "options": {
@@ -1584,230 +1493,6 @@
       },
       "pluginVersion": "9.5.6",
       "type": "text"
-    },
-    {
-      "datasource": {
-        "type": "kniepdennis-neo4j-datasource",
-        "uid": "P13FD9E770BE36698"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "inspect": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 9,
-        "w": 6,
-        "x": 18,
-        "y": 22
-      },
-      "id": 30,
-      "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
-        "showHeader": true,
-        "sortBy": [
-          {
-            "desc": false,
-            "displayName": "twin_setting"
-          }
-        ]
-      },
-      "pluginVersion": "9.5.6",
-      "targets": [
-        {
-          "Format": "table",
-          "cypherQuery": "Match (n:TwinMetaData)\nWITH n, properties(n) as node_properties\n\nUNWIND keys(node_properties) AS property_key\nRETURN property_key as twin_setting, node_properties[property_key] AS setting_value ",
-          "datasource": {
-            "type": "kniepdennis-neo4j-datasource",
-            "uid": "P13FD9E770BE36698"
-          },
-          "refId": "A"
-        }
-      ],
-      "type": "table"
-    },
-    {
-      "datasource": {
-        "type": "kniepdennis-neo4j-datasource",
-        "uid": "P13FD9E770BE36698"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "axisSoftMax": 100,
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 50,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "line+area"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "green",
-                "value": 100
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 5,
-        "w": 6,
-        "x": 12,
-        "y": 23
-      },
-      "id": 9,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "cypherQuery": "MATCH (m:TwinMetaData)\nCALL {\n  MATCH (c:Commit)\n\n  WITH c\n  LIMIT 1\n  \n  RETURN c.branch as main_branch\n}\nMATCH (m:TwinMetaData)\n\nMATCH (run:AutomationRun)\nWHERE run.name in m.ci_automation_names\nAND run.head_branch = main_branch\n\nWITH date(datetime(run.run_started_at)) AS date, CASE run.conclusion WHEN 'failure' THEN 0 ELSE 1 END AS wasSuccess\nWHERE date.weekDay <> 6 AND date.weekDay <> 7\n\nRETURN date, (SUM(wasSuccess) * 100.0 / COUNT(*)) AS successRate\nORDER BY date",
-          "datasource": {
-            "type": "kniepdennis-neo4j-datasource",
-            "uid": "P13FD9E770BE36698"
-          },
-          "refId": "A"
-        }
-      ],
-      "title": "CI Success Rate (Main Branch)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "kniepdennis-neo4j-datasource",
-        "uid": "P13FD9E770BE36698"
-      },
-      "description": "CI Success Rate is calculated daily as the ratio of CI runs that passed to all CI runs. Then the mean of all values is displayed.",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red",
-                "value": null
-              },
-              {
-                "color": "green",
-                "value": 100
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 6,
-        "x": 12,
-        "y": 28
-      },
-      "id": 49,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "textMode": "auto"
-      },
-      "pluginVersion": "9.5.6",
-      "targets": [
-        {
-          "cypherQuery": "MATCH (m:TwinMetaData)\nCALL {\n  MATCH (c:Commit)\n\n  WITH c\n  LIMIT 1\n  \n  RETURN c.branch as main_branch\n}\nMATCH (m:TwinMetaData)\n\nMATCH (run:AutomationRun)\nWHERE run.name in m.ci_automation_names\nAND run.head_branch = main_branch\n\nWITH date(datetime(run.run_started_at)) AS date, CASE run.conclusion WHEN 'failure' THEN 0 ELSE 1 END AS wasSuccess\nWHERE date.weekDay <> 6 AND date.weekDay <> 7\n\nWITH date, (SUM(wasSuccess) * 100.0 / COUNT(*)) AS successRate\n\nRETURN percentileCont(successRate, 0.5)",
-          "datasource": {
-            "type": "kniepdennis-neo4j-datasource",
-            "uid": "P13FD9E770BE36698"
-          },
-          "refId": "A"
-        }
-      ],
-      "title": "Mean CI Success Rate (Main branch)",
-      "type": "stat"
     },
     {
       "datasource": {
@@ -1879,7 +1564,7 @@
         "h": 5,
         "w": 6,
         "x": 12,
-        "y": 31
+        "y": 18
       },
       "id": 25,
       "options": {
@@ -1905,6 +1590,346 @@
         }
       ],
       "title": "CI Time To Recovery (Main branch)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "kniepdennis-neo4j-datasource",
+        "uid": "P13FD9E770BE36698"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMax": 100,
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 19
+      },
+      "id": 26,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "cypherQuery": "MATCH (m:TwinMetaData)\nCALL {\n  MATCH (c:Commit)\n\n  WITH c\n  LIMIT 1\n  \n  RETURN c.branch as main_branch\n}\nMATCH (run:AutomationRun)\nWHERE run.name in m.ci_automation_names\nAND run.head_branch <> main_branch\n\nWITH date(datetime(run.run_started_at)) AS date, CASE run.conclusion WHEN 'failure' THEN 0 ELSE 1 END AS wasSuccess\nWHERE date.weekDay <> 6 AND date.weekDay <> 7\n\nRETURN date, (SUM(wasSuccess) * 100.0 / COUNT(*)) AS successRate\nORDER BY date",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "CI Success Rate (All other branches)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "kniepdennis-neo4j-datasource",
+        "uid": "P13FD9E770BE36698"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 6,
+        "x": 0,
+        "y": 20
+      },
+      "id": 30,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "twin_setting"
+          }
+        ]
+      },
+      "pluginVersion": "9.5.6",
+      "targets": [
+        {
+          "Format": "table",
+          "cypherQuery": "Match (n:TwinMetaData)\nWITH n, properties(n) as node_properties\n\nUNWIND keys(node_properties) AS property_key\nRETURN property_key as twin_setting, node_properties[property_key] AS setting_value ",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "refId": "A"
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "kniepdennis-neo4j-datasource",
+        "uid": "P13FD9E770BE36698"
+      },
+      "description": "How many test jobs ran each day, all branches",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 23
+      },
+      "id": 47,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\nWHERE date.weekDay <> 6 AND date.weekDay <> 7\n\nMATCH (m:TwinMetaData)\nOPTIONAL MATCH (r:AutomationRun) \nWHERE r.name in m.test_automation_names\nAND date(datetime(r.run_started_at)) = date\n\nRETURN date, count(r) as testRunsPerDay",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Test runs per day",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "kniepdennis-neo4j-datasource",
+        "uid": "P13FD9E770BE36698"
+      },
+      "description": "How many CI jobs ran each day, all branches",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 24
+      },
+      "id": 45,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, duration.inDays(fromDate, toDate).days + 1 AS totalDays\n\nUNWIND range(0, totalDays) AS daysToAdd\n\nWITH fromDate + duration({ days: daysToAdd }) as date\nWHERE date.weekDay <> 6 AND date.weekDay <> 7\n\nMATCH (m:TwinMetaData)\nOPTIONAL MATCH (r:AutomationRun) \nWHERE r.name in m.ci_automation_names\nAND date(datetime(r.run_started_at)) = date\n\nRETURN date, count(r) as ciRunsPerDay",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "CI runs per day",
       "type": "timeseries"
     }
   ],
