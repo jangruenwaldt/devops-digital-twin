@@ -557,7 +557,7 @@
               "mode": "none"
             },
             "thresholdsStyle": {
-              "mode": "off"
+              "mode": "area"
             }
           },
           "mappings": [],
@@ -569,8 +569,16 @@
                 "value": null
               },
               {
+                "color": "yellow",
+                "value": 10
+              },
+              {
+                "color": "orange",
+                "value": 15
+              },
+              {
                 "color": "red",
-                "value": 80
+                "value": 20
               }
             ]
           },
@@ -662,7 +670,7 @@
               "mode": "none"
             },
             "thresholdsStyle": {
-              "mode": "off"
+              "mode": "area"
             }
           },
           "mappings": [],
@@ -674,8 +682,16 @@
                 "value": null
               },
               {
+                "color": "yellow",
+                "value": 48
+              },
+              {
+                "color": "orange",
+                "value": 96
+              },
+              {
                 "color": "red",
-                "value": 80
+                "value": 168
               }
             ]
           },
@@ -690,7 +706,7 @@
             "properties": [
               {
                 "id": "unit",
-                "value": "s"
+                "value": "h"
               }
             ]
           }
@@ -717,7 +733,7 @@
       },
       "targets": [
         {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\nMATCH (n:TwinMetaData)\n\nWITH deployment, n, toDate as maxDate\nORDER BY deployment.published_at\n\nWITH collect(deployment) as deployments, n.project_management_bug_categories as categories, maxDate\n\nUNWIND range(0, size(deployments) - 1) as i\n\nWITH categories, date(datetime(deployments[i].published_at)) as fromDate, \nCASE WHEN i = size(deployments) - 1\n          THEN maxDate \n          ELSE date(datetime(deployments[i+1].published_at)) \nEND as toDate\n\nWITH fromDate, toDate, categories\n\nMATCH (issue:Issue {state: 'closed'})-[r:HAS_LABEL]->(l:IssueLabel)\nWHERE date(datetime(issue.created_at)) >= fromDate\nAND date(datetime(issue.created_at)) <= toDate\n\nWITH issue, collect(l.name) as issueLabels, categories, fromDate\n\nWHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\"))) \n\nRETURN fromDate as date, toFloat(percentileCont(duration.inSeconds(datetime(issue.created_at), datetime(issue.closed_at)).seconds, 0.5)) as meanTimeToRepairCode\n\n",
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\nMATCH (n:TwinMetaData)\n\nWITH deployment, n, toDate as maxDate\nORDER BY deployment.published_at\n\nWITH collect(deployment) as deployments, n.project_management_bug_categories as categories, maxDate\n\nUNWIND range(0, size(deployments) - 1) as i\n\nWITH categories, date(datetime(deployments[i].published_at)) as fromDate, \nCASE WHEN i = size(deployments) - 1\n          THEN maxDate \n          ELSE date(datetime(deployments[i+1].published_at)) \nEND as toDate\n\nWITH fromDate, toDate, categories\n\nMATCH (issue:Issue {state: 'closed'})-[r:HAS_LABEL]->(l:IssueLabel)\nWHERE date(datetime(issue.created_at)) >= fromDate\nAND date(datetime(issue.created_at)) <= toDate\n\nWITH issue, collect(l.name) as issueLabels, categories, fromDate\n\nWHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\"))) \n\nRETURN fromDate as date, toFloat(percentileCont(duration.inSeconds(datetime(issue.created_at), datetime(issue.closed_at)).hours, 0.5)) as meanTimeToRepairCode\n\n",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
