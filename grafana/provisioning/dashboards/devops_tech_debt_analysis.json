@@ -524,115 +524,6 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
-      "description": "Time to repair code for issues opened during release",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 50,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "smooth",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          },
-          "unit": "dtdurations"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "openedBugsPerRelease"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "none"
-              },
-              {
-                "id": "custom.drawStyle",
-                "value": "bars"
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 6,
-        "x": 12,
-        "y": 6
-      },
-      "id": 43,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\nMATCH (n:TwinMetaData)\n\nWITH deployment, n\nORDER BY deployment.published_at\n\nWITH collect(deployment) as deployments, n.project_management_bug_categories as categories\n\nUNWIND range(0, size(deployments) - 1) as i\n\nWITH categories, date(datetime(deployments[i].published_at)) as fromDate, date(datetime(deployments[i+1].published_at)) as toDate\n\nWITH fromDate, toDate, categories\n\nMATCH (issue:Issue {state: 'closed'})-[r:HAS_LABEL]->(l:IssueLabel)\nWHERE date(datetime(issue.created_at)) >= fromDate\nAND date(datetime(issue.created_at)) <= toDate\n\nWITH issue, collect(l.name) as issueLabels, categories, fromDate\n\nWHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\"))) \n\nRETURN fromDate as date, toFloat(percentileCont(duration.inSeconds(datetime(issue.created_at), datetime(issue.closed_at)).seconds, 0.5)) as meanTimeToRepairCode\n\n",
-          "datasource": {
-            "type": "kniepdennis-neo4j-datasource",
-            "uid": "P13FD9E770BE36698"
-          },
-          "hide": false,
-          "refId": "B"
-        }
-      ],
-      "title": "Time to repair code per release",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "kniepdennis-neo4j-datasource",
-        "uid": "P13FD9E770BE36698"
-      },
       "description": "",
       "fieldConfig": {
         "defaults": {
@@ -685,12 +576,25 @@
           },
           "unit": "percent"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "meanTimeToRepairCode"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "s"
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 6,
         "w": 6,
-        "x": 18,
+        "x": 12,
         "y": 6
       },
       "id": 42,
@@ -715,9 +619,18 @@
           },
           "hide": false,
           "refId": "B"
+        },
+        {
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\nMATCH (n:TwinMetaData)\n\nWITH deployment, n, toDate as maxDate\nORDER BY deployment.published_at\n\nWITH collect(deployment) as deployments, n.project_management_bug_categories as categories, maxDate\n\nUNWIND range(0, size(deployments)) as i\n\nWITH categories, date(datetime(deployments[i].published_at)) as fromDate, \nCASE WHEN i = size(deployments) - 1\n          THEN maxDate \n          ELSE date(datetime(deployments[i+1].published_at)) \nEND as toDate\n\nWITH fromDate, toDate, categories\n\nMATCH (issue:Issue {state: 'closed'})-[r:HAS_LABEL]->(l:IssueLabel)\nWHERE date(datetime(issue.created_at)) >= fromDate\nAND date(datetime(issue.created_at)) <= toDate\n\nWITH issue, collect(l.name) as issueLabels, categories, fromDate\n\nWHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\"))) \n\nRETURN fromDate as date, toFloat(percentileCont(duration.inSeconds(datetime(issue.created_at), datetime(issue.closed_at)).seconds, 0.5)) as meanTimeToRepairCode\n\n",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "hide": false,
+          "refId": "A"
         }
       ],
-      "title": "Bug issue rate per release (in percent)",
+      "title": "Bug-related metrics per release",
       "type": "timeseries"
     },
     {
