@@ -11,6 +11,12 @@
         "hide": true,
         "iconColor": "rgba(0, 211, 255, 1)",
         "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
         "type": "dashboard"
       }
     ]
@@ -541,7 +547,8 @@
             "lineWidth": 2,
             "pointSize": 5,
             "scaleDistribution": {
-              "type": "linear"
+              "log": 2,
+              "type": "log"
             },
             "showPoints": "auto",
             "spanNulls": false,
@@ -580,7 +587,7 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 5,
+        "h": 10,
         "w": 6,
         "x": 6,
         "y": 5
@@ -896,106 +903,6 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
-      "description": "For the primary application you work on, what percentage of changes requested imply a bug correction or code repair (e.g., malfunction of the application)? (Ruiz et al.)",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 50,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "area"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 10
-              },
-              {
-                "color": "orange",
-                "value": 15
-              },
-              {
-                "color": "red",
-                "value": 20
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 6,
-        "y": 10
-      },
-      "id": 32,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "9.5.6",
-      "targets": [
-        {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, toInteger(duration.inDays(fromDate, toDate).days / 7) + 1 AS totalWeeks\n\nUNWIND range(0, totalWeeks) AS weeksToAdd\n\nMATCH (n:TwinMetaData)\n\nWITH n.project_management_bug_categories as categories, fromDate + duration({ days: weeksToAdd * 7 }) as fromDate, fromDate + duration({ days: (weeksToAdd + 1) * 7 }) as toDate\n\n// Exclude issues without any labels, usually irrelevant.\nOPTIONAL MATCH (issue:Issue)-[r:HAS_LABEL]-(i:IssueLabel)\n  WHERE date(datetime(issue.created_at)) >= fromDate AND date(datetime(issue.created_at)) < toDate\n\nWITH DISTINCT(issue), fromDate, toDate, categories \n\nWITH fromDate, toDate, count(issue) as overallOpened, categories\n\nCALL {\nWITH fromDate, toDate, categories\n\nOPTIONAL MATCH (issue:Issue)-[r:HAS_LABEL]->(l:IssueLabel)\n  WHERE date(datetime(issue.created_at)) >= fromDate AND date(datetime(issue.created_at)) < toDate\n\nCALL {\n    WITH l, categories\n    WITH collect(l.name) as issueLabels, categories\n        WHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\")))\n        RETURN count(*) as wasBugIssue\n}\n\nWITH issue\nWHERE wasBugIssue = 1\n\nWITH DISTINCT(issue)\n\nRETURN count(*) as bugIssuesOpened\n}\n\nRETURN fromDate,\n       CASE\n         WHEN overallOpened = 0 THEN bugIssuesOpened\n         ELSE 100 * bugIssuesOpened / overallOpened\n         END AS bugIssueRate\n",
-          "datasource": {
-            "type": "kniepdennis-neo4j-datasource",
-            "uid": "P13FD9E770BE36698"
-          },
-          "refId": "A"
-        }
-      ],
-      "title": "Bug Issue Rate (per week)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "kniepdennis-neo4j-datasource",
-        "uid": "P13FD9E770BE36698"
-      },
       "description": "Mean test run time. Test run time is a measure for how long each test automation job ran.",
       "fieldConfig": {
         "defaults": {
@@ -1239,98 +1146,6 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
-      "description": "For the primary application you work on, what percentage of changes requested imply a bug correction or code repair (e.g., malfunction of the application)? (Ruiz et al.)",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 50,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "linear",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "off"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 20
-              }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 4,
-        "w": 6,
-        "x": 6,
-        "y": 14
-      },
-      "id": 18,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "9.5.6",
-      "targets": [
-        {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, toInteger(duration.inDays(fromDate, toDate).days / 7) + 1 AS totalWeeks\n\nUNWIND range(0, totalWeeks) AS weeksToAdd\n\nMATCH (n:TwinMetaData)\n\nWITH n.project_management_bug_categories as categories, fromDate + duration({ days: weeksToAdd * 7 }) as fromDate, fromDate + duration({ days: (weeksToAdd + 1) * 7 }) as toDate\n\n// Exclude issues without any labels, usually irrelevant.\nOPTIONAL MATCH (issue:Issue)-[r:HAS_LABEL]-(i:IssueLabel)\n  WHERE date(datetime(issue.created_at)) >= fromDate AND date(datetime(issue.created_at)) < toDate\n\nWITH DISTINCT(issue), fromDate, toDate, categories\n\nWITH fromDate, toDate, count(issue) as overallOpened, categories\n\nCALL {\nWITH fromDate, toDate, categories\n\nOPTIONAL MATCH (issue:Issue)-[r:HAS_LABEL]->(l:IssueLabel)\n  WHERE date(datetime(issue.created_at)) >= fromDate AND date(datetime(issue.created_at)) < toDate\n\nCALL {\n    WITH l, categories\n    WITH collect(l.name) as issueLabels, categories\n        WHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\")))\n        RETURN count(*) as wasBugIssue\n}\n\nWITH issue\nWHERE wasBugIssue = 1\n\nWITH DISTINCT(issue)\n\nRETURN count(*) as bugIssuesOpened\n}\n\nRETURN fromDate, bugIssuesOpened, overallOpened",
-          "datasource": {
-            "type": "kniepdennis-neo4j-datasource",
-            "uid": "P13FD9E770BE36698"
-          },
-          "refId": "A"
-        }
-      ],
-      "title": "Opened Bugs vs All Opened Issues (weekly)",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "kniepdennis-neo4j-datasource",
-        "uid": "P13FD9E770BE36698"
-      },
       "description": "Time from commit to deploy in hours",
       "fieldConfig": {
         "defaults": {
@@ -1397,6 +1212,98 @@
       ],
       "title": "Mean Lead Time",
       "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "kniepdennis-neo4j-datasource",
+        "uid": "P13FD9E770BE36698"
+      },
+      "description": "For the primary application you work on, what percentage of changes requested imply a bug correction or code repair (e.g., malfunction of the application)? (Ruiz et al.)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 20
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 4,
+        "w": 6,
+        "x": 6,
+        "y": 15
+      },
+      "id": 18,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "9.5.6",
+      "targets": [
+        {
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, toInteger(duration.inDays(fromDate, toDate).days / 7) + 1 AS totalWeeks\n\nUNWIND range(0, totalWeeks) AS weeksToAdd\n\nMATCH (n:TwinMetaData)\n\nWITH n.project_management_bug_categories as categories, fromDate + duration({ days: weeksToAdd * 7 }) as fromDate, fromDate + duration({ days: (weeksToAdd + 1) * 7 }) as toDate\n\n// Exclude issues without any labels, usually irrelevant.\nOPTIONAL MATCH (issue:Issue)-[r:HAS_LABEL]-(i:IssueLabel)\n  WHERE date(datetime(issue.created_at)) >= fromDate AND date(datetime(issue.created_at)) < toDate\n\nWITH DISTINCT(issue), fromDate, toDate, categories\n\nWITH fromDate, toDate, count(issue) as overallOpened, categories\n\nCALL {\nWITH fromDate, toDate, categories\n\nOPTIONAL MATCH (issue:Issue)-[r:HAS_LABEL]->(l:IssueLabel)\n  WHERE date(datetime(issue.created_at)) >= fromDate AND date(datetime(issue.created_at)) < toDate\n\nCALL {\n    WITH l, categories\n    WITH collect(l.name) as issueLabels, categories\n        WHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\")))\n        RETURN count(*) as wasBugIssue\n}\n\nWITH issue\nWHERE wasBugIssue = 1\n\nWITH DISTINCT(issue)\n\nRETURN count(*) as bugIssuesOpened\n}\n\nRETURN fromDate, bugIssuesOpened, overallOpened",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Opened Bugs vs All Opened Issues (weekly)",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -1475,24 +1382,100 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
+      "description": "For the primary application you work on, what percentage of changes requested imply a bug correction or code repair (e.g., malfunction of the application)? (Ruiz et al.)",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "area"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "yellow",
+                "value": 10
+              },
+              {
+                "color": "orange",
+                "value": 15
+              },
+              {
+                "color": "red",
+                "value": 20
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
       "gridPos": {
-        "h": 2,
+        "h": 4,
         "w": 6,
         "x": 0,
         "y": 18
       },
-      "id": 31,
+      "id": 32,
       "options": {
-        "code": {
-          "language": "plaintext",
-          "showLineNumbers": false,
-          "showMiniMap": false
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
         },
-        "content": "# Twin info",
-        "mode": "markdown"
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "9.5.6",
-      "type": "text"
+      "targets": [
+        {
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nWITH fromDate, toDate, toInteger(duration.inDays(fromDate, toDate).days / 7) + 1 AS totalWeeks\n\nUNWIND range(0, totalWeeks) AS weeksToAdd\n\nMATCH (n:TwinMetaData)\n\nWITH n.project_management_bug_categories as categories, fromDate + duration({ days: weeksToAdd * 7 }) as fromDate, fromDate + duration({ days: (weeksToAdd + 1) * 7 }) as toDate\n\n// Exclude issues without any labels, usually irrelevant.\nOPTIONAL MATCH (issue:Issue)-[r:HAS_LABEL]-(i:IssueLabel)\n  WHERE date(datetime(issue.created_at)) >= fromDate AND date(datetime(issue.created_at)) < toDate\n\nWITH DISTINCT(issue), fromDate, toDate, categories \n\nWITH fromDate, toDate, count(issue) as overallOpened, categories\n\nCALL {\nWITH fromDate, toDate, categories\n\nOPTIONAL MATCH (issue:Issue)-[r:HAS_LABEL]->(l:IssueLabel)\n  WHERE date(datetime(issue.created_at)) >= fromDate AND date(datetime(issue.created_at)) < toDate\n\nCALL {\n    WITH l, categories\n    WITH collect(l.name) as issueLabels, categories\n        WHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\")))\n        RETURN count(*) as wasBugIssue\n}\n\nWITH issue\nWHERE wasBugIssue = 1\n\nWITH DISTINCT(issue)\n\nRETURN count(*) as bugIssuesOpened\n}\n\nRETURN fromDate,\n       CASE\n         WHEN overallOpened = 0 THEN bugIssuesOpened\n         ELSE 100 * bugIssuesOpened / overallOpened\n         END AS bugIssueRate\n",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Bug Issue Rate (per week)",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -1687,70 +1670,24 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "inspect": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "red",
-                "value": 80
-              }
-            ]
-          }
-        },
-        "overrides": []
-      },
       "gridPos": {
-        "h": 9,
+        "h": 2,
         "w": 6,
         "x": 0,
-        "y": 20
+        "y": 22
       },
-      "id": 30,
+      "id": 31,
       "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
         },
-        "showHeader": true,
-        "sortBy": [
-          {
-            "desc": false,
-            "displayName": "twin_setting"
-          }
-        ]
+        "content": "# Twin info",
+        "mode": "markdown"
       },
       "pluginVersion": "9.5.6",
-      "targets": [
-        {
-          "Format": "table",
-          "cypherQuery": "Match (n:TwinMetaData)\nWITH n, properties(n) as node_properties\n\nUNWIND keys(node_properties) AS property_key\nRETURN property_key as twin_setting, node_properties[property_key] AS setting_value ",
-          "datasource": {
-            "type": "kniepdennis-neo4j-datasource",
-            "uid": "P13FD9E770BE36698"
-          },
-          "refId": "A"
-        }
-      ],
-      "type": "table"
+      "type": "text"
     },
     {
       "datasource": {
@@ -1841,6 +1778,76 @@
       ],
       "title": "Test runs per day",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "kniepdennis-neo4j-datasource",
+        "uid": "P13FD9E770BE36698"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 6,
+        "x": 0,
+        "y": 24
+      },
+      "id": 30,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": false,
+            "displayName": "twin_setting"
+          }
+        ]
+      },
+      "pluginVersion": "9.5.6",
+      "targets": [
+        {
+          "Format": "table",
+          "cypherQuery": "Match (n:TwinMetaData)\nWITH n, properties(n) as node_properties\n\nUNWIND keys(node_properties) AS property_key\nRETURN property_key as twin_setting, node_properties[property_key] AS setting_value ",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "refId": "A"
+        }
+      ],
+      "type": "table"
     },
     {
       "datasource": {
@@ -1948,6 +1955,6 @@
   "timezone": "",
   "title": "DevOps Tech Debt Metrics",
   "uid": "a49a1264-f31e-4333-a906-0f4a2c5340f8",
-  "version": 52,
+  "version": 53,
   "weekStart": ""
 }
