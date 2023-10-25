@@ -588,12 +588,16 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "meanTimeToRepairCode"
+              "options": "openedBugsPerRelease"
             },
             "properties": [
               {
                 "id": "unit",
-                "value": "s"
+                "value": "none"
+              },
+              {
+                "id": "custom.drawStyle",
+                "value": "bars"
               }
             ]
           }
@@ -627,6 +631,15 @@
           },
           "hide": false,
           "refId": "B"
+        },
+        {
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\nMATCH (n:TwinMetaData)\n\nWITH deployment, n, toDate as maxDate\nORDER BY deployment.published_at\n\nWITH collect(deployment) as deployments, n.project_management_bug_categories as categories, maxDate\n\nUNWIND range(0, size(deployments) - 1) as i\n\nWITH categories, date(datetime(deployments[i].published_at)) as fromDate, \nCASE WHEN i = size(deployments) - 1\n          THEN maxDate \n          ELSE date(datetime(deployments[i+1].published_at)) \nEND as toDate\n\nWITH fromDate, toDate, categories\n\nMATCH (issue:Issue {state: 'closed'})-[r:HAS_LABEL]->(l:IssueLabel)\nWHERE date(datetime(issue.created_at)) >= fromDate\nAND date(datetime(issue.created_at)) < toDate\n\nWITH issue, collect(l.name) as issueLabels, categories, fromDate\n\nWHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\"))) \n\nRETURN fromDate as date, count(*) as openedBugsPerRelease\n\n",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "hide": false,
+          "refId": "A"
         }
       ],
       "title": "Bug Issue Rate per release",
@@ -701,12 +714,16 @@
           {
             "matcher": {
               "id": "byName",
-              "options": "meanTimeToRepairCode"
+              "options": "openedBugsPerRelease"
             },
             "properties": [
               {
                 "id": "unit",
-                "value": "h"
+                "value": "none"
+              },
+              {
+                "id": "custom.drawStyle",
+                "value": "bars"
               }
             ]
           }
@@ -740,6 +757,15 @@
           },
           "hide": false,
           "refId": "A"
+        },
+        {
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\nMATCH (n:TwinMetaData)\n\nWITH deployment, n, toDate as maxDate\nORDER BY deployment.published_at\n\nWITH collect(deployment) as deployments, n.project_management_bug_categories as categories, maxDate\n\nUNWIND range(0, size(deployments) - 1) as i\n\nWITH categories, date(datetime(deployments[i].published_at)) as fromDate, \nCASE WHEN i = size(deployments) - 1\n          THEN maxDate \n          ELSE date(datetime(deployments[i+1].published_at)) \nEND as toDate\n\nWITH fromDate, toDate, categories\n\nMATCH (issue:Issue {state: 'closed'})-[r:HAS_LABEL]->(l:IssueLabel)\nWHERE date(datetime(issue.created_at)) >= fromDate\nAND date(datetime(issue.created_at)) < toDate\n\nWITH issue, collect(l.name) as issueLabels, categories, fromDate\n\nWHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\"))) \n\nRETURN fromDate as date, count(*) as openedBugsPerRelease\n\n",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "hide": false,
+          "refId": "B"
         }
       ],
       "title": "Time to repair code per release",
@@ -959,6 +985,6 @@
   "timezone": "",
   "title": "DevOps Tech Debt Analysis",
   "uid": "f49b6377-7cbd-42a4-aea7-470f570426b9",
-  "version": 21,
+  "version": 26,
   "weekStart": ""
 }
