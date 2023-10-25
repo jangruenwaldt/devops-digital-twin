@@ -544,7 +544,7 @@
               "viz": false
             },
             "lineInterpolation": "linear",
-            "lineWidth": 2,
+            "lineWidth": 1.5,
             "pointSize": 5,
             "scaleDistribution": {
               "log": 2,
@@ -1134,7 +1134,7 @@
               "viz": false
             },
             "lineInterpolation": "linear",
-            "lineWidth": 2,
+            "lineWidth": 1.5,
             "pointSize": 5,
             "scaleDistribution": {
               "log": 2,
