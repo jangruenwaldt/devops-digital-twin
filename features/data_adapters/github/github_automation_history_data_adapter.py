@@ -60,7 +60,7 @@ class GitHubAutomationHistoryDataAdapter(GitHubDataFetcher):
                 print(f'Fetch limit unchanged: {Config.get_automation_history_since()}. Fetching only workflows '
                       f'after {latest_fetched_date}, as all previous already fetched.')
                 api_url_without_query_param = api_url.split('?')[0]
-                api_url = api_url_without_query_param + f'?created>={latest_fetched_date}'
+                api_url = api_url_without_query_param + f'?created=>{latest_fetched_date}'
 
             newly_fetched_data = self._fetch_from_workflow_history_api(api_url)
 
