@@ -405,7 +405,7 @@
               }
             ]
           },
-          "unit": "percent"
+          "unit": "h"
         },
         "overrides": [
           {
@@ -989,6 +989,6 @@
   "timezone": "",
   "title": "DevOps Tech Debt Analysis",
   "uid": "f49b6377-7cbd-42a4-aea7-470f570426b9",
-  "version": 26,
+  "version": 30,
   "weekStart": ""
 }
