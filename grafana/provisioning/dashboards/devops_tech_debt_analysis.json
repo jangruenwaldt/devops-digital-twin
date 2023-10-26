@@ -755,11 +755,15 @@
               },
               {
                 "color": "#EAB839",
-                "value": 360
+                "value": 168
+              },
+              {
+                "color": "orange",
+                "value": 336
               },
               {
                 "color": "red",
-                "value": 720
+                "value": 672
               }
             ]
           },
