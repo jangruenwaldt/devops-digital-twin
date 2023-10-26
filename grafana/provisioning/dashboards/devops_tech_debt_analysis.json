@@ -221,11 +221,41 @@
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
-      "description": "Release standard deviation less than 2 weeks",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "area"
+            }
           },
           "mappings": [],
           "thresholds": {
@@ -236,64 +266,122 @@
                 "value": null
               },
               {
-                "color": "red",
-                "value": 0
+                "color": "yellow",
+                "value": 10
               },
               {
-                "color": "green",
-                "value": 1
+                "color": "orange",
+                "value": 15
+              },
+              {
+                "color": "red",
+                "value": 20
               }
             ]
           },
-          "unit": "bool"
+          "unit": "percent"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "openedBugsPerRelease"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "custom.drawStyle",
+                "value": "bars"
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
-        "h": 3,
+        "h": 6,
         "w": 6,
         "x": 12,
         "y": 3
       },
-      "id": 41,
+      "id": 42,
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
         },
-        "textMode": "auto"
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
-      "pluginVersion": "9.5.6",
       "targets": [
         {
-          "cypherQuery": "RETURN 1",
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\nMATCH (n:TwinMetaData)\n\nWITH deployment, n\nORDER BY deployment.published_at\n\nWITH collect(deployment) as deployments, n.project_management_bug_categories as categories\n\nUNWIND range(0, size(deployments) - 1) as i\n\nWITH categories, date(datetime(deployments[i].published_at)) as fromDate, \ndate(datetime(deployments[i+1].published_at)) as toDate\n\n// Exclude issues without any labels, usually irrelevant.\nOPTIONAL MATCH (issue:Issue)-[r:HAS_LABEL]-(i:IssueLabel)\n  WHERE date(datetime(issue.created_at)) >= fromDate \n  AND (toDate is null OR date(datetime(issue.created_at)) < toDate)\n\nWITH DISTINCT(issue), fromDate, toDate, categories \n\nWITH fromDate, toDate, count(issue) as overallOpened, categories\n\nCALL {\nWITH fromDate, toDate, categories\n\nOPTIONAL MATCH (issue:Issue)-[r:HAS_LABEL]->(l:IssueLabel)\n  WHERE date(datetime(issue.created_at)) >= fromDate \n  AND date(datetime(issue.created_at)) < toDate\n\nCALL {\n    WITH l, categories\n    WITH collect(l.name) as issueLabels, categories\n        WHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\")))\n        RETURN count(*) as wasBugIssue\n}\n\nWITH issue\nWHERE wasBugIssue = 1\n\nWITH DISTINCT(issue)\n\nRETURN count(*) as bugIssuesOpened\n}\n\nRETURN fromDate,\n       CASE\n         WHEN overallOpened = 0 THEN 100\n         ELSE 100 * bugIssuesOpened / overallOpened\n         END AS bugIssueRate",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
           },
+          "hide": false,
+          "refId": "B"
+        },
+        {
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\nMATCH (n:TwinMetaData)\n\nWITH deployment, n, toDate as maxDate\nORDER BY deployment.published_at\n\nWITH collect(deployment) as deployments, n.project_management_bug_categories as categories, maxDate\n\nUNWIND range(0, size(deployments) - 1) as i\n\nWITH categories, date(datetime(deployments[i].published_at)) as fromDate, \nCASE WHEN i = size(deployments) - 1\n          THEN maxDate \n          ELSE date(datetime(deployments[i+1].published_at)) \nEND as toDate\n\nWITH fromDate, toDate, categories\n\nMATCH (issue:Issue {state: 'closed'})-[r:HAS_LABEL]->(l:IssueLabel)\nWHERE date(datetime(issue.created_at)) >= fromDate\nAND date(datetime(issue.created_at)) < toDate\n\nWITH issue, collect(l.name) as issueLabels, categories, fromDate\n\nWHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\"))) \n\nRETURN fromDate as date, count(*) as openedBugsPerRelease\n\n",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "hide": false,
           "refId": "A"
         }
       ],
-      "title": "Releases are regular",
-      "type": "stat"
+      "title": "Bug Issue Rate per release",
+      "type": "timeseries"
     },
     {
       "datasource": {
         "type": "kniepdennis-neo4j-datasource",
         "uid": "P13FD9E770BE36698"
       },
-      "description": "Standard deviation of release frequency",
+      "description": "",
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 50,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "smooth",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "area"
+            }
           },
           "mappings": [],
           "thresholds": {
@@ -304,53 +392,81 @@
                 "value": null
               },
               {
-                "color": "#EAB839",
-                "value": 360
+                "color": "yellow",
+                "value": 48
+              },
+              {
+                "color": "orange",
+                "value": 96
               },
               {
                 "color": "red",
-                "value": 720
+                "value": 168
               }
             ]
           },
-          "unit": "h"
+          "unit": "percent"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "openedBugsPerRelease"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "none"
+              },
+              {
+                "id": "custom.drawStyle",
+                "value": "bars"
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
-        "h": 3,
+        "h": 6,
         "w": 6,
         "x": 18,
         "y": 3
       },
-      "id": 44,
+      "id": 48,
       "options": {
-        "colorMode": "value",
-        "graphMode": "area",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
         },
-        "textMode": "auto"
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
       },
-      "pluginVersion": "9.5.6",
       "targets": [
         {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\n\nWITH deployment\nORDER BY deployment.published_at\n\nWITH collect(deployment.published_at) AS deploymentDates\n\nUNWIND range(0, size(deploymentDates) - 2) AS i\nWITH deploymentDates[i] AS currentDeployment, deploymentDates[i+1] AS nextDeployment\n\nRETURN stDev(duration.inSeconds(datetime(currentDeployment), datetime(nextDeployment)).seconds / 3600.0) AS deploymentFrequencyInHours",
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\nMATCH (n:TwinMetaData)\n\nWITH deployment, n, toDate as maxDate\nORDER BY deployment.published_at\n\nWITH collect(deployment) as deployments, n.project_management_bug_categories as categories, maxDate\n\nUNWIND range(0, size(deployments) - 1) as i\n\nWITH categories, date(datetime(deployments[i].published_at)) as fromDate, \nCASE WHEN i = size(deployments) - 1\n          THEN maxDate \n          ELSE date(datetime(deployments[i+1].published_at)) \nEND as toDate\n\nWITH fromDate, toDate, categories\n\nMATCH (issue:Issue {state: 'closed'})-[r:HAS_LABEL]->(l:IssueLabel)\nWHERE date(datetime(issue.created_at)) >= fromDate\nAND date(datetime(issue.created_at)) < toDate\n\nWITH issue, collect(l.name) as issueLabels, categories, fromDate\n\nWHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\"))) \n\nRETURN fromDate as date, toFloat(percentileCont(duration.inSeconds(datetime(issue.created_at), datetime(issue.closed_at)).hours, 0.5)) as meanTimeToRepairCode\n\n",
           "datasource": {
             "type": "kniepdennis-neo4j-datasource",
             "uid": "P13FD9E770BE36698"
           },
+          "hide": false,
           "refId": "A"
+        },
+        {
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\nMATCH (n:TwinMetaData)\n\nWITH deployment, n, toDate as maxDate\nORDER BY deployment.published_at\n\nWITH collect(deployment) as deployments, n.project_management_bug_categories as categories, maxDate\n\nUNWIND range(0, size(deployments) - 1) as i\n\nWITH categories, date(datetime(deployments[i].published_at)) as fromDate, \nCASE WHEN i = size(deployments) - 1\n          THEN maxDate \n          ELSE date(datetime(deployments[i+1].published_at)) \nEND as toDate\n\nWITH fromDate, toDate, categories\n\nMATCH (issue:Issue {state: 'closed'})-[r:HAS_LABEL]->(l:IssueLabel)\nWHERE date(datetime(issue.created_at)) >= fromDate\nAND date(datetime(issue.created_at)) < toDate\n\nWITH issue, collect(l.name) as issueLabels, categories, fromDate\n\nWHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\"))) \n\nRETURN fromDate as date, count(*) as openedBugsPerRelease\n\n",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "hide": false,
+          "refId": "B"
         }
       ],
-      "title": "Release Regularity (standard deviation)",
-      "type": "stat"
+      "title": "Time to repair code per release",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -544,258 +660,6 @@
               "tooltip": false,
               "viz": false
             },
-            "lineInterpolation": "smooth",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "area"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 10
-              },
-              {
-                "color": "orange",
-                "value": 15
-              },
-              {
-                "color": "red",
-                "value": 20
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "openedBugsPerRelease"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "none"
-              },
-              {
-                "id": "custom.drawStyle",
-                "value": "bars"
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 6,
-        "x": 12,
-        "y": 6
-      },
-      "id": 42,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\nMATCH (n:TwinMetaData)\n\nWITH deployment, n\nORDER BY deployment.published_at\n\nWITH collect(deployment) as deployments, n.project_management_bug_categories as categories\n\nUNWIND range(0, size(deployments) - 1) as i\n\nWITH categories, date(datetime(deployments[i].published_at)) as fromDate, \ndate(datetime(deployments[i+1].published_at)) as toDate\n\n// Exclude issues without any labels, usually irrelevant.\nOPTIONAL MATCH (issue:Issue)-[r:HAS_LABEL]-(i:IssueLabel)\n  WHERE date(datetime(issue.created_at)) >= fromDate \n  AND (toDate is null OR date(datetime(issue.created_at)) < toDate)\n\nWITH DISTINCT(issue), fromDate, toDate, categories \n\nWITH fromDate, toDate, count(issue) as overallOpened, categories\n\nCALL {\nWITH fromDate, toDate, categories\n\nOPTIONAL MATCH (issue:Issue)-[r:HAS_LABEL]->(l:IssueLabel)\n  WHERE date(datetime(issue.created_at)) >= fromDate \n  AND date(datetime(issue.created_at)) < toDate\n\nCALL {\n    WITH l, categories\n    WITH collect(l.name) as issueLabels, categories\n        WHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\")))\n        RETURN count(*) as wasBugIssue\n}\n\nWITH issue\nWHERE wasBugIssue = 1\n\nWITH DISTINCT(issue)\n\nRETURN count(*) as bugIssuesOpened\n}\n\nRETURN fromDate,\n       CASE\n         WHEN overallOpened = 0 THEN 100\n         ELSE 100 * bugIssuesOpened / overallOpened\n         END AS bugIssueRate",
-          "datasource": {
-            "type": "kniepdennis-neo4j-datasource",
-            "uid": "P13FD9E770BE36698"
-          },
-          "hide": false,
-          "refId": "B"
-        },
-        {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\nMATCH (n:TwinMetaData)\n\nWITH deployment, n, toDate as maxDate\nORDER BY deployment.published_at\n\nWITH collect(deployment) as deployments, n.project_management_bug_categories as categories, maxDate\n\nUNWIND range(0, size(deployments) - 1) as i\n\nWITH categories, date(datetime(deployments[i].published_at)) as fromDate, \nCASE WHEN i = size(deployments) - 1\n          THEN maxDate \n          ELSE date(datetime(deployments[i+1].published_at)) \nEND as toDate\n\nWITH fromDate, toDate, categories\n\nMATCH (issue:Issue {state: 'closed'})-[r:HAS_LABEL]->(l:IssueLabel)\nWHERE date(datetime(issue.created_at)) >= fromDate\nAND date(datetime(issue.created_at)) < toDate\n\nWITH issue, collect(l.name) as issueLabels, categories, fromDate\n\nWHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\"))) \n\nRETURN fromDate as date, count(*) as openedBugsPerRelease\n\n",
-          "datasource": {
-            "type": "kniepdennis-neo4j-datasource",
-            "uid": "P13FD9E770BE36698"
-          },
-          "hide": false,
-          "refId": "A"
-        }
-      ],
-      "title": "Bug Issue Rate per release",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "kniepdennis-neo4j-datasource",
-        "uid": "P13FD9E770BE36698"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 50,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
-            "lineInterpolation": "smooth",
-            "lineWidth": 1,
-            "pointSize": 5,
-            "scaleDistribution": {
-              "type": "linear"
-            },
-            "showPoints": "auto",
-            "spanNulls": false,
-            "stacking": {
-              "group": "A",
-              "mode": "none"
-            },
-            "thresholdsStyle": {
-              "mode": "area"
-            }
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green",
-                "value": null
-              },
-              {
-                "color": "yellow",
-                "value": 48
-              },
-              {
-                "color": "orange",
-                "value": 96
-              },
-              {
-                "color": "red",
-                "value": 168
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "openedBugsPerRelease"
-            },
-            "properties": [
-              {
-                "id": "unit",
-                "value": "none"
-              },
-              {
-                "id": "custom.drawStyle",
-                "value": "bars"
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 6,
-        "w": 6,
-        "x": 18,
-        "y": 6
-      },
-      "id": 48,
-      "options": {
-        "legend": {
-          "calcs": [],
-          "displayMode": "list",
-          "placement": "bottom",
-          "showLegend": true
-        },
-        "tooltip": {
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "targets": [
-        {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\nMATCH (n:TwinMetaData)\n\nWITH deployment, n, toDate as maxDate\nORDER BY deployment.published_at\n\nWITH collect(deployment) as deployments, n.project_management_bug_categories as categories, maxDate\n\nUNWIND range(0, size(deployments) - 1) as i\n\nWITH categories, date(datetime(deployments[i].published_at)) as fromDate, \nCASE WHEN i = size(deployments) - 1\n          THEN maxDate \n          ELSE date(datetime(deployments[i+1].published_at)) \nEND as toDate\n\nWITH fromDate, toDate, categories\n\nMATCH (issue:Issue {state: 'closed'})-[r:HAS_LABEL]->(l:IssueLabel)\nWHERE date(datetime(issue.created_at)) >= fromDate\nAND date(datetime(issue.created_at)) < toDate\n\nWITH issue, collect(l.name) as issueLabels, categories, fromDate\n\nWHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\"))) \n\nRETURN fromDate as date, toFloat(percentileCont(duration.inSeconds(datetime(issue.created_at), datetime(issue.closed_at)).hours, 0.5)) as meanTimeToRepairCode\n\n",
-          "datasource": {
-            "type": "kniepdennis-neo4j-datasource",
-            "uid": "P13FD9E770BE36698"
-          },
-          "hide": false,
-          "refId": "A"
-        },
-        {
-          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\nMATCH (n:TwinMetaData)\n\nWITH deployment, n, toDate as maxDate\nORDER BY deployment.published_at\n\nWITH collect(deployment) as deployments, n.project_management_bug_categories as categories, maxDate\n\nUNWIND range(0, size(deployments) - 1) as i\n\nWITH categories, date(datetime(deployments[i].published_at)) as fromDate, \nCASE WHEN i = size(deployments) - 1\n          THEN maxDate \n          ELSE date(datetime(deployments[i+1].published_at)) \nEND as toDate\n\nWITH fromDate, toDate, categories\n\nMATCH (issue:Issue {state: 'closed'})-[r:HAS_LABEL]->(l:IssueLabel)\nWHERE date(datetime(issue.created_at)) >= fromDate\nAND date(datetime(issue.created_at)) < toDate\n\nWITH issue, collect(l.name) as issueLabels, categories, fromDate\n\nWHERE any(category in categories WHERE size([label IN apoc.text.split(category, \"&\") WHERE label in issueLabels]) = size(apoc.text.split(category, \"&\"))) \n\nRETURN fromDate as date, count(*) as openedBugsPerRelease\n\n",
-          "datasource": {
-            "type": "kniepdennis-neo4j-datasource",
-            "uid": "P13FD9E770BE36698"
-          },
-          "hide": false,
-          "refId": "B"
-        }
-      ],
-      "title": "Time to repair code per release",
-      "type": "timeseries"
-    },
-    {
-      "datasource": {
-        "type": "kniepdennis-neo4j-datasource",
-        "uid": "P13FD9E770BE36698"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisCenteredZero": false,
-            "axisColorMode": "text",
-            "axisLabel": "",
-            "axisPlacement": "auto",
-            "barAlignment": 0,
-            "drawStyle": "line",
-            "fillOpacity": 50,
-            "gradientMode": "none",
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            },
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
@@ -869,6 +733,74 @@
       ],
       "title": "CI runs per day vs Test runs per day",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "kniepdennis-neo4j-datasource",
+        "uid": "P13FD9E770BE36698"
+      },
+      "description": "Standard deviation of release frequency",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 360
+              },
+              {
+                "color": "red",
+                "value": 720
+              }
+            ]
+          },
+          "unit": "h"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 12,
+        "y": 9
+      },
+      "id": 44,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.5.6",
+      "targets": [
+        {
+          "cypherQuery": "WITH date(datetime({epochMillis: ${__from}})) AS fromDate, date(datetime({epochMillis: ${__to}})) AS toDate\n\nMATCH (deployment:Deployment)\nWHERE date(datetime(deployment.published_at)) >= fromDate AND date(datetime(deployment.published_at)) <= toDate\n\nWITH deployment\nORDER BY deployment.published_at\n\nWITH collect(deployment.published_at) AS deploymentDates\n\nUNWIND range(0, size(deploymentDates) - 2) AS i\nWITH deploymentDates[i] AS currentDeployment, deploymentDates[i+1] AS nextDeployment\n\nRETURN stDev(duration.inSeconds(datetime(currentDeployment), datetime(nextDeployment)).seconds / 3600.0) AS deploymentFrequencyInHours",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Release Regularity (standard deviation)",
+      "type": "stat"
     },
     {
       "datasource": {
@@ -968,6 +900,74 @@
       ],
       "title": "CI Failure Rate vs Runs Per Day (Main branch)",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "kniepdennis-neo4j-datasource",
+        "uid": "P13FD9E770BE36698"
+      },
+      "description": "Release standard deviation less than 2 weeks",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0
+              },
+              {
+                "color": "green",
+                "value": 1
+              }
+            ]
+          },
+          "unit": "bool"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 6,
+        "x": 0,
+        "y": 15
+      },
+      "id": 41,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "area",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "9.5.6",
+      "targets": [
+        {
+          "cypherQuery": "RETURN 1",
+          "datasource": {
+            "type": "kniepdennis-neo4j-datasource",
+            "uid": "P13FD9E770BE36698"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Releases are regular",
+      "type": "stat"
     }
   ],
   "refresh": "",
