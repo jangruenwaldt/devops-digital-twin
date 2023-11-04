@@ -47,7 +47,7 @@ class GitHubProjectManagementDataAdapter(GitHubDataFetcher):
         issue_data_list = self._transform_api_response_into_data_format(self.enable_logs, raw_issues)
         DataManager.store_twin_data(DataTypes.PROJECT_MANAGEMENT_DATA, self.owner, self.repo_name, issue_data_list)
 
-    def _transform_api_response_into_data_format(self, enable_logs, issues):
+    def _transform_api_response_into_data_format(self, issues):
         issue_data_list = []
         for issue in issues:
             # Exclude PRs for now.
