@@ -44,7 +44,7 @@ class GitHubProjectManagementDataAdapter(GitHubDataFetcher):
                                        raw_issues)
         print(f'API returned {len(raw_issues)} issues. Mapping and storing in JSON now.')
 
-        issue_data_list = self._transform_api_response_into_data_format(self.enable_logs, raw_issues)
+        issue_data_list = self._transform_api_response_into_data_format(raw_issues)
         DataManager.store_twin_data(DataTypes.PROJECT_MANAGEMENT_DATA, self.owner, self.repo_name, issue_data_list)
 
     def _transform_api_response_into_data_format(self, issues):
