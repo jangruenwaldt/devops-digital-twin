@@ -92,11 +92,11 @@ class Config:
         return CONFIG_DATA.get('automations_history_data_source', None)
 
     @staticmethod
-    def get_update_interval_in_hours():
-        config_value = CONFIG_DATA.get('update_interval_in_hours', None)
+    def update_interval_in_minutes():
+        config_value = CONFIG_DATA.get('update_interval_in_minutes', None)
         if config_value is not None:
             return int(config_value)
-        return 24
+        return 60
 
     # db connection hardcoded as db is run via Docker
     @staticmethod

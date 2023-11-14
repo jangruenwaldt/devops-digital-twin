@@ -21,10 +21,10 @@ class ScheduledRunner:
 
     @staticmethod
     def _add_schedule_from_config_setting():
-        scheduler.add_job(TwinBuilder.build, 'interval', hours=Config.get_update_interval_in_hours())
+        scheduler.add_job(TwinBuilder.build, 'interval', minutes=Config.update_interval_in_minutes())
 
     # Check when last data update was and schedule so that data is updated according to
-    # Config.get_update_interval_in_hours() setting; 24 hours by default. Update data immediately if data was never
+    # Config.update_interval_in_minutes() setting; 60 minutes by default. Update data immediately if data was never
     # updated before.
     @staticmethod
     def start():
@@ -33,7 +33,7 @@ class ScheduledRunner:
 
         if last_data_fetch is not None:
             minutes_passed_since_last_run = (datetime.now() - last_data_fetch).total_seconds() / 60
-            minutes_until_next_run = Config.get_update_interval_in_hours() * 60 - minutes_passed_since_last_run
+            minutes_until_next_run = Config.update_interval_in_minutes() - minutes_passed_since_last_run
             if Config.get_enable_logs():
                 print(f'Last data fetch was {last_data_fetch}, i.e. {minutes_passed_since_last_run} minutes ago. '
                       f'The next fetch will therefore be in {minutes_until_next_run} minutes.')

@@ -8,10 +8,10 @@
   "project_management_data_source": "https://github.com/jangruenwaldt/xss-escape-django",
   "automations_data_source": "https://github.com/jangruenwaldt/xss-escape-django",
   "automations_history_data_source": "https://github.com/jangruenwaldt/xss-escape-django",
-  "update_interval_in_hours": "24",
+  "update_interval_in_minutes": "24",
   "enable_logs": "true",
   "automation_history_since": "2023-01-25",
-  "force_update_on_first_launch": "false",
+  "force_update_on_first_launch": "true",
   "deployment_automation_name": "Greetings",
   "test_automation_name" : [
     "Run Tests"
