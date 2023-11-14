@@ -13,7 +13,7 @@
   "automation_history_since": "2023-01-25",
   "force_update_on_first_launch": "true",
   "deployment_automation_name": "Greetings",
-  "test_automation_name" : [
+  "test_automation_names" : [
     "Run Tests"
   ],
   "ci_automation_names": [
