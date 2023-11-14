@@ -1,0 +1,48 @@
+{
+  "personal_access_token": "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",
+  "main_branch": "main",
+  "twin_owner": "twbs",
+  "twin_name": "bootstrap",
+  "commit_data_source": "https://github.com/twbs/bootstrap",
+  "deployment_data_source": "https://github.com/twbs/bootstrap",
+  "project_management_data_source": "https://github.com/twbs/bootstrap",
+  "automations_data_source": "https://github.com/twbs/bootstrap",
+  "automations_history_data_source": "https://github.com/twbs/bootstrap",
+  "update_interval_in_minutes": "24",
+  "enable_logs": "true",
+  "automation_history_since": "2022-09-30",
+  "force_update_on_first_launch": "true",
+  "deployment_automation_name": "pages build and deployment",
+  "test_automation_names": [
+    "JS Tests",
+    "LambdaTest",
+    "CSS"
+  ],
+  "ci_automation_names": [
+    "BrowserStack",
+    "BundleWatch",
+    "CodeQL",
+    "Compress Images",
+    "cspell",
+    "CSS",
+    "CSS (Dart Sass)",
+    "Docs",
+    "JS Tests",
+    "LambdaTest",
+    "Lint"
+  ],
+  "project_management_bug_categories": [
+    "p1",
+    "p2",
+    "p3",
+    "affects-main-branch",
+    "browser-bug",
+    "regression",
+    "performance",
+    "accessibility",
+    "confirmed",
+    "print"
+  ],
+  "override_existing_data": "true",
+  "deployment_regex" : "^v5\\.\\d+\\.\\d+$"
+}

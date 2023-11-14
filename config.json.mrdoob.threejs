@@ -1,0 +1,28 @@
+{
+  "personal_access_token": "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",
+  "main_branch": "dev",
+  "twin_owner": "mrdoob",
+  "twin_name": "three.js",
+  "commit_data_source": "https://github.com/mrdoob/three.js",
+  "deployment_data_source": "https://github.com/mrdoob/three.js",
+  "project_management_data_source": "https://github.com/mrdoob/three.js",
+  "automations_data_source": "https://github.com/mrdoob/three.js",
+  "automations_history_data_source": "https://github.com/mrdoob/three.js",
+  "update_interval_in_minutes": "24",
+  "enable_logs": "true",
+  "automation_history_since": "2022-09-30",
+  "force_update_on_first_launch": "true",
+  "deployment_automation_name": "pages build and deployment",
+  "test_automation_names": [
+    "CI"
+  ],
+  "ci_automation_names": [
+    "CI",
+    "CodeQL"
+  ],
+  "project_management_bug_categories": [
+    "Bug",
+    "Regression"
+  ],
+  "override_existing_data": "true"
+}
