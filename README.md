@@ -1,6 +1,10 @@
 # DevOps Digital Twin
 
-Fetch DevOps system data into JSON via Python, and then store it in neo4j. Exploration and visualization with Grafana.
+This is an intial prototype of a Digital Twin for monitoring of DevOps practices in modern software engineering. 
+The visualizations based on the digital twin can generate valuable insights into product stability, system and team performance. 
+
+Input: Fetch DevOps system data into JSON via Python, and then store it in neo4j. 
+Output: Exploration and visualization with Grafana.
 
 ## What is this, and what makes it new and different?
 
