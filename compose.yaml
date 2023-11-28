@@ -17,8 +17,8 @@ services:
       - 7474:7474
       - 7687:7687
     volumes:
-      - $HOME/neo4j/data:/data
-      - $HOME/neo4j/logs:/logs
+      - ./neo4j/data:/data
+      - ./neo4j/logs:/logs
       - data-volume:/app/data
     environment:
       - NEO4J_AUTH=neo4j/password
@@ -30,7 +30,7 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - grafana-storage:/var/lib/grafana
+      - ./grafana-storage:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning
     environment:
       - GF_INSTALL_PLUGINS=kniepdennis-neo4j-datasource

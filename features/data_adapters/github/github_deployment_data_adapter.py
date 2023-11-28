@@ -28,7 +28,10 @@ class GitHubDeploymentDataAdapter(GitHubDataFetcher):
 
         cached_data = DataManager.retrieve_raw_api_data(DataTypes.DEPLOYMENT_DATA, DataSources.GITHUB, self.owner,
                                                         self.repo_name)
-        if cached_data is not None:
+        print("Cached data:", cached_data)
+
+        #if cached_data is not None:
+        if cached_data:
             latest_release = max(cached_data, key=lambda x: x.get('published_at', ''))
 
             def check_if_existing_release_reached(new_data):

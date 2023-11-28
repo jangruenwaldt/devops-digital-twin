@@ -1,0 +1,29 @@
+{
+  "personal_access_token": "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",
+  "main_branch": "master",
+  "twin_owner": "nguyenhongphu",
+  "twin_name": "eShopOnContainersCustomised",
+  "commit_data_source": "https://github.com/nguyenhongphu/eShopOnContainersCustomised",
+  "deployment_data_source": "https://github.com/nguyenhongphu/eShopOnContainersCustomised",
+  "project_management_data_source": "https://github.com/nguyenhongphu/eShopOnContainersCustomised",
+  "automations_data_source": "https://github.com/nguyenhongphu/eShopOnContainersCustomised",
+  "automations_history_data_source": "https://github.com/nguyenhongphu/eShopOnContainersCustomised",
+  "update_interval_in_minutes": "24",
+  "enable_logs": "true",
+  "automation_history_since": "2019-01-25",
+  "force_update_on_first_launch": "true",
+  "deployment_automation_name": "Greetings",
+  "test_automation_names": [
+    "Run Tests"
+  ],
+  "ci_automation_names": [
+    "Run Tests",
+    "Run Build"
+  ],
+  "project_management_bug_categories": [
+    "incident",
+    "crash&help-wanted",
+    "you can combine two categories using the & sign. Both have to be present to be considered an incident."
+  ],
+  "override_existing_data": "false"
+}

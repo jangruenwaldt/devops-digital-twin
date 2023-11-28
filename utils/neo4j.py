@@ -12,7 +12,7 @@ class Neo4j:
         return Neo4j.get_graph().run(query)
 
     @staticmethod
-    def wait_for_connection(retries=5, delay=8):
+    def wait_for_connection(retries=8, delay=8):
         for i in range(retries):
             try:
                 connection = Graph(Config.get_db_address(), auth=(Config.get_db_user(), Config.get_db_pw()))

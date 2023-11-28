@@ -14,7 +14,8 @@ class GitHubProjectManagementDataAdapter(GitHubDataFetcher):
 
         old_data = DataManager.retrieve_raw_api_data(DataTypes.PROJECT_MANAGEMENT_DATA, DataSources.GITHUB, self.owner,
                                                      self.repo_name)
-        if old_data is not None:
+        #if old_data is not None:
+        if old_data:
             # Get the latest edited issue in the old data
             latest_edited_issue = max(old_data, key=lambda x: x.get('updated_at', ''))
             since_date = latest_edited_issue.get('updated_at', '')
